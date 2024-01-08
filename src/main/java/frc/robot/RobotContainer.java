@@ -4,10 +4,17 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
+import frc.robot.subsystems.LEDs;
+import frc.robot.subsystems.swerve.Swerve;
+
+import static edu.wpi.first.math.MathUtil.applyDeadband;
+import static frc.lib.Color.Colors.WHITE;
+import static frc.robot.subsystems.LEDs.LEDPattern.SOLID;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -16,30 +23,38 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
-  private final CommandPS5Controller driver = new CommandPS5Controller(0);
+    // subsystems
+    private final Swerve swerve = new Swerve();
+    private final LEDs leds = LEDs.getInstance();
 
-  public RobotContainer() {
-    configureBindings();
-  }
+    // controllers
+    private final CommandPS4Controller controller = new CommandPS4Controller(0);
 
-  /**
-   * Use this method to define your trigger->command mappings. Triggers can be created via the
-   * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary
-   * predicate, or via the named factories in {@link
-   * edu.wpi.first.wpilibj2.command.button.CommandGenericHID}'s subclasses for {@link
-   * CommandXboxController Xbox}/{@link edu.wpi.first.wpilibj2.command.button.CommandPS4Controller
-   * PS4} controllers or {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
-   * joysticks}.
-   */
-  private void configureBindings() {}
+    public RobotContainer() {
+        configureBindings();
+    }
 
-  /**
-   * Use this to pass the autonomous command to the main {@link Robot} class.
-   *
-   * @return the command to run in autonomous
-   */
-  public Command getAutonomousCommand() {
-    // An example command will be run in autonomous
-    return null;
-  }
+    private void configureBindings() {
+        swerve.setDefaultCommand(
+                swerve.driveSwerveCommand(
+                        () -> applyDeadband(-controller.getLeftY(), 0.07),
+                        () -> applyDeadband(-controller.getLeftX(), 0.07),
+                        () -> applyDeadband(-controller.getRightX(), 0.07),
+                        controller.L2().negate(),
+                        controller::getR2Axis));
+
+        controller.touchpad().whileTrue(toggleMotorsIdleMode().alongWith(leds.applyPatternCommand(SOLID, WHITE.color)));
+        controller.PS().onTrue(swerve.setOdometryPositionCommand(new Pose2d(0, 0, new Rotation2d(0))));
+    }
+
+    public Command toggleMotorsIdleMode() {
+        return new ParallelCommandGroup(
+                swerve.toggleIdleModeCommand()
+                // add other subsystems here
+        );
+    }
+
+    public Command getAutonomousCommand() {
+        return null;
+    }
 }
