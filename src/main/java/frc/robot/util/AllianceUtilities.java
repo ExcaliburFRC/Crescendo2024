@@ -20,6 +20,10 @@ public class AllianceUtilities {
         return true;
     }
 
+    public static boolean isRedAlliance() {
+        return !isBlueAlliance();
+    }
+
     /**
      * Converts a pose to the pose relative to the current driver station alliance.
      *
