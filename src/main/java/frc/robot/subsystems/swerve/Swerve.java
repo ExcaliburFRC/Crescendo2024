@@ -101,20 +101,6 @@ public class Swerve extends SubsystemBase {
     public Swerve() {
         resetGyroHardware();
 
-        AutoBuilder.configureHolonomic(
-                this::getPose2d,
-                this::setPose2d,
-                this::getRobotRelativeSpeeds,
-                this::driveRobotRelative,
-                new HolonomicPathFollowerConfig(
-                        new PIDConstants(PATHPLANNER_TRANSLATION_GAINS.kp, 0.0, PATHPLANNER_TRANSLATION_GAINS.kd),
-                        new PIDConstants(PATHPLANNER_ANGLE_GAINS.kp, 0.0, PATHPLANNER_ANGLE_GAINS.kd),
-                        MAX_VELOCITY_METER_PER_SECOND,
-                        Math.sqrt(2) * (TRACK_WIDTH / 2), // needs to change for a non-square swerve
-                        new ReplanningConfig()),
-                ()-> true, this
-        );
-
         odometry.resetPosition(getGyroRotation2d(), getModulesPositions(), new Pose2d(0, 0, new Rotation2d()));
         resetOdometryAngleCommand();
 
@@ -124,6 +110,7 @@ public class Swerve extends SubsystemBase {
         interpolate.put(1.0, 0.2);
         interpolate.put(-1.0, 1.0);
 
+        initAutoBuilder();
         initShuffleboardData();
     }
 
@@ -165,10 +152,17 @@ public class Swerve extends SubsystemBase {
         return new InstantCommand(() -> setPose2d(pose)).ignoringDisable(true);
     }
 
+    private void driveRobotRelative(ChassisSpeeds chassisSpeeds) {
+        setModulesStates(kSwerveKinematics.toSwerveModuleStates(chassisSpeeds));
+    }
+
     public Command setOdometryAngleCommand(double angle) {
         return new ProxyCommand(() ->
                 setOdometryPositionCommand(
-                        new Pose2d(odometry.getEstimatedPosition().getTranslation(), Rotation2d.fromDegrees(angle))).ignoringDisable(true));
+                        new Pose2d(
+                                odometry.getEstimatedPosition().getTranslation(),
+                        Rotation2d.fromDegrees(angle)))
+                        .ignoringDisable(true));
     }
 
     public Command resetOdometryAngleCommand() {
@@ -217,14 +211,6 @@ public class Swerve extends SubsystemBase {
             DoubleSupplier spinningSpeedSupplier,
             BooleanSupplier fieldOriented) {
         return driveSwerveCommand(xSpeedSupplier, ySpeedSupplier, spinningSpeedSupplier, fieldOriented, () -> 1);
-    }
-
-    public Command tankDriveCommand(DoubleSupplier speed, DoubleSupplier turn, boolean fieldOriented) {
-        return driveSwerveCommand(speed, () -> 0, turn, () -> fieldOriented);
-    }
-
-    private void driveRobotRelative(ChassisSpeeds chassisSpeeds) {
-        setModulesStates(kSwerveKinematics.toSwerveModuleStates(chassisSpeeds));
     }
 
     public Command straightenModulesCommand() {
@@ -341,7 +327,7 @@ public class Swerve extends SubsystemBase {
         );
     }
 
-    public Pose2d[] getAlliancePositions(Pose2d... poses) {
+    private Pose2d[] getAlliancePositions(Pose2d... poses) {
         for (int i = 0; i < poses.length; i++) {
             poses[i] = AllianceUtilities.toAlliancePose(poses[i]);
             System.out.println(poses[i]);
@@ -392,5 +378,21 @@ public class Swerve extends SubsystemBase {
                 .withPosition(0, 2).withSize(4, 4);
         swerveTab.add("Field2d", field).withSize(9, 5).withPosition(12, 0);
         swerveTab.addDouble("robotPitch", this::getRobotPitch);
+    }
+
+    private void initAutoBuilder(){
+        AutoBuilder.configureHolonomic(
+                this::getPose2d,
+                this::setPose2d,
+                this::getRobotRelativeSpeeds,
+                this::driveRobotRelative,
+                new HolonomicPathFollowerConfig(
+                        new PIDConstants(PATHPLANNER_TRANSLATION_GAINS.kp, 0.0, PATHPLANNER_TRANSLATION_GAINS.kd),
+                        new PIDConstants(PATHPLANNER_ANGLE_GAINS.kp, 0.0, PATHPLANNER_ANGLE_GAINS.kd),
+                        MAX_VELOCITY_METER_PER_SECOND,
+                        Math.sqrt(2) * (TRACK_WIDTH / 2), // needs to change for a non-square swerve
+                        new ReplanningConfig()),
+                AllianceUtilities::isRedAlliance, this
+        );
     }
 }

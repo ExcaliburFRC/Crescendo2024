@@ -2,18 +2,26 @@ package frc.robot.util;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 
+import static edu.wpi.first.wpilibj.DriverStation.Alliance.Blue;
 import static frc.robot.Constants.SwerveConstants.FIELD_LENGTH_METERS;
 import static frc.robot.Constants.SwerveConstants.FIELD_WIDTH_METERS;
 
 public class AllianceUtilities {
-    public static boolean isBlueAlliance = true; // updates value in Robot.robotInit()
-
     /**
      * @return whether the robot is on the blue alliance
      */
     public static boolean isBlueAlliance() {
-        return isBlueAlliance;
+        var alliance = DriverStation.getAlliance();
+
+        if (alliance.isPresent()) return alliance.get().equals(Blue);
+        DriverStation.reportError("DS alliance empty!", false);
+        return true;
+    }
+
+    public static boolean isRedAlliance() {
+        return !isBlueAlliance();
     }
 
     /**
