@@ -7,6 +7,7 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -346,19 +347,17 @@ public class Swerve extends SubsystemBase {
     }
 
     public Command pidToPose(Pose2d setpoint) {
-        SlewRateLimiter slewX = new SlewRateLimiter(2);
-        SlewRateLimiter slewY = new SlewRateLimiter(2);
-
         Trigger atSetpointTrigger = new Trigger(() ->
                 getPose2d().getTranslation().getDistance(setpoint.getTranslation()) < 0.05 &&
                         Math.abs(getPose2d().getRotation().minus(setpoint.getRotation()).getDegrees()) < 3).debounce(0.25);
+        double maxVel = 0.5;
 
         return new RunCommand(() -> driveRobotRelative(
                 ChassisSpeeds.fromFieldRelativeSpeeds(
                         new ChassisSpeeds(
-                        slewX.calculate(xTranslationPIDcontroller.calculate(getPose2d().getX(), setpoint.getX())),
-                        slewY.calculate(yTranslationPIDcontroller.calculate(getPose2d().getY(), setpoint.getY())),
-                        anglePIDcontroller.calculate(getPose2d().getRotation().getDegrees(), setpoint.getRotation().getDegrees())),
+                                MathUtil.clamp(xTranslationPIDcontroller.calculate(getPose2d().getX(), setpoint.getX()), -maxVel, maxVel),
+                                MathUtil.clamp(yTranslationPIDcontroller.calculate(getPose2d().getY(), setpoint.getY()), -maxVel, maxVel),
+                                MathUtil.clamp(anglePIDcontroller.calculate(getPose2d().getRotation().getDegrees(), setpoint.getRotation().getDegrees()), -maxVel, maxVel)),
                         getGyroRotation2d())),
                 this).until(atSetpointTrigger);
     }

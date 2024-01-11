@@ -31,11 +31,7 @@ public class AllianceUtilities {
      * @return the converted pose
      */
     public static Pose2d toAlliancePose(Pose2d pose) {
-        if (isBlueAlliance()) {
-            System.out.println("blue alliance");
-            return pose;
-        }
-        System.out.println("red alliance");
+        if (isBlueAlliance()) return pose;
         return switchAlliance(pose);
     }
 
