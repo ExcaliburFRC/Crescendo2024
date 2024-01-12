@@ -48,6 +48,8 @@ public class Robot extends TimedRobot {
 
     controller.touchpad().whileTrue(toggleMotorsIdleMode().alongWith(leds.applyPatternCommand(SOLID, WHITE.color)));
     controller.PS().onTrue(swerve.setOdometryPositionCommand(new Pose2d(0, 0, new Rotation2d(0))));
+
+    controller.cross().onTrue(swerve.pidToPose(new Pose2d()));
   }
 
   // methods
