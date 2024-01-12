@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.8782413928464217,
-        "y": 5.550603828480384
+        "x": 13.5,
+        "y": 1.5
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.8204447317985544,
-        "y": 6.464820929641859
+        "x": 14.333941395155517,
+        "y": 1.585886808137253
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.813147989932344,
-        "y": 5.755836238945205
+        "x": 15.453390906781815,
+        "y": 0.8955596093010377
       },
       "prevControl": {
-        "x": 6.376521116678596,
-        "y": 6.670053340106681
+        "x": 14.865679913178008,
+        "y": 1.4739418569746237
       },
       "nextControl": null,
       "isLocked": false,
@@ -32,18 +32,18 @@
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 3.6,
+    "maxVelocity": 5.0,
     "maxAcceleration": 3.0,
-    "maxAngularVelocity": 540.0,
+    "maxAngularVelocity": 720.0,
     "maxAngularAcceleration": 720.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0,
-    "rotateFast": false
+    "rotation": -59.981632572390694,
+    "rotateFast": true
   },
   "reversed": false,
-  "folder": "AUTOPaths",
+  "folder": "TelePaths",
   "previewStartingState": null,
   "useDefaultConstraints": false
 }

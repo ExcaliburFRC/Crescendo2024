@@ -43,7 +43,7 @@
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "AUTOIntakes",
+  "folder": "AUTOPaths",
   "previewStartingState": null,
   "useDefaultConstraints": false
 }

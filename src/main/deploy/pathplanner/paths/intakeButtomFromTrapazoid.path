@@ -43,7 +43,7 @@
     "rotateFast": true
   },
   "reversed": false,
-  "folder": "AUTOIntakes",
+  "folder": "AUTOPaths",
   "previewStartingState": {
     "rotation": -60.0,
     "velocity": 0

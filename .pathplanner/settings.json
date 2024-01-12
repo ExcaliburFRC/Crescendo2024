@@ -3,10 +3,11 @@
   "robotLength": 0.56,
   "holonomicMode": true,
   "pathFolders": [
-    "AUTOIntakes"
+    "AUTOPaths",
+    "TelePaths"
   ],
   "autoFolders": [
-    "StartFromOffCenter",
+    "StartOffCenter",
     "StartFromTrapazoid"
   ],
   "defaultMaxVel": 5.0,
