@@ -4,13 +4,12 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.swerve.Swerve;
@@ -36,6 +35,10 @@ public class Robot extends TimedRobot {
   // commands
   private final Command m_autonomousCommand = Commands.none(); // insert autonomous command here
 
+  private final SendableChooser<Command> shouldDriveToCenterLineChooser = new SendableChooser<>();
+
+  public Robot(){}
+
   // bindings
   private void configureBindings() {
     swerve.setDefaultCommand(
@@ -58,6 +61,11 @@ public class Robot extends TimedRobot {
             swerve.toggleIdleModeCommand()
             // add other subsystems here
     );
+  }
+
+  private void initSendableChoosers(){
+    shouldDriveToCenterLineChooser.setDefaultOption("don't Drive", Commands.none());
+    shouldDriveToCenterLineChooser.addOption("drive", Commands.idle()); // this is my commandddd!!
   }
 
   // Robot methods
@@ -94,6 +102,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
+    NamedCommands.registerCommand("ShouldDriveToCenterLine", shouldDriveToCenterLineChooser.getSelected());
     m_autonomousCommand.schedule();
   }
 
