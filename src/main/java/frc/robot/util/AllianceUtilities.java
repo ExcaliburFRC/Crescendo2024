@@ -5,8 +5,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 
 import static edu.wpi.first.wpilibj.DriverStation.Alliance.Blue;
-import static frc.robot.Constants.SwerveConstants.FIELD_LENGTH_METERS;
-import static frc.robot.Constants.SwerveConstants.FIELD_WIDTH_METERS;
+import static frc.robot.Constants.FieldConstants.*;
 
 public class AllianceUtilities {
     /**

@@ -82,9 +82,6 @@ public final class Constants {
         public static final PathConstraints PATH_CONSTRAINTS = new PathConstraints(
                 MAX_VELOCITY_METER_PER_SECOND, MAX_VELOCITY_ACCELERATION_METER_PER_SECOND,
                 MAX_ANGULAR_VELOCITY_RAD_PER_SECOND, MAX_ANGULAR_ACCELERATION_RAD_PER_SECOND);
-
-        public static final double FIELD_LENGTH_METERS = 16.54175;
-        public static final double FIELD_WIDTH_METERS = 8.02;
     }
 
     public static final class ModuleConstants {
@@ -103,9 +100,30 @@ public final class Constants {
         public static final int DRIVE_CURRENT_LIMIT = 65;
         public static final int ANGLE_CURRENT_LIMIT = 25;
     }
+
+    public static final class FieldConstants {
+        public static final double FIELD_LENGTH_METERS = 16.54;
+        public static final double FIELD_WIDTH_METERS = 8.02;
+
+        public enum FieldLocations {
+            // Human player locations
+            HM_LEFT("HMLeft"), HM_CENTER("HMCenter"), HM_RIGHT("HMRight"),
+
+            // Speaker locations,
+            SPEAKER_TOP("SpeakerTop"), SPEAKER_CENTER("SpeakerCenter"), SPEAKER_BOTTOM("SpeakerBottom");
+
+            public String pathName;
+
+            FieldLocations(String pathName){
+                this.pathName = pathName;
+            }
+        }
+    }
+
     public static class LedsConstants {
 
         public static final int LEDS_PORT = 0; // pwm
         public static final int LENGTH = 0;
+
     }
 }

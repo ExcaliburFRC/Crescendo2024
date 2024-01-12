@@ -3,6 +3,7 @@ package frc.robot.subsystems.swerve;
 import com.kauailabs.navx.frc.AHRS;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.GoalEndState;
+import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
@@ -11,7 +12,6 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -24,7 +24,6 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.networktables.GenericEntry;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -32,6 +31,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants.FieldConstants.*;
 import frc.robot.util.AllianceUtilities;
 
 import java.util.function.BooleanSupplier;
@@ -360,6 +360,18 @@ public class Swerve extends SubsystemBase {
                                 MathUtil.clamp(anglePIDcontroller.calculate(getPose2d().getRotation().getDegrees(), setpoint.getRotation().getDegrees()), -maxVel, maxVel)),
                         getGyroRotation2d())),
                 this).until(atSetpointTrigger);
+    }
+
+    public Command pathFindToLocation(FieldLocations location){
+        return AutoBuilder.pathfindThenFollowPath(PathPlannerPath.fromPathFile(location.pathName), PATH_CONSTRAINTS);
+    }
+
+    public Command pathFindToPose(Pose2d pose, PathConstraints constraints, double goalEndVel){
+        return AutoBuilder.pathfindToPose(pose, constraints, goalEndVel);
+    }
+
+    public Command pathFindToPose(Pose2d pose){
+        return pathFindToPose(pose, PATH_CONSTRAINTS, 0);
     }
     // ----------
 

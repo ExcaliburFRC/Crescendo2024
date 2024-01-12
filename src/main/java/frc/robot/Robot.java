@@ -16,6 +16,7 @@ import frc.robot.subsystems.swerve.Swerve;
 
 import static edu.wpi.first.math.MathUtil.applyDeadband;
 import static frc.lib.Color.Colors.WHITE;
+import static frc.robot.Constants.FieldConstants.FieldLocations.*;
 import static frc.robot.subsystems.LEDs.LEDPattern.SOLID;
 
 /**
@@ -52,7 +53,17 @@ public class Robot extends TimedRobot {
     controller.touchpad().whileTrue(toggleMotorsIdleMode().alongWith(leds.applyPatternCommand(SOLID, WHITE.color)));
     controller.PS().onTrue(swerve.setOdometryPositionCommand(new Pose2d(0, 0, new Rotation2d(0))));
 
-    controller.cross().onTrue(swerve.pidToPose(new Pose2d()));
+    // teleop path's
+
+    // speaker pathfinding
+    controller.povLeft().whileTrue(swerve.pathFindToLocation(SPEAKER_TOP));
+    controller.povUp().whileTrue(swerve.pathFindToLocation(SPEAKER_CENTER));
+    controller.povRight().whileTrue(swerve.pathFindToLocation(SPEAKER_BOTTOM));
+
+    // Human player pathfinding
+    controller.square().whileTrue(swerve.pathFindToLocation(HM_LEFT));
+    controller.triangle().whileTrue(swerve.pathFindToLocation(HM_CENTER));
+    controller.circle().whileTrue(swerve.pathFindToLocation(HM_RIGHT));
   }
 
   // methods
