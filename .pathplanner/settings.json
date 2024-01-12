@@ -3,12 +3,15 @@
   "robotLength": 0.56,
   "holonomicMode": true,
   "pathFolders": [
-    "AUTOsimpleIntakes"
+    "AUTOIntakes"
   ],
-  "autoFolders": [],
-  "defaultMaxVel": 3.65,
+  "autoFolders": [
+    "StartFromOffCenter",
+    "StartFromTrapazoid"
+  ],
+  "defaultMaxVel": 5.0,
   "defaultMaxAccel": 3.0,
-  "defaultMaxAngVel": 540.0,
+  "defaultMaxAngVel": 720.0,
   "defaultMaxAngAccel": 720.0,
-  "maxModuleSpeed": 3.6
+  "maxModuleSpeed": 5.88
 }

@@ -3,49 +3,55 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.8968988847068604,
-        "y": 6.977901955803912
+        "x": 2.5,
+        "y": 4.33
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.8950746992403076,
-        "y": 7.602927933128594
+        "x": 2.639873690443485,
+        "y": 1.1768813244022063
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.831805481792781,
-        "y": 7.42568176045443
+        "x": 7.822476735862562,
+        "y": 4.085990717435981
       },
       "prevControl": {
-        "x": 6.292562403306624,
-        "y": 7.546955457547279
+        "x": 5.91941256609786,
+        "y": 4.729674186621101
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": null
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.4,
+      "rotationDegrees": -30.0,
+      "rotateFast": false
+    }
+  ],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 3.6,
+    "maxVelocity": 5.0,
     "maxAcceleration": 3.0,
-    "maxAngularVelocity": 540.0,
+    "maxAngularVelocity": 720.0,
     "maxAngularAcceleration": 720.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0,
+    "rotation": 0,
     "rotateFast": true
   },
   "reversed": false,
   "folder": "AUTOIntakes",
   "previewStartingState": {
-    "rotation": -145.0,
+    "rotation": -30.0,
     "velocity": 0
   },
   "useDefaultConstraints": false

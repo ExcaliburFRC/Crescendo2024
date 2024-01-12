@@ -3,7 +3,7 @@
   "startingPose": {
     "position": {
       "x": 1.2457108550580738,
-      "y": 5.578590066271041
+      "y": 5.541275082550166
     },
     "rotation": 0
   },
@@ -62,38 +62,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "intakeTopNote"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "intakeFromGround"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "shootFromRobotPose"
-          }
-        },
-        {
-          "type": "deadline",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "ShouldDriveToCenterLine"
-                }
-              },
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "intakeTopNodeCenterLine"
+                  "pathName": "intake2ndCenterLine"
                 }
               },
               {
@@ -108,6 +77,6 @@
       ]
     }
   },
-  "folder": null,
+  "folder": "StartFromTrapazoid",
   "choreoAuto": false
 }

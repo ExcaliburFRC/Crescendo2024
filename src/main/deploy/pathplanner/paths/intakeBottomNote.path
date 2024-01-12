@@ -8,20 +8,20 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.0554875655205853,
-        "y": 4.972221580806798
+        "x": 2.4304615881959033,
+        "y": 5.084166531969428
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.9062276306370793,
-        "y": 4.113976955226638
+        "x": 2.514420301567876,
+        "y": 4.347195603482116
       },
       "prevControl": {
-        "x": 3.018172581799709,
-        "y": 4.552428013946938
+        "x": 2.3091878911030554,
+        "y": 4.655044219179348
       },
       "nextControl": null,
       "isLocked": false,
@@ -39,11 +39,11 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -102.90740867126583,
+    "rotation": -35.2175929681927,
     "rotateFast": true
   },
   "reversed": false,
-  "folder": "AUTOsimpleIntakes",
+  "folder": "AUTOIntakes",
   "previewStartingState": null,
   "useDefaultConstraints": false
 }
