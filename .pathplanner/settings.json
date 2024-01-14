@@ -1,0 +1,18 @@
+{
+  "robotWidth": 0.56,
+  "robotLength": 0.56,
+  "holonomicMode": true,
+  "pathFolders": [
+    "AUTOPaths",
+    "TelePaths"
+  ],
+  "autoFolders": [
+    "StartOffCenter",
+    "StartFromTrapazoid"
+  ],
+  "defaultMaxVel": 5.0,
+  "defaultMaxAccel": 3.0,
+  "defaultMaxAngVel": 720.0,
+  "defaultMaxAngAccel": 720.0,
+  "maxModuleSpeed": 5.88
+}

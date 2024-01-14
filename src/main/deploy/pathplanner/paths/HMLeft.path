@@ -1,0 +1,49 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 13.5135,
+        "y": 1.5
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 14.240653935853326,
+        "y": 1.7258179970905398
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 16.013115662594963,
+        "y": 1.2127369709284874
+      },
+      "prevControl": {
+        "x": 15.098898561433487,
+        "y": 1.8564204401136077
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 5.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 720.0,
+    "maxAngularAcceleration": 720.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -59.981632572390694,
+    "rotateFast": true
+  },
+  "reversed": false,
+  "folder": "TelePaths",
+  "previewStartingState": null,
+  "useDefaultConstraints": false
+}

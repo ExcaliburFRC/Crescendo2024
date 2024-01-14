@@ -4,19 +4,19 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.swerve.Swerve;
 
 import static edu.wpi.first.math.MathUtil.applyDeadband;
 import static frc.lib.Color.Colors.WHITE;
+import static frc.robot.Constants.FieldConstants.FieldLocations.*;
 import static frc.robot.subsystems.LEDs.LEDPattern.SOLID;
 
 /**
@@ -36,6 +36,10 @@ public class Robot extends TimedRobot {
   // commands
   private final Command m_autonomousCommand = Commands.none(); // insert autonomous command here
 
+  private final SendableChooser<Command> shouldDriveToCenterLineChooser = new SendableChooser<>();
+
+  public Robot(){}
+
   // bindings
   private void configureBindings() {
     swerve.setDefaultCommand(
@@ -49,7 +53,17 @@ public class Robot extends TimedRobot {
     controller.touchpad().whileTrue(toggleMotorsIdleMode().alongWith(leds.applyPatternCommand(SOLID, WHITE.color)));
     controller.PS().onTrue(swerve.setOdometryPositionCommand(new Pose2d(0, 0, new Rotation2d(0))));
 
-    controller.cross().onTrue(swerve.pidToPose(new Pose2d()));
+    // teleop path's
+
+    // speaker pathfinding
+    controller.povLeft().whileTrue(swerve.pathFindToLocation(SPEAKER_TOP));
+    controller.povUp().whileTrue(swerve.pathFindToLocation(SPEAKER_CENTER));
+    controller.povRight().whileTrue(swerve.pathFindToLocation(SPEAKER_BOTTOM));
+
+    // Human player pathfinding
+    controller.square().whileTrue(swerve.pathFindToLocation(HM_LEFT));
+    controller.triangle().whileTrue(swerve.pathFindToLocation(HM_CENTER));
+    controller.circle().whileTrue(swerve.pathFindToLocation(HM_RIGHT));
   }
 
   // methods
@@ -58,6 +72,11 @@ public class Robot extends TimedRobot {
             swerve.toggleIdleModeCommand()
             // add other subsystems here
     );
+  }
+
+  private void initSendableChoosers(){
+    shouldDriveToCenterLineChooser.setDefaultOption("don't Drive", Commands.none());
+    shouldDriveToCenterLineChooser.addOption("drive", Commands.idle()); // this is my commandddd!!
   }
 
   // Robot methods
@@ -94,6 +113,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
+    NamedCommands.registerCommand("ShouldDriveToCenterLine", shouldDriveToCenterLineChooser.getSelected());
     m_autonomousCommand.schedule();
   }
 
