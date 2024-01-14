@@ -28,7 +28,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "IntakeTopNote"
+                        "pathName": "intakeTopNote"
                       }
                     }
                   ]
