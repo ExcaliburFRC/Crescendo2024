@@ -7,12 +7,15 @@ package frc.robot;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.swerve.Swerve;
+import monologue.Logged;
+import monologue.Monologue;
 
 import static edu.wpi.first.math.MathUtil.applyDeadband;
 import static frc.lib.Color.Colors.WHITE;
@@ -25,7 +28,7 @@ import static frc.robot.subsystems.LEDs.LEDPattern.SOLID;
  * the package after creating this project, you must also update the build.gradle file in the
  * project.
  */
-public class Robot extends TimedRobot {
+public class Robot extends TimedRobot implements Logged {
   // subsystems
   private final Swerve swerve = new Swerve();
   private final LEDs leds = LEDs.getInstance();
@@ -87,6 +90,10 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     configureBindings();
+
+    boolean fileOnly = false;
+    boolean lazyLogging = false;
+    Monologue.setupMonologue(this, "Robot", fileOnly, lazyLogging);
   }
 
   /**
@@ -103,6 +110,11 @@ public class Robot extends TimedRobot {
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
+
+      // setFileOnly is used to shut off NetworkTables broadcasting for most logging calls.
+      // Basing this condition on the connected state of the FMS is a suggestion only.
+      Monologue.setFileOnly(DriverStation.isFMSAttached());
+      Monologue.updateAll();
   }
 
   @Override

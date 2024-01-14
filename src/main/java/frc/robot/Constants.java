@@ -30,12 +30,9 @@ public final class Constants {
             BR(14, 13, 8, 0.3339, true, true);
 
 
-            public int DRIVE_MOTOR_ID;
-            public int SPIN_MOTOR_ID;
-            public int ABS_ENCODER_CHANNEL;
+            public int DRIVE_MOTOR_ID, SPIN_MOTOR_ID, ABS_ENCODER_CHANNEL;
             public double OFFSET_ANGLE;
-            public boolean DRIVE_MOTOR_REVERSED;
-            public boolean SPIN_MOTOR_REVERSED;
+            public boolean DRIVE_MOTOR_REVERSED, SPIN_MOTOR_REVERSED;
 
             public static final int FRONT_LEFT = 0;
             public static final int FRONT_RIGHT = 1;

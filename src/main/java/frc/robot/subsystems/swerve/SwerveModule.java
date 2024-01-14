@@ -11,11 +11,15 @@ import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.Neo;
 import frc.robot.Constants;
+import monologue.Annotations;
+import monologue.Annotations.Log;
+import monologue.LogLevel;
+import monologue.Logged;
 
 import static frc.robot.Constants.ModuleConstants.*;
 import static java.lang.Math.PI;
 
-public class SwerveModule implements Sendable {
+public class SwerveModule implements Sendable, Logged {
   //create the module's motors
   private final Neo _driveMotor;
   private final Neo _angleMotor;
@@ -90,10 +94,12 @@ public class SwerveModule implements Sendable {
     _angleMotor.setPosition(getAbsEncoderRad());
   }
 
+  @Log.NT (key = "ModuleState", level = LogLevel.NOT_FILE_ONLY)
   public SwerveModuleState getState() {
     return new SwerveModuleState(_driveMotor.getVelocity(), new Rotation2d(_angleMotor.getPosition()));
   }
 
+  @Log.NT (key = "ModulePosition")
   public SwerveModulePosition getPosition(){
     return new SwerveModulePosition(_driveMotor.getPosition(), Rotation2d.fromRadians(_angleMotor.getPosition()));
   }

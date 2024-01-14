@@ -1,0 +1,119 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 1.2635114159117207,
+      "y": 5.577004487342309
+    },
+    "rotation": 0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "shootFromTrapazoid"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "intakeTopNodeFromTrapazoid"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "intakeFromGround"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shootFromRobotPose"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "intakeMiddleNoteFromHigh"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "intakeFromGround"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shootFromRobotPose"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "intakeButtomNoteFromMiddle"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "intakeFromGround"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shootFromRobotPose"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "intake4thCenterLine"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "intakeFromGround"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "folder": "StartFromTrapazoid",
+  "choreoAuto": false
+}
