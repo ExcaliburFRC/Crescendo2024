@@ -2,6 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
+
 package frc.robot;
 
 import com.pathplanner.lib.auto.NamedCommands;
@@ -34,9 +35,10 @@ public class Robot extends TimedRobot implements Logged {
   private final Swerve swerve = new Swerve();
   private final LEDs leds = LEDs.getInstance();
   private final Shooter shooter = new Shooter();
-
   // controllers
   private final CommandPS4Controller controller = new CommandPS4Controller(0);
+  private final CommandPS4Controller controllerArms = new CommandPS4Controller(1);
+
 
   // commands
   private final Command m_autonomousCommand = Commands.none(); // insert autonomous command here
@@ -73,6 +75,8 @@ public class Robot extends TimedRobot implements Logged {
     controller.circle().whileTrue(swerve.pathFindToLocation(HM_RIGHT));
 
     shooter.setDefaultCommand(shooter.ManualShooterCommand());
+
+    shooter.setDefaultCommand(shooter.LinearStart(()-> controller.getLeftY()));
   }
 
   // methods

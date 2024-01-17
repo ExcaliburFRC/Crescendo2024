@@ -6,9 +6,15 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.Neo;
+
+import java.util.function.DoubleSupplier;
 
 import static frc.robot.Constants.ShooterConstants.*;
 import static frc.robot.Constants.SwerveConstants.DRIVE_SPEED_PERCENTAGE;
@@ -16,6 +22,10 @@ import static frc.robot.Constants.SwerveConstants.DRIVE_SPEED_PERCENTAGE;
 public class Shooter extends SubsystemBase {
     private final Neo shooter = new Neo(LEADER_SHOOTER_MOTOR_ID);
     private final Neo followerMotor = new Neo(FOLLOWER_SHOOTER_MOTOR_ID);
+    
+    private final Neo linearLeader = new Neo(LEADER_LINEAR_SHOOTER_MOTOR_ID);
+    private final Neo linearFollower = new Neo(FOLLOWER_LINEAR_SHOOTER_MOTOR_ID);
+
     private final DigitalInput beamBreak = new DigitalInput(SHOOTER_BEAMBREAK_CHANNEL);
     public final Trigger beamBreakTrigger = new Trigger(()-> beamBreak.get());
 
@@ -25,6 +35,15 @@ public class Shooter extends SubsystemBase {
 
     public Shooter(){
         followerMotor.follow(shooter, true);
+        linearFollower.follow(linearLeader);
+    }
+
+    private final void setLinear(double speed){
+        linearLeader.set(speed);
+    }
+
+    public Command LinearStart(DoubleSupplier speed){
+        return new RunCommand(() -> setLinear(speed.getAsDouble()));
     }
 
     public Command ManualShooterCommand() {
