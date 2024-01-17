@@ -6,10 +6,6 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.Neo;
@@ -17,25 +13,23 @@ import frc.lib.Neo;
 import java.util.function.DoubleSupplier;
 
 import static frc.robot.Constants.ShooterConstants.*;
-import static frc.robot.Constants.SwerveConstants.DRIVE_SPEED_PERCENTAGE;
 
 public class Shooter extends SubsystemBase {
-    private final Neo shooter = new Neo(LEADER_SHOOTER_MOTOR_ID);
-    private final Neo followerMotor = new Neo(FOLLOWER_SHOOTER_MOTOR_ID);
+    private final Neo shooterMotors = new Neo(LEADER_SHOOTER_MOTOR_ID);
+    private final Neo followerShooterMotor = new Neo(FOLLOWER_SHOOTER_MOTOR_ID);
     
     private final Neo linearLeader = new Neo(LEADER_LINEAR_SHOOTER_MOTOR_ID);
-    private final Neo linearFollower = new Neo(FOLLOWER_LINEAR_SHOOTER_MOTOR_ID);
+    private final Neo linearFollowerMotor = new Neo(FOLLOWER_LINEAR_SHOOTER_MOTOR_ID);
 
     private final DigitalInput beamBreak = new DigitalInput(SHOOTER_BEAMBREAK_CHANNEL);
-    public final Trigger beamBreakTrigger = new Trigger(()-> beamBreak.get());
+    public final Trigger noteTrigger = new Trigger(beamBreak::get);
 
-    private ShuffleboardTab shooterTab;
-    private GenericEntry shooterSpeed = Shuffleboard.getTab("Shooter").add("shootSpeedPercent", 0).getEntry();
-
+    public ShuffleboardTab shooterTab = Shuffleboard.getTab("ShooterTab");
+    private GenericEntry shooterSpeed = shooterTab.add("shootSpeedPercent", 0).getEntry();
 
     public Shooter(){
-        followerMotor.follow(shooter, true);
-        linearFollower.follow(linearLeader);
+        followerShooterMotor.follow(shooterMotors, true);
+        linearFollowerMotor.follow(linearLeader);
     }
 
     private final void setLinear(double speed){
@@ -47,7 +41,6 @@ public class Shooter extends SubsystemBase {
     }
 
     public Command ManualShooterCommand() {
-        return new RunCommand(()-> shooter.set(shooterSpeed.getDouble(DRIVE_SPEED_PERCENTAGE)), this).until(beamBreakTrigger);
+        return new RunCommand(()-> shooterMotors.set(shooterSpeed.getDouble(0)), this).until(noteTrigger);
     }
-
 }
