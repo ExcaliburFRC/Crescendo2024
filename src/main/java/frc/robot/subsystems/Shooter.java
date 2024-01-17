@@ -18,8 +18,8 @@ public class Shooter extends SubsystemBase {
     private final Neo shooterMotors = new Neo(LEADER_SHOOTER_MOTOR_ID);
     private final Neo followerShooterMotor = new Neo(FOLLOWER_SHOOTER_MOTOR_ID);
     
-    private final Neo linearLeader = new Neo(LEADER_LINEAR_SHOOTER_MOTOR_ID);
-    private final Neo linearFollowerMotor = new Neo(FOLLOWER_LINEAR_SHOOTER_MOTOR_ID);
+    private final Neo linearLeader = new Neo(LEADER_LINEAR_MOTOR_ID);
+    private final Neo linearFollowerMotor = new Neo(FOLLOWER_LINEAR_MOTOR_ID);
 
     private final DigitalInput beamBreak = new DigitalInput(SHOOTER_BEAMBREAK_CHANNEL);
     public final Trigger noteTrigger = new Trigger(beamBreak::get);
@@ -36,7 +36,7 @@ public class Shooter extends SubsystemBase {
         linearLeader.set(speed);
     }
 
-    public Command LinearStart(DoubleSupplier speed){
+    public Command StartLinearMotor(DoubleSupplier speed){
         return new RunCommand(() -> setLinear(speed.getAsDouble()));
     }
 
