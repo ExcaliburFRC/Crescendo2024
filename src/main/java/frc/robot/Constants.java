@@ -103,6 +103,24 @@ public final class Constants {
         public static final int DRIVE_CURRENT_LIMIT = 65;
         public static final int ANGLE_CURRENT_LIMIT = 25;
     }
+    public static final class IntakeConstants{
+        public static final Gains PIDGains = new Gains(0, 0, 0);
+        public static final Gains FFangleGains = new Gains(0, 0, 0);
+
+        public enum INTAKE_ANGLE {
+            GROUND(0),
+            AMP(0),
+            HUMAN_PLAER(0),
+            TO_SHOOTER(0),
+            IDLE(0);
+
+            public final int angle;
+
+            INTAKE_ANGLE(int angle) {
+                this.angle = angle;
+            }
+        }
+    }
 
     public static final class FieldConstants {
         public static final double FIELD_LENGTH_METERS = 16.54;
