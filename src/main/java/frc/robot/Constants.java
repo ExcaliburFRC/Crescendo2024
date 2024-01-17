@@ -143,5 +143,8 @@ public final class Constants {
         public static final int LEADER_LINEAR_MOTOR_ID = 31;
         public static final int FOLLOWER_LINEAR_MOTOR_ID = 31;
         public static final int SHOOTER_BEAMBREAK_CHANNEL = 32;
+
+        public static final Gains PID_SHOOTER_CONSTANT = new Gains(0,0,0);
+        public static final Gains FEED_FOREWORD = new Gains(0,0,0,0);
     }
 }

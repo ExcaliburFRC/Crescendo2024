@@ -1,5 +1,8 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -27,6 +30,10 @@ public class Shooter extends SubsystemBase {
     public ShuffleboardTab shooterTab = Shuffleboard.getTab("ShooterTab");
     private GenericEntry shooterSpeed = shooterTab.add("shootSpeedPercent", 0).getEntry();
 
+    private final PIDController ShooterMotorPID = new PIDController(PID_SHOOTER_CONSTANT.kp, PID_SHOOTER_CONSTANT.ki, PID_SHOOTER_CONSTANT.kd);
+    private final SimpleMotorFeedforward ShooterMotorFF = new SimpleMotorFeedforward(FEED_FOREWORD.ks, FEED_FOREWORD.kv, FEED_FOREWORD.ka);
+
+
     public Shooter(){
         followerShooterMotor.follow(shooterMotors, true);
         linearFollowerMotor.follow(linearLeader);
@@ -36,6 +43,13 @@ public class Shooter extends SubsystemBase {
         linearLeader.set(speed);
     }
 
+    public final void SpeakerShotWithControl(double setPoint){
+        double pid = ShooterMotorPID.calculate(setPoint, shooterMotors.getVelocity());
+        double ff = ShooterMotorFF.calculate(setPoint, 0);
+        double output = pid + ff;
+        shooterMotors.set(output);
+    }
+
     public Command StartLinearMotor(DoubleSupplier speed){
         return new RunCommand(() -> setLinear(speed.getAsDouble()));
     }
@@ -43,4 +57,6 @@ public class Shooter extends SubsystemBase {
     public Command ManualShooterCommand() {
         return new RunCommand(()-> shooterMotors.set(shooterSpeed.getDouble(0)), this).until(noteTrigger);
     }
+
+
 }
