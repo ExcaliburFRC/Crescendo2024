@@ -55,7 +55,11 @@ public final class Constants {
                 this.DRIVE_MOTOR_REVERSED = DRIVE_MOTOR_REVERSED;
                 this.SPIN_MOTOR_REVERSED = SPIN_MOTOR_REVERSED;
             }
+
         }
+
+
+
 
         public static final int PIGEON_ID = 19;
 
@@ -136,6 +140,12 @@ public final class Constants {
 
         public static final int LEDS_PORT = 0; // pwm
         public static final int LENGTH = 0;
+
+    }
+    public static final class ShooterConstants {
+        public static final int LEADER_SHOOTER_MOTOR_ID = 30;
+        public static final int FOLLOWER_SHOOTER_MOTOR_ID = 31;
+        public static final int SHOOTER_BEAMBREAK_CHANNEL = 32;
 
     }
 }
