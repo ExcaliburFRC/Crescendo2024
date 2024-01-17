@@ -5,11 +5,15 @@
 package frc.robot;
 
 import com.pathplanner.lib.path.PathConstraints;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
 import frc.lib.Gains;
+import frc.robot.util.PositionUtils;
 
+import static frc.robot.util.PositionUtils.getPose;
 import static java.lang.Math.PI;
 
 /**
@@ -52,6 +56,8 @@ public final class Constants {
                 this.SPIN_MOTOR_REVERSED = SPIN_MOTOR_REVERSED;
             }
         }
+
+        public static final int PIGEON_ID = 19;
 
         public static final double TRACK_WIDTH = 0.56665; // m
         public static final SwerveDriveKinematics kSwerveKinematics = new SwerveDriveKinematics(
@@ -104,15 +110,24 @@ public final class Constants {
 
         public enum FieldLocations {
             // Human player locations
-            HM_LEFT("HMLeft"), HM_CENTER("HMCenter"), HM_RIGHT("HMRight"),
+            HM_LEFT("HMLeft", getPose(16.01, 1.21, -60)),
+            HM_CENTER("HMCenter", getPose(15.45, 0.9, -60)),
+            HM_RIGHT("HMRight", getPose(14.95, 0.56, -60)),
 
             // Speaker locations,
-            SPEAKER_TOP("SpeakerTop"), SPEAKER_CENTER("SpeakerCenter"), SPEAKER_BOTTOM("SpeakerBottom");
+            SPEAKER_TOP("SpeakerTop", getPose(0.82, 6.61, 60)),
+            SPEAKER_CENTER("SpeakerCenter", getPose(1.32, 5.6, 0)),
+            SPEAKER_BOTTOM("SpeakerBottom", getPose(0.71, 4.51, 120)),
+
+            AMPLIFIER("Amp", getPose(1.86, 7.68, 90)),
+            PODIUM("Podium", getPose(2.86, 4.09, -28));
 
             public String pathName;
+            public Pose2d pose2d;
 
-            FieldLocations(String pathName){
+            FieldLocations(String pathName, Pose2d pose){
                 this.pathName = pathName;
+                this.pose2d = pose;
             }
         }
     }

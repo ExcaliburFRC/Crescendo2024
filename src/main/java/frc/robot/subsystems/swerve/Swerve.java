@@ -1,5 +1,7 @@
 package frc.robot.subsystems.swerve;
 
+import com.ctre.phoenix6.configs.Pigeon2Configuration;
+import com.ctre.phoenix6.hardware.Pigeon2;
 import com.kauailabs.navx.frc.AHRS;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.GoalEndState;
@@ -16,9 +18,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
-import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
-import edu.wpi.first.math.interpolation.Interpolator;
-import edu.wpi.first.math.interpolation.InverseInterpolator;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -32,8 +31,9 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants;
 import frc.robot.Constants.FieldConstants.*;
-import frc.robot.util.AllianceUtilities;
+import frc.robot.util.AllianceUtils;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
@@ -75,7 +75,8 @@ public class Swerve extends SubsystemBase {
 
     private boolean hasStraighten = false;
 
-    private final AHRS _gyro = new AHRS(SPI.Port.kMXP);
+    private final AHRS navx = new AHRS(SPI.Port.kMXP);
+    private final Pigeon2 pigeon = new Pigeon2(Constants.SwerveConstants.PIGEON_ID);
 
     private final ProfiledPIDController anglePIDcontroller = new ProfiledPIDController(
             ANGLE_GAINS.kp, ANGLE_GAINS.ki, ANGLE_GAINS.kd,
@@ -101,10 +102,10 @@ public class Swerve extends SubsystemBase {
     private boolean isClosedloop = false;
 
     public Swerve() {
+        pigeon.getConfigurator().apply(new Pigeon2Configuration());
         resetGyroHardware();
 
         odometry.resetPosition(getGyroRotation2d(), getModulesPositions(), new Pose2d(0, 0, new Rotation2d()));
-        resetOdometryAngleCommand();
 
         anglePIDcontroller.enableContinuousInput(0, 360);
         anglePIDcontroller.setTolerance(1);
@@ -118,15 +119,16 @@ public class Swerve extends SubsystemBase {
 
     // gyro getters and setters
     public void resetGyroHardware() {
-        _gyro.reset();
+        navx.reset();
+        pigeon.reset();
     }
 
     private double getGyroDegrees() {
-        return Math.IEEEremainder(_gyro.getAngle(), 360);
+        return Math.IEEEremainder(navx.getAngle(), 360);
     }
 
     public double getRobotPitch() {
-        return _gyro.getRoll() - 0.46;
+        return navx.getRoll() - 0.46;
     }
 
     // odometry getters and setters
@@ -324,14 +326,13 @@ public class Swerve extends SubsystemBase {
     // drives the robot from current location to a given Pose2d
     public Command pathPlannerToPose(Pose2d position, double endVel) {
         return new ProxyCommand(() ->
-                followPath(endVel, position.getRotation().getDegrees(),
-                        getStraightLinePoses(position.getTranslation()))
+                followPath(endVel, position.getRotation().getDegrees(), getStraightLinePoses(position.getTranslation()))
         );
     }
 
     private Pose2d[] getAlliancePositions(Pose2d... poses) {
         for (int i = 0; i < poses.length; i++) {
-            poses[i] = AllianceUtilities.toAlliancePose(poses[i]);
+            poses[i] = AllianceUtils.toAlliancePose(poses[i]);
             System.out.println(poses[i]);
         }
         return poses;
@@ -404,7 +405,7 @@ public class Swerve extends SubsystemBase {
                         MAX_VELOCITY_METER_PER_SECOND,
                         Math.sqrt(2) * (TRACK_WIDTH / 2), // needs to change for a non-square swerve
                         new ReplanningConfig()),
-                AllianceUtilities::isRedAlliance, this
+                AllianceUtils::isRedAlliance, this
         );
     }
 }

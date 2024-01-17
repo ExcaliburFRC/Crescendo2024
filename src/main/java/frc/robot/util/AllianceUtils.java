@@ -7,7 +7,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import static edu.wpi.first.wpilibj.DriverStation.Alliance.Blue;
 import static frc.robot.Constants.FieldConstants.*;
 
-public class AllianceUtilities {
+public class AllianceUtils {
     /**
      * @return whether the robot is on the blue alliance
      */

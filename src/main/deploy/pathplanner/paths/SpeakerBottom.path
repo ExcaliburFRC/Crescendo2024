@@ -20,8 +20,8 @@
         "y": 4.505784284295841
       },
       "prevControl": {
-        "x": 1.0777934283141293,
-        "y": 3.9180732906920364
+        "x": 1.0595768792734868,
+        "y": 3.907179657813208
       },
       "nextControl": null,
       "isLocked": false,
@@ -43,7 +43,7 @@
     "rotateFast": true
   },
   "reversed": false,
-  "folder": "TelePaths",
+  "folder": "Teleop",
   "previewStartingState": {
     "rotation": 0.0,
     "velocity": 0.0
