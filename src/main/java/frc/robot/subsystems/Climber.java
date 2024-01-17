@@ -1,35 +1,62 @@
 package frc.robot.subsystems;
+
 import com.revrobotics.CANSparkBase;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.*;
 import frc.lib.Neo;
 
 import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
 
 public class Climber extends SubsystemBase {
 
-   private final Neo rightMotor;
-    private final Neo leftMotor;
+    private final Neo rightMotor = new Neo(0);
+    private final Neo leftMotor = new Neo(0);
+    public static final Climber climber = new Climber();
+
     public Climber() {
-     rightMotor = new Neo(0);
-     leftMotor = new Neo(0);
+
+        rightMotor.setConversionFactors(0, 0);
+        leftMotor.setConversionFactors(0, 0);
         rightMotor.setIdleMode(CANSparkBase.IdleMode.kBrake);
         leftMotor.setIdleMode(CANSparkBase.IdleMode.kBrake);
+        System.out.print("hello");
+        System.out.print(" ");
+        System.out.print("world");
+        System.out.print("!");
     }
 
-    public Command manualCommand(
-            BooleanSupplier leftUp, BooleanSupplier leftDown,
-            BooleanSupplier rightUp, BooleanSupplier rightDown){
-        return new RunCommand(
-                ()-> {
-                    if (leftUp.getAsBoolean()) leftMotor.set(0.5);
-                    else if (leftDown.getAsBoolean()) leftMotor.set(-0.5);
-                    else leftMotor.set(0);
-                    if (rightUp.getAsBoolean()) rightMotor.set(0.5);
-                    else if (rightDown.getAsBoolean()) rightMotor.set(-0.5);
-                    else rightMotor.set(0);
 
+    public Command manualCommand(DoubleSupplier leftVal, DoubleSupplier rightVal) {
+        return new RunCommand(
+                () -> {
+                    rightMotor.set(rightVal.getAsDouble());
+                    leftMotor.set(leftVal.getAsDouble());
                 }, this);
     }
+
+    public Command openArms() {
+        return Commands.runEnd(
+                () -> {
+                    rightMotor.set(0.3);
+                    leftMotor.set(0.3);
+                },
+                () -> {
+                    rightMotor.set(0);
+                    leftMotor.set(0);
+                }, this);
+    }
+
+    public Command closeArms() {
+        return Commands.runEnd(
+                () -> {
+                    rightMotor.set(-0.6);
+                    leftMotor.set(-0.6);
+                },
+                () -> {
+                    rightMotor.set(0);
+                    leftMotor.set(0);
+                }, this);
+    }
+
+
 }

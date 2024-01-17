@@ -12,6 +12,8 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
+import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
+import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.swerve.Swerve;
 import monologue.Logged;
@@ -34,7 +36,8 @@ public class Robot extends TimedRobot implements Logged {
   private final LEDs leds = LEDs.getInstance();
 
   // controllers
-  private final CommandPS4Controller controller = new CommandPS4Controller(0);
+  private final CommandPS5Controller controller = new CommandPS5Controller(0);
+  private final CommandPS5Controller operator = new CommandPS5Controller(1);
 
   // commands
   private final Command m_autonomousCommand = Commands.none(); // insert autonomous command here
@@ -67,6 +70,9 @@ public class Robot extends TimedRobot implements Logged {
     controller.square().whileTrue(swerve.pathFindToLocation(HM_LEFT));
     controller.triangle().whileTrue(swerve.pathFindToLocation(HM_CENTER));
     controller.circle().whileTrue(swerve.pathFindToLocation(HM_RIGHT));
+
+    //Clim bear
+    Climber.climber.setDefaultCommand(Climber.climber.manualCommand(()-> operator.getLeftY(), ()-> operator.getRightY()));
   }
 
   // methods
