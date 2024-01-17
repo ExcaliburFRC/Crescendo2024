@@ -58,7 +58,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "intakeBottomNote"
+            "pathName": "intakeButtomNoteFromMiddle"
           }
         },
         {
@@ -102,6 +102,6 @@
       ]
     }
   },
-  "folder": "StartFromTrapazoid",
+  "folder": null,
   "choreoAuto": false
 }

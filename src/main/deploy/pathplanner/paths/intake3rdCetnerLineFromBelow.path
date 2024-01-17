@@ -49,7 +49,7 @@
     "rotateFast": true
   },
   "reversed": false,
-  "folder": "AUTOPaths",
+  "folder": "Auto",
   "previewStartingState": {
     "rotation": -30.0,
     "velocity": 0

@@ -3,8 +3,8 @@
   "robotLength": 0.56,
   "holonomicMode": true,
   "pathFolders": [
-    "AUTOPaths",
-    "TelePaths"
+    "Auto",
+    "Teleop"
   ],
   "autoFolders": [
     "StartOffCenter",

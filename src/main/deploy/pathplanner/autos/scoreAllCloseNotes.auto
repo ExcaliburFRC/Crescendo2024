@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.2635114159117207,
-      "y": 5.577004487342309
+      "x": 0.8352460341284319,
+      "y": 6.57676588080449
     },
-    "rotation": 0
+    "rotation": 60.0
   },
   "command": {
     "type": "sequential",
@@ -24,7 +24,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "intakeTopNodeFromTrapazoid"
+                  "pathName": "intakeTopNote"
                 }
               },
               {
@@ -114,6 +114,6 @@
       ]
     }
   },
-  "folder": "StartFromTrapazoid",
+  "folder": null,
   "choreoAuto": false
 }

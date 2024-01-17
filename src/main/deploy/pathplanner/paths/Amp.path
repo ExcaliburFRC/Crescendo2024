@@ -43,10 +43,10 @@
     "rotateFast": true
   },
   "reversed": false,
-  "folder": "TelePaths",
+  "folder": "Teleop",
   "previewStartingState": {
     "rotation": 135.0,
-    "velocity": 0.0
+    "velocity": 3.0
   },
   "useDefaultConstraints": false
 }

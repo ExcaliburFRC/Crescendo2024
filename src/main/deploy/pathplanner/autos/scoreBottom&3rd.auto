@@ -40,7 +40,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "intakeButtomFromTrapazoid"
+                        "pathName": "intakeButtom"
                       }
                     }
                   ]
@@ -90,6 +90,6 @@
       ]
     }
   },
-  "folder": "StartOffCenter",
+  "folder": null,
   "choreoAuto": false
 }
