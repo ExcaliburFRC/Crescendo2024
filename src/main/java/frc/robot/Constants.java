@@ -55,12 +55,7 @@ public final class Constants {
                 this.DRIVE_MOTOR_REVERSED = DRIVE_MOTOR_REVERSED;
                 this.SPIN_MOTOR_REVERSED = SPIN_MOTOR_REVERSED;
             }
-
         }
-
-
-
-
         public static final int PIGEON_ID = 19;
 
         public static final double TRACK_WIDTH = 0.56665; // m
@@ -147,9 +142,6 @@ public final class Constants {
         public static final int FOLLOWER_SHOOTER_MOTOR_ID = 31;
         public static final int LEADER_LINEAR_MOTOR_ID = 31;
         public static final int FOLLOWER_LINEAR_MOTOR_ID = 31;
-
         public static final int SHOOTER_BEAMBREAK_CHANNEL = 32;
-        public static final double SHOOT_SPEED = 0;
-
     }
 }

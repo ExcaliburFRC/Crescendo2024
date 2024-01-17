@@ -37,14 +37,13 @@ public class Robot extends TimedRobot implements Logged {
   private final Shooter shooter = new Shooter();
   // controllers
   private final CommandPS4Controller controller = new CommandPS4Controller(0);
-  private final CommandPS4Controller controllerArms = new CommandPS4Controller(1);
+  private final CommandPS4Controller controllerOperator = new CommandPS4Controller(1);
 
 
   // commands
   private final Command m_autonomousCommand = Commands.none(); // insert autonomous command here
 
   private final SendableChooser<Command> shouldDriveToCenterLineChooser = new SendableChooser<>();
-
 
   public Robot(){}
 
@@ -74,7 +73,7 @@ public class Robot extends TimedRobot implements Logged {
     controller.triangle().whileTrue(swerve.pathFindToLocation(HM_CENTER));
     controller.circle().whileTrue(swerve.pathFindToLocation(HM_RIGHT));
 
-    shooter.setDefaultCommand(shooter.ManualShooterCommand().alongWith(shooter.StartLinearMotor(controller::getLeftY)));
+    shooter.setDefaultCommand(shooter.ManualShooterCommand().alongWith(shooter.StartLinearMotor(controllerOperator::getLeftY)));
   }
 
   // methods
