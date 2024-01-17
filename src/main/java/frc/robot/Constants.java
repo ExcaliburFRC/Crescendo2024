@@ -104,6 +104,11 @@ public final class Constants {
         public static final int ANGLE_CURRENT_LIMIT = 25;
     }
 
+    public static final class ClimberConstants {
+        public static final Gains LEFT_GAINS = new Gains(0, 0, 0);
+        public static final Gains RIGHT_GAINS = new Gains(0, 0, 0);
+    }
+
     public static final class FieldConstants {
         public static final double FIELD_LENGTH_METERS = 16.54;
         public static final double FIELD_WIDTH_METERS = 8.02;

@@ -1,5 +1,6 @@
 package frc.lib;
 
+import com.revrobotics.CANSparkBase;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
@@ -41,5 +42,8 @@ public class Neo extends CANSparkMax{
 
     public double getVelocity(){
         return encoder.getVelocity();
+    }
+    public void setReference(double value, CANSparkBase.ControlType ctrl, int pidSlot, double arbFeedforward){
+        pidController.setReference(value, ctrl, pidSlot, arbFeedforward);
     }
 }
