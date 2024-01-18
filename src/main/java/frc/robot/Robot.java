@@ -47,7 +47,6 @@ public class Robot extends TimedRobot implements Logged {
 
   public Robot(){}
 
-
   // bindings
   private void configureBindings() {
     swerve.setDefaultCommand(
