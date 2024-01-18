@@ -33,10 +33,12 @@ public class Shooter extends SubsystemBase {
     private final PIDController linearPID = new PIDController(LINEAR_PID.kp, LINEAR_PID.ki, LINEAR_PID.kd);
 
 
+
     public Shooter(){
         shooterFollower.follow(shooter, true);
         linearFollower.follow(linear);
     }
+
 
     private void setLinear(double speed){
         linear.set(speed);
@@ -75,6 +77,7 @@ public class Shooter extends SubsystemBase {
         return new RunCommand(() -> setLinear(speed.getAsDouble()));
     }
 
+
     public Command ManualShooterCommand() {
         return new RunCommand(()-> shooter.set(shooterSpeed.getDouble(0)), this).until(noteTrigger).andThen(()->shooter.stopMotor());
     }
@@ -83,5 +86,15 @@ public class Shooter extends SubsystemBase {
         return new RunCommand(shooter::stopMotor);
     }
 
+    public Command ShootFromDistanceCommand(DoubleSupplier distance)  {
+        return new RunCommand(
+                ()-> {
+            double pid  = shooterPID.calculate(distance.getAsDouble(), shooter.getVelocity());
+            double ff = shooterFF.calculate(distance.getAsDouble(), 0);
+            shooter.set(pid+ff);
+        },
+                this).withTimeout(2000).andThen(this::StopMotor);
+
+    }
 
 }
