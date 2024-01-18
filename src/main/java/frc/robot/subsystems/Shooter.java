@@ -28,7 +28,9 @@ public class Shooter extends SubsystemBase {
     private final GenericEntry shooterSpeed = shooterTab.add("shootSpeedPercent", 0).getEntry();
 
     private final PIDController shooterPID = new PIDController(SHOOTER_PID.kp, SHOOTER_PID.ki, SHOOTER_PID.kd);
+
     private final SimpleMotorFeedforward shooterFF = new SimpleMotorFeedforward(SHOOTER_FF.ks, SHOOTER_FF.kv, SHOOTER_FF.ka);
+    private final PIDController linearPID = new PIDController(LINEAR_PID.kp, LINEAR_PID.ki, LINEAR_PID.kd);
 
 
     public Shooter(){
@@ -38,6 +40,24 @@ public class Shooter extends SubsystemBase {
 
     private void setLinear(double speed){
         linear.set(speed);
+    }
+
+    public Command AMPShooter(){
+        return new RunCommand(
+                ()->{
+                    double LinearAmpPID = linearPID.calculate(LINEAR_SETPOINT, linear.getVelocity());
+                    linear.set(LinearAmpPID);
+
+                    double ShooterAmpPid = shooterPID.calculate(SHOOTER_AMP_SPEED, shooter.getVelocity());
+                    double ShooterAmpFF = shooterFF.calculate(SHOOTER_AMP_SPEED, 0);
+                    double output = ShooterAmpPid + ShooterAmpFF;
+                    shooter.set(output);
+
+                    LinearAmpPID = linearPID.calculate(LINEAR_SETPOINT_BACK, linear.getVelocity());
+                    linear.set(LinearAmpPID);
+
+                },
+        this).until(noteTrigger).andThen(()->shooter.stopMotor());
     }
 
     public Command SpeakerShotWithControlCommand(double setPoint){
