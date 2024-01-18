@@ -73,8 +73,8 @@ public class Robot extends TimedRobot implements Logged {
     controller.triangle().whileTrue(swerve.pathFindToLocation(HM_CENTER));
     controller.circle().whileTrue(swerve.pathFindToLocation(HM_RIGHT));
 
-    shooter.setDefaultCommand(shooter.ManualShooterCommand().alongWith(shooter.StartLinearMotor(controllerOperator::getLeftY)));
-    shooter.setDefaultCommand(shooter.ManualShooterCommand().alongWith(shooter.SpeakerShotWithControl(controllerOperator::getLeftX)));
+    shooter.setDefaultCommand(shooter.ManualShooterCommand().alongWith(shooter.StartLinearMotorCommand(controllerOperator::getLeftY)));
+    controllerOperator.circle().onTrue(shooter.SpeakerShotWithControlCommand(controllerOperator.getRightY()));
   }
 
   // methods

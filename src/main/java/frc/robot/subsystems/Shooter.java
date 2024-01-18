@@ -1,6 +1,5 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.networktables.GenericEntry;
@@ -17,48 +16,47 @@ import java.util.function.DoubleSupplier;
 import static frc.robot.Constants.ShooterConstants.*;
 
 public class Shooter extends SubsystemBase {
-    private final Neo leaderShooterMotor = new Neo(LEADER_SHOOTER_MOTOR_ID);
-    private final Neo followerShooterMotor = new Neo(FOLLOWER_SHOOTER_MOTOR_ID);
+    private final Neo shooter = new Neo(LEADER_SHOOTER_MOTOR_ID);
+    private final Neo shooterFollower = new Neo(FOLLOWER_SHOOTER_MOTOR_ID);
 
-    private final Neo linearLeaderMotor = new Neo(LEADER_LINEAR_MOTOR_ID);
-    private final Neo linearFollowerMotor = new Neo(FOLLOWER_LINEAR_MOTOR_ID);
-
+    private final Neo linear = new Neo(LEADER_LINEAR_MOTOR_ID);
+    private final Neo linearFollower = new Neo(FOLLOWER_LINEAR_MOTOR_ID);
     private final DigitalInput beamBreak = new DigitalInput(SHOOTER_BEAMBREAK_CHANNEL);
     public final Trigger noteTrigger = new Trigger(beamBreak::get);
 
     public ShuffleboardTab shooterTab = Shuffleboard.getTab("ShooterTab");
     private final GenericEntry shooterSpeed = shooterTab.add("shootSpeedPercent", 0).getEntry();
 
-    private final PIDController ShooterMotorPID = new PIDController(PID_SHOOTER_CONSTANT.kp, PID_SHOOTER_CONSTANT.ki, PID_SHOOTER_CONSTANT.kd);
-    private final SimpleMotorFeedforward ShooterMotorFF = new SimpleMotorFeedforward(FEED_FOREWORD.ks, FEED_FOREWORD.kv, FEED_FOREWORD.ka);
+    private final PIDController shooterPID = new PIDController(SHOOTER_PID.kp, SHOOTER_PID.ki, SHOOTER_PID.kd);
+    private final SimpleMotorFeedforward shooterFF = new SimpleMotorFeedforward(SHOOTER_FF.ks, SHOOTER_FF.kv, SHOOTER_FF.ka);
 
 
     public Shooter(){
-        Neo followerShooterMotor = new Neo(FOLLOWER_SHOOTER_MOTOR_ID);
-        followerShooterMotor.follow(leaderShooterMotor, true);
-        linearFollowerMotor.follow(linearLeaderMotor);
+        shooterFollower.follow(shooter, true);
+        linearFollower.follow(linear);
     }
 
-    private final void setLinear(double speed){
-        linearLeaderMotor.set(speed);
+    private void setLinear(double speed){
+        linear.set(speed);
     }
 
-    public final void SpeakerShotWithControl(double setPoint){
-        double pid = ShooterMotorPID.calculate(setPoint, leaderShooterMotor.getVelocity());
-        double ff = ShooterMotorFF.calculate(setPoint, 0);
-        double output = pid + ff;
-        leaderShooterMotor.set(output);
+    public Command SpeakerShotWithControlCommand(double setPoint){
+        return new RunCommand(
+                ()-> {
+                    double pid = shooterPID.calculate(setPoint, shooter.getVelocity());
+                    double ff = shooterFF.calculate(setPoint, 0);
+                    double output = pid + ff;
+                    shooter.set(output);
+                    },
+                this).until(noteTrigger).andThen(()->shooter.stopMotor());
     }
 
-    public Command StartLinearMotor(DoubleSupplier speed){
+    public Command StartLinearMotorCommand(DoubleSupplier speed){
         return new RunCommand(() -> setLinear(speed.getAsDouble()));
     }
 
-    public Command SpeakerShotWithControl(DoubleSupplier setPoint){
-        return new RunCommand(() -> SpeakerShotWithControl(setPoint.getAsDouble()));
-    }
     public Command ManualShooterCommand() {
-        return new RunCommand(()-> leaderShooterMotor.set(shooterSpeed.getDouble(0)), this).until(noteTrigger);
+        return new RunCommand(()-> shooter.set(shooterSpeed.getDouble(0)), this).until(noteTrigger).andThen(()->shooter.stopMotor());
     }
 
 
