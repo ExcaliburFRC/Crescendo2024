@@ -57,7 +57,7 @@ public class Shooter extends SubsystemBase {
                     linear.set(LinearAmpPID);
 
                 },
-        this).until(noteTrigger).andThen(()->shooter.stopMotor());
+        this).until(noteTrigger).andThen(this::StopMotor);
     }
 
     public Command SpeakerShotWithControlCommand(double setPoint){
@@ -68,7 +68,7 @@ public class Shooter extends SubsystemBase {
                     double output = pid + ff;
                     shooter.set(output);
                     },
-                this).until(noteTrigger).andThen(()->shooter.stopMotor());
+                this).until(noteTrigger.negate()).andThen(this::StopMotor);
     }
 
     public Command StartLinearMotorCommand(DoubleSupplier speed){
@@ -77,6 +77,10 @@ public class Shooter extends SubsystemBase {
 
     public Command ManualShooterCommand() {
         return new RunCommand(()-> shooter.set(shooterSpeed.getDouble(0)), this).until(noteTrigger).andThen(()->shooter.stopMotor());
+    }
+
+    public Command StopMotor(){
+        return new RunCommand(shooter::stopMotor);
     }
 
 
