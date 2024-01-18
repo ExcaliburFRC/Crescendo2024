@@ -20,8 +20,8 @@ public class Shooter extends SubsystemBase {
     private final Neo leaderShooterMotor = new Neo(LEADER_SHOOTER_MOTOR_ID);
     private final Neo followerShooterMotor = new Neo(FOLLOWER_SHOOTER_MOTOR_ID);
 
-    private final Neo linearLeaderMotor = new Neo(LEADER_LINEAR_SHOOTER_MOTOR_ID);
-    private final Neo linearFollowerMotor = new Neo(FOLLOWER_LINEAR_SHOOTER_MOTOR_ID);
+    private final Neo linearLeaderMotor = new Neo(LEADER_LINEAR_MOTOR_ID);
+    private final Neo linearFollowerMotor = new Neo(FOLLOWER_LINEAR_MOTOR_ID);
 
     private final DigitalInput beamBreak = new DigitalInput(SHOOTER_BEAMBREAK_CHANNEL);
     public final Trigger noteTrigger = new Trigger(beamBreak::get);
@@ -44,16 +44,19 @@ public class Shooter extends SubsystemBase {
     }
 
     public final void SpeakerShotWithControl(double setPoint){
-        double pid = ShooterMotorPID.calculate(setPoint, shooterMotors.getVelocity());
+        double pid = ShooterMotorPID.calculate(setPoint, leaderShooterMotor.getVelocity());
         double ff = ShooterMotorFF.calculate(setPoint, 0);
         double output = pid + ff;
-        shooterMotors.set(output);
+        leaderShooterMotor.set(output);
     }
 
     public Command StartLinearMotor(DoubleSupplier speed){
         return new RunCommand(() -> setLinear(speed.getAsDouble()));
     }
 
+    public Command SpeakerShotWithControl(DoubleSupplier setPoint){
+        return new RunCommand(() -> SpeakerShotWithControl(setPoint.getAsDouble()));
+    }
     public Command ManualShooterCommand() {
         return new RunCommand(()-> leaderShooterMotor.set(shooterSpeed.getDouble(0)), this).until(noteTrigger);
     }
