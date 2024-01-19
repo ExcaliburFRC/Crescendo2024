@@ -2,7 +2,7 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
-import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -12,8 +12,7 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.Neo;
-import edu.wpi.first.math.interpolation.Interpolator;
-import edu.wpi.first.math.interpolation.InverseInterpolator;
+
 import java.util.function.DoubleSupplier;
 import static frc.robot.Constants.ShooterConstants.*;
 
@@ -32,13 +31,14 @@ public class Shooter extends SubsystemBase {
     private final PIDController shooterPID = new PIDController(SHOOTER_PID.kp, SHOOTER_PID.ki, SHOOTER_PID.kd);
     private final SimpleMotorFeedforward shooterFF = new SimpleMotorFeedforward(SHOOTER_FF.ks, SHOOTER_FF.kv, SHOOTER_FF.ka);
     private final PIDController linearPID = new PIDController(LINEAR_PID.kp, LINEAR_PID.ki, LINEAR_PID.kd);
-    private final InterpolatingTreeMap interpolate = new InterpolatingTreeMap(InverseInterpolator.forDouble(), Interpolator.forDouble());
-
+    private final InterpolatingDoubleTreeMap interpolate = new InterpolatingDoubleTreeMap();
 
     public Shooter(){
         shooterFollower.follow(shooter, true);
         Neo linearFollower = new Neo(FOLLOWER_LINEAR_MOTOR_ID);
         linearFollower.follow(linear);
+        interpolate.put(MIN_SHOOTING_DISTANCE, MIN_SHOOTING_RPM);
+        interpolate.put(MAX_SHOOTING_DISTANCE, MAX_SHOOTING_RPM);
     }
 
     private void setLinear(double speed){
@@ -89,15 +89,14 @@ public class Shooter extends SubsystemBase {
     public Command ShootFromDistanceCommand(DoubleSupplier distance)  {
         return new RunCommand(
                 ()-> {
-                    interpolate.put(MIN_SHOOTING_DISTANCE, MIN_SHOOTING_SPEED);
-                    interpolate.put(MAX_SHOOTING_DISTANCE, MIN_SHOOTING_SPEED);
+
             double pid  = shooterPID.calculate(distance.getAsDouble(), shooter.getVelocity());
             double ff = shooterFF.calculate(distance.getAsDouble(), 0);
             shooter.set((double)interpolate.get(SET_SHOOTING_RANGE)+pid+ff);
             interpolate.get(distance.getAsDouble());
 
         },
-                this).until(noteTrigger.negate()).andThen( () -> StopMotorCommand(shooter));
+                this).until(noteTrigger.negate());
 
     }
 
