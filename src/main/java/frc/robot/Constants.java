@@ -151,6 +151,12 @@ public final class Constants {
         public static final double LINEAR_SETPOINT_BACK = 0;
         public static final double SHOOTER_AMP_SPEED = 0.75;
 
+        public static final double MIN_SHOOTING_DISTANCE = 0.0;//TODO: Find Values
+        public static final double MAX_SHOOTING_DISTANCE = 0.0; //TODO: Find Values
+        public static final double MIN_SHOOTING_SPEED = 0.0; //TODO: Find Values
+        public static final double MAX_SHOOTING_SPEED = 0.0; //TODO: Find Values
+        public static final double SET_SHOOTING_RANGE = 0.0; //TODO: find values!
+
 
     }
 }
