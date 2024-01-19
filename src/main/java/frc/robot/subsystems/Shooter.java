@@ -30,12 +30,9 @@ public class Shooter extends SubsystemBase {
     private final GenericEntry shooterSpeed = shooterTab.add("shootSpeedPercent", 0).getEntry();
 
     private final PIDController shooterPID = new PIDController(SHOOTER_PID.kp, SHOOTER_PID.ki, SHOOTER_PID.kd);
-
     private final SimpleMotorFeedforward shooterFF = new SimpleMotorFeedforward(SHOOTER_FF.ks, SHOOTER_FF.kv, SHOOTER_FF.ka);
     private final PIDController linearPID = new PIDController(LINEAR_PID.kp, LINEAR_PID.ki, LINEAR_PID.kd);
     private final InterpolatingTreeMap interpolate = new InterpolatingTreeMap(InverseInterpolator.forDouble(), Interpolator.forDouble());
-
-
 
 
     public Shooter(){
@@ -43,7 +40,6 @@ public class Shooter extends SubsystemBase {
         Neo linearFollower = new Neo(FOLLOWER_LINEAR_MOTOR_ID);
         linearFollower.follow(linear);
     }
-
 
     private void setLinear(double speed){
         linear.set(speed);
@@ -82,7 +78,6 @@ public class Shooter extends SubsystemBase {
         return new RunCommand(() -> setLinear(speed.getAsDouble()));
     }
 
-
     public Command ManualShooterCommand() {
         return new RunCommand(()-> shooter.set(shooterSpeed.getDouble(0)), this).until(noteTrigger.negate()).andThen(() -> StopMotorCommand(shooter));
     }
@@ -90,11 +85,6 @@ public class Shooter extends SubsystemBase {
     public Command StopMotorCommand(Neo motor){
         return new RunCommand(()-> motor.stopMotor(),this);
     }
-
-
-
-
-
 
     public Command ShootFromDistanceCommand(DoubleSupplier distance)  {
         return new RunCommand(
