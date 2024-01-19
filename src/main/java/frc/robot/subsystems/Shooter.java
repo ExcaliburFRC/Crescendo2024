@@ -23,6 +23,7 @@ public class Shooter extends SubsystemBase {
     private final Neo shooter = new Neo(LEADER_SHOOTER_MOTOR_ID);
     private final Neo shooterFollower = new Neo(FOLLOWER_SHOOTER_MOTOR_ID);
 
+    private final Neo linearFollower = new Neo(FOLLOWER_LINEAR_MOTOR_ID);
     private final Neo linear = new Neo(LEADER_LINEAR_MOTOR_ID);
     private final DigitalInput beamBreak = new DigitalInput(SHOOTER_BEAMBREAK_CHANNEL);
     public final Trigger noteTrigger = new Trigger(beamBreak::get);
