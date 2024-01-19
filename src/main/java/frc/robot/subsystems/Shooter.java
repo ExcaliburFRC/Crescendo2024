@@ -13,9 +13,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.Neo;
 import edu.wpi.first.math.interpolation.Interpolator;
-
 import edu.wpi.first.math.interpolation.InverseInterpolator;
-
 import java.util.function.DoubleSupplier;
 import static frc.robot.Constants.ShooterConstants.*;
 
@@ -36,6 +34,7 @@ public class Shooter extends SubsystemBase {
     private final SimpleMotorFeedforward shooterFF = new SimpleMotorFeedforward(SHOOTER_FF.ks, SHOOTER_FF.kv, SHOOTER_FF.ka);
     private final PIDController linearPID = new PIDController(LINEAR_PID.kp, LINEAR_PID.ki, LINEAR_PID.kd);
     private final InterpolatingTreeMap interpolate = new InterpolatingTreeMap(InverseInterpolator.forDouble(), Interpolator.forDouble());
+
 
 
 
@@ -105,6 +104,7 @@ public class Shooter extends SubsystemBase {
             double pid  = shooterPID.calculate(distance.getAsDouble(), shooter.getVelocity());
             double ff = shooterFF.calculate(distance.getAsDouble(), 0);
             shooter.set((double)interpolate.get(SET_SHOOTING_RANGE)+pid+ff);
+            interpolate.get(distance.getAsDouble());
 
         },
                 this).until(noteTrigger.negate()).andThen( () -> StopMotorCommand(shooter));
@@ -112,3 +112,5 @@ public class Shooter extends SubsystemBase {
     }
 
 }
+// Path: src/main/java/frc/robot/subsystems/Shooter.java
+
