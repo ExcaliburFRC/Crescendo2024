@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -46,32 +47,30 @@ public class Shooter extends SubsystemBase {
     }
 
     public Command AMPShooter(){
-        return new RunCommand(
+        return this.runEnd(
                 ()->{
                     double LinearAmpPID = linearPID.calculate(LINEAR_SETPOINT, linear.getVelocity());
                     linear.set(LinearAmpPID);
 
-                    double ShooterAmpPid = shooterPID.calculate(SHOOTER_AMP_SPEED, shooter.getVelocity());
-                    double ShooterAmpFF = shooterFF.calculate(SHOOTER_AMP_SPEED, 0);
-                    double output = ShooterAmpPid + ShooterAmpFF;
-                    shooter.set(output);
-
-                    LinearAmpPID = linearPID.calculate(LINEAR_SETPOINT_BACK, linear.getVelocity());
-                    linear.set(LinearAmpPID);
-
+                    setShooterPID(SHOOTER_AMP_SPEED);
                 },
-        this).until(noteTrigger).andThen(( () -> StopMotorCommand(shooter)));
+                shooter::stopMotor)
+                .andThen(
+                new InstantCommand(()->linear.set(linearPID.calculate(0, linear.getVelocity()))).until(noteTrigger.negate()));
     }
 
-    public Command SpeakerShotWithControlCommand(double setPoint){
-        return new RunCommand(
-                ()-> {
-                    double pid = shooterPID.calculate(setPoint, shooter.getVelocity());
-                    double ff = shooterFF.calculate(setPoint, 0);
-                    double output = pid + ff;
-                    shooter.set(output);
-                    },
-                this).until(noteTrigger.negate()).andThen( () -> StopMotorCommand(shooter));
+    public Command SpeakerShotWithControlCommand(){
+        return this.runEnd(
+                ()-> setShooterPID(SETPOINT_SHOT_SPEAKER),
+                shooter::stopMotor).until(noteTrigger.negate());
+    }
+
+    private double setShooterPID(double setpoint) {
+        double pid = shooterPID.calculate(setpoint, shooter.getVelocity());
+        double ff = shooterFF.calculate(setpoint, 0);
+        double output = pid + ff;
+        shooter.set(output);
+        return pid;
     }
 
     public Command StartLinearMotorCommand(DoubleSupplier speed){
@@ -79,27 +78,9 @@ public class Shooter extends SubsystemBase {
     }
 
     public Command ManualShooterCommand() {
-        return new RunCommand(()-> shooter.set(shooterSpeed.getDouble(0)), this).until(noteTrigger.negate()).andThen(() -> StopMotorCommand(shooter));
-    }
-
-    public Command StopMotorCommand(Neo motor){
-        return new RunCommand(()-> motor.stopMotor(),this);
-    }
-
-    public Command ShootFromDistanceCommand(DoubleSupplier distance)  {
-        return new RunCommand(
-                ()-> {
-
-            double pid  = shooterPID.calculate(distance.getAsDouble(), shooter.getVelocity());
-            double ff = shooterFF.calculate(distance.getAsDouble(), 0);
-            shooter.set((double)interpolate.get(SET_SHOOTING_RANGE)+pid+ff);
-            interpolate.get(distance.getAsDouble());
-
-        },
-                this).until(noteTrigger.negate());
-
-    }
-
-}
+        return runEnd(
+                ()-> shooter.set(shooterSpeed.getDouble(0)),
+                shooter::stopMotor).until(noteTrigger.negate());
+    }}
 // Path: src/main/java/frc/robot/subsystems/Shooter.java
 

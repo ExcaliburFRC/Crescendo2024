@@ -150,7 +150,9 @@ public final class Constants {
         public static final double LINEAR_SETPOINT = 0;
         public static final double LINEAR_SETPOINT_BACK = 0;
         public static final double SHOOTER_AMP_SPEED = 0.75;
-
+        public static final double MIN_SHOOTING_RPM = 0;
+        public static final double MAX_SHOOTING_RPM = 0;
+        public static final double SETPOINT_SHOT_SPEAKER = 0;
         public static final double MIN_SHOOTING_DISTANCE = 0.0;//TODO: Find Values
         public static final double MAX_SHOOTING_DISTANCE = 0.0; //TODO: Find Values
         public static final double MIN_SHOOTING_SPEED = 0.0; //TODO: Find Values
