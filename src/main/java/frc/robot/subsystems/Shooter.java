@@ -13,13 +13,13 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.Neo;
+
 import java.util.function.DoubleSupplier;
 import static frc.robot.Constants.ShooterConstants.*;
 
 public class Shooter extends SubsystemBase {
     private final Neo shooter = new Neo(LEADER_SHOOTER_MOTOR_ID);
     private final Neo shooterFollower = new Neo(FOLLOWER_SHOOTER_MOTOR_ID);
-
     private final Neo linearFollower = new Neo(FOLLOWER_LINEAR_MOTOR_ID);
     private final Neo linear = new Neo(LEADER_LINEAR_MOTOR_ID);
     private final DigitalInput beamBreak = new DigitalInput(SHOOTER_BEAMBREAK_CHANNEL);
@@ -33,7 +33,6 @@ public class Shooter extends SubsystemBase {
     private final PIDController linearPID = new PIDController(LINEAR_PID.kp, LINEAR_PID.ki, LINEAR_PID.kd);
     private final InterpolatingDoubleTreeMap interpolate = new InterpolatingDoubleTreeMap();
 
-
     public Shooter(){
         shooterFollower.follow(shooter, true);
         Neo linearFollower = new Neo(FOLLOWER_LINEAR_MOTOR_ID);
@@ -41,46 +40,49 @@ public class Shooter extends SubsystemBase {
         interpolate.put(MIN_SHOOTING_DISTANCE, MIN_SHOOTING_RPM);
         interpolate.put(MAX_SHOOTING_DISTANCE, MAX_SHOOTING_RPM);
     }
-    private double setShooterPID(double setpoint) {
+
+    private void setLinearSpeed(double speed){
+        setLinearPID(speed);
+    }
+
+    public Command AMPShooter(){
+        return this.runEnd(
+                ()->{
+                    double LinearAmpPID = linearPID.calculate(linear.getVelocity(), LINEAR_SETPOINT);
+                    linear.set(LinearAmpPID);
+
+                    setShooterPID(SHOOTER_AMP_SPEED);
+                },
+                shooter::stopMotor)
+                .andThen(
+                new InstantCommand(()->linear.set(linearPID.calculate(0, linear.getVelocity()))).until(noteTrigger.negate()));
+    }
+
+    public Command setShooterVelocityCommand(){
+        return this.runEnd(
+                ()-> setShooterPID(SETPOINT_SHOT_SPEAKER),
+                shooter::stopMotor).until(noteTrigger.negate());
+    }
+
+    private void setShooterPID(double setpoint) {
         double pid = shooterPID.calculate(setpoint, shooter.getVelocity());
         double ff = shooterFF.calculate(setpoint, 0);
         double output = pid + ff;
         shooter.set(output);
-        return pid;
     }
     private void setLinearPID(double setpoint){
         double pid = linearPID.calculate(setpoint, linear.getVelocity());
         linear.set(pid);
     }
 
-    public Command AMPShooter(){
-        return this.runEnd(
-                ()->{
-                    setLinearPID(LINEAR_SETPOINT);
-                    setShooterPID(SHOOTER_AMP_SPEED);
-                },
-                shooter::stopMotor)
-                .andThen(
-                new InstantCommand(()->setLinearPID(0)).until(noteTrigger.negate()));
-    }
-
-    public Command SpeakerShootWithControlCommand(){
-        return this.runEnd(
-                ()-> setShooterPID(SETPOINT_SHOOT_SPEAKER),
-                shooter::stopMotor).until(noteTrigger.negate());
-    }
-
-
-
     public Command StartLinearMotorCommand(DoubleSupplier speed){
-        return new RunCommand(() -> setLinearPID(speed.getAsDouble()));
+        return new RunCommand(() -> setLinearSpeed(speed.getAsDouble()));
     }
 
     public Command ManualShooterCommand() {
         return runEnd(
                 ()-> shooter.set(shooterSpeed.getDouble(0)),
                 shooter::stopMotor).until(noteTrigger.negate());
-    }
-}
-
+    }}
 // Path: src/main/java/frc/robot/subsystems/Shooter.java
+
