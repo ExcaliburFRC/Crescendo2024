@@ -6,12 +6,10 @@ package frc.robot;
 
 import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
 import frc.lib.Gains;
-import frc.robot.util.PositionUtils;
 
 import static frc.robot.util.PositionUtils.getPose;
 import static java.lang.Math.PI;
@@ -101,6 +99,7 @@ public final class Constants {
 
         public static final int DRIVE_CURRENT_LIMIT = 65;
         public static final int ANGLE_CURRENT_LIMIT = 25;
+
     }
 
     public static final class FieldConstants {
@@ -127,6 +126,7 @@ public final class Constants {
             FieldLocations(String pathName, Pose2d pose){
                 this.pathName = pathName;
                 this.pose2d = pose;
+
             }
         }
     }
@@ -152,13 +152,10 @@ public final class Constants {
         public static final double SHOOTER_AMP_SPEED = 0.75;
         public static final double MIN_SHOOTING_RPM = 0;
         public static final double MAX_SHOOTING_RPM = 0;
-        public static final double SETPOINT_SHOT_SPEAKER = 0;
+        public static final double SETPOINT_SHOOT_SPEAKER = 0;
         public static final double MIN_SHOOTING_DISTANCE = 0.0;//TODO: Find Values
         public static final double MAX_SHOOTING_DISTANCE = 0.0; //TODO: Find Values
-        public static final double MIN_SHOOTING_SPEED = 0.0; //TODO: Find Values
-        public static final double MAX_SHOOTING_SPEED = 0.0; //TODO: Find Values
         public static final double SET_SHOOTING_RANGE = 0.0; //TODO: find values!
-
-
+        public static final double SHOOTER_SPEED_PERCENT = 0.0; //TODO: find values!
     }
 }
