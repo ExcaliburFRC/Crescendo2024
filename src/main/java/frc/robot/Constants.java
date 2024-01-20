@@ -105,8 +105,13 @@ public final class Constants {
     }
 
     public static final class ClimberConstants {
+        //gains
         public static final Gains LEFT_GAINS = new Gains(0, 0, 0);
         public static final Gains RIGHT_GAINS = new Gains(0, 0, 0);
+
+        //movement limitation
+        public static final double kMaxLinearVelocity = 0;
+        public static final double kMaxLinearAcceleration = 0;
     }
 
     public static final class FieldConstants {
