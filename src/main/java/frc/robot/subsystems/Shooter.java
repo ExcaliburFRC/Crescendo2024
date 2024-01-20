@@ -20,7 +20,6 @@ import static frc.robot.Constants.ShooterConstants.*;
 public class Shooter extends SubsystemBase {
     private final Neo shooter = new Neo(LEADER_SHOOTER_MOTOR_ID);
     private final Neo shooterFollower = new Neo(FOLLOWER_SHOOTER_MOTOR_ID);
-
     private final Neo linearFollower = new Neo(FOLLOWER_LINEAR_MOTOR_ID);
     private final Neo linear = new Neo(LEADER_LINEAR_MOTOR_ID);
     private final DigitalInput beamBreak = new DigitalInput(SHOOTER_BEAMBREAK_CHANNEL);
@@ -42,14 +41,14 @@ public class Shooter extends SubsystemBase {
         interpolate.put(MAX_SHOOTING_DISTANCE, MAX_SHOOTING_RPM);
     }
 
-    private void setLinear(double speed){
-        linear.set(speed);
+    private void setLinearSpeed(double speed){
+        setLinearPID(speed);
     }
 
     public Command AMPShooter(){
         return this.runEnd(
                 ()->{
-                    double LinearAmpPID = linearPID.calculate(LINEAR_SETPOINT, linear.getVelocity());
+                    double LinearAmpPID = linearPID.calculate(linear.getVelocity(), LINEAR_SETPOINT);
                     linear.set(LinearAmpPID);
 
                     setShooterPID(SHOOTER_AMP_SPEED);
@@ -59,22 +58,25 @@ public class Shooter extends SubsystemBase {
                 new InstantCommand(()->linear.set(linearPID.calculate(0, linear.getVelocity()))).until(noteTrigger.negate()));
     }
 
-    public Command SpeakerShotWithControlCommand(){
+    public Command setShooterVelocityCommand(){
         return this.runEnd(
                 ()-> setShooterPID(SETPOINT_SHOT_SPEAKER),
                 shooter::stopMotor).until(noteTrigger.negate());
     }
 
-    private double setShooterPID(double setpoint) {
+    private void setShooterPID(double setpoint) {
         double pid = shooterPID.calculate(setpoint, shooter.getVelocity());
         double ff = shooterFF.calculate(setpoint, 0);
         double output = pid + ff;
         shooter.set(output);
-        return pid;
+    }
+    private void setLinearPID(double setpoint){
+        double pid = linearPID.calculate(setpoint, linear.getVelocity());
+        linear.set(pid);
     }
 
     public Command StartLinearMotorCommand(DoubleSupplier speed){
-        return new RunCommand(() -> setLinear(speed.getAsDouble()));
+        return new RunCommand(() -> setLinearSpeed(speed.getAsDouble()));
     }
 
     public Command ManualShooterCommand() {
