@@ -161,5 +161,8 @@ public final class Constants {
         public static final double MAX_SHOOTING_DISTANCE = 0.0; //TODO: Find Values
         public static final double SET_SHOOTING_RANGE = 0.0; //TODO: find values!
         public static final double SHOOTER_SPEED_PERCENT = 0.0; //TODO: find values!
+
+        public static final double PREP_SHOOTER_SPEED_FOR_AMP = 0.0; //TODO: find values!
+        public static final double PREP_SHOOTER_SPEED_FOR_SPEAKER = 0.0; //TODO: find values!
     }
 }
