@@ -6,12 +6,10 @@ package frc.robot;
 
 import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
 import frc.lib.Gains;
-import frc.robot.util.PositionUtils;
 
 import static frc.robot.util.PositionUtils.getPose;
 import static java.lang.Math.PI;
@@ -56,7 +54,6 @@ public final class Constants {
                 this.SPIN_MOTOR_REVERSED = SPIN_MOTOR_REVERSED;
             }
         }
-
         public static final int PIGEON_ID = 19;
 
         public static final double TRACK_WIDTH = 0.56665; // m
@@ -102,6 +99,7 @@ public final class Constants {
 
         public static final int DRIVE_CURRENT_LIMIT = 65;
         public static final int ANGLE_CURRENT_LIMIT = 25;
+
     }
 
     public static final class FieldConstants {
@@ -128,6 +126,7 @@ public final class Constants {
             FieldLocations(String pathName, Pose2d pose){
                 this.pathName = pathName;
                 this.pose2d = pose;
+
             }
         }
     }
@@ -137,5 +136,29 @@ public final class Constants {
         public static final int LEDS_PORT = 0; // pwm
         public static final int LENGTH = 0;
 
+    }
+    public static final class ShooterConstants {
+        public static final int SHOOTER_LEADER_MOTOR_ID = 31;
+        public static final int SHOOTER_FOLLOWER_MOTOR_ID = 32;
+
+        public static final int LINEAR_LEADER_MOTOR_ID = 33;
+        public static final int LINEAR_FOLLOWER_MOTOR_ID = 34;
+
+        public static final int SHOOTER_BEAMBREAK_CHANNEL = 0;
+
+        public static final Gains SHOOTER_PID = new Gains(0,0,0);
+        public static final Gains SHOOTER_FF = new Gains(0,0,0,0);
+
+        public static final Gains LINEAR_PID = new Gains(0,0,0);
+        public static final double LINEAR_LENGTH = 0;
+
+        public static final double AMP_RPM = 0;
+        public static final double WOOFER_RPM = 0;
+
+        public static final double SHOOTER_PID_TOLERANCE = 100;
+        public static final double LINEAR_PID_TOLERANCE = 0.01;
+
+        public static final double AMP_PREP_DC = 0;
+        public static final double SPEAKER_PREP_DC = 0;
     }
 }
