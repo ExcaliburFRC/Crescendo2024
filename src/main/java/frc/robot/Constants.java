@@ -118,6 +118,12 @@ public final class Constants {
 
         public static final double kRotToMeter = 2 * PI * kDriveWheelRaius * kGearing;
         public static final double kRotToMeterPerSec = kRotToMeter / 60;
+        public static final int leftID = 0;
+        public static final int rightID = 0;
+        public static final double LEFT_ARM_LOCATION = 0;
+        public static final double RIGHT_ARM_LOCATION = 0;
+        public static final double MINIMAL_HEIGHT = 0;
+        public static final double EXTRA_SAFETY_DISTANCE = 0.1;
     }
 
     public static final class FieldConstants {
