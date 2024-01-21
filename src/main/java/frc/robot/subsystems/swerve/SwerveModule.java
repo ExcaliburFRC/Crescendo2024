@@ -47,14 +47,11 @@ public class SwerveModule implements Sendable, Logged {
     _absEncoderOffsetRad = offsetAngle * 2 * PI;
     _resetOffset = _absEncoderOffsetRad - PI;
 
-    _driveMotor = new Neo(driveMotorId, Gains.EMPTY_GAINS);
-    _angleMotor = new Neo(spinningMotorId, Gains.EMPTY_GAINS);
+    _driveMotor = new Neo(driveMotorId);
+    _angleMotor = new Neo(spinningMotorId);
 
     _driveMotor.setInverted(driveMotorReversed);
     _angleMotor.setInverted(spinningMotorReversed);
-
-    _driveMotor.setBrake(true);
-    _angleMotor.setBrake(true);
 
     _driveMotor.clearFaults();
     _angleMotor.clearFaults();

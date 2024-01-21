@@ -112,6 +112,12 @@ public final class Constants {
         //movement limitation
         public static final double kMaxLinearVelocity = 0;
         public static final double kMaxLinearAcceleration = 0;
+
+        public static final double kGearing = 0;
+        public static final double kDriveWheelRaius = 0;
+
+        public static final double kRotToMeter = 2 * PI * kDriveWheelRaius * kGearing;
+        public static final double kRotToMeterPerSec = kRotToMeter / 60;
     }
 
     public static final class FieldConstants {
@@ -143,9 +149,7 @@ public final class Constants {
     }
 
     public static class LedsConstants {
-
         public static final int LEDS_PORT = 0; // pwm
         public static final int LENGTH = 0;
-
     }
 }
