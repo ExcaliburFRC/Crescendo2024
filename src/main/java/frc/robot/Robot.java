@@ -74,7 +74,7 @@ public class Robot extends TimedRobot implements Logged {
 
     shooter.setDefaultCommand(shooter.ManualShooterCommand().alongWith(shooter.StartLinearMotorCommand(controllerOperator::getLeftY)));
     controllerOperator.circle().onTrue(shooter.setShooterVelocityCommand());
-    controllerOperator.triangle().onTrue(shooter.AMPShooter());
+    controllerOperator.triangle().onTrue(shooter.AMPShooterCommand());
   }
 
   // methods

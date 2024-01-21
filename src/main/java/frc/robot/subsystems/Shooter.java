@@ -41,38 +41,21 @@ public class Shooter extends SubsystemBase {
         interpolate.put(MAX_SHOOTING_DISTANCE, MAX_SHOOTING_RPM);
     }
 
-    private void setLinearSpeed(double speed){
-        setLinearPID(speed);
-    }
-
-    public Command AMPShooter(){
-        return this.runEnd(
-                ()->{
-                    double LinearAmpPID = linearPID.calculate(linear.getVelocity(), LINEAR_SETPOINT);
-                    linear.set(LinearAmpPID);
-
-                    setShooterPID(SHOOTER_AMP_SPEED);
-                },
-                shooter::stopMotor)
-                .andThen(
-                new InstantCommand(()->linear.set(linearPID.calculate(0, linear.getVelocity()))).until(noteTrigger.negate()));
-    }
-
-    public Command setShooterVelocityCommand(){
-        return this.runEnd(
-                ()-> setShooterPID(SETPOINT_SHOT_SPEAKER),
-                shooter::stopMotor).until(noteTrigger.negate());
-    }
-
     private void setShooterPID(double setpoint) {
         double pid = shooterPID.calculate(setpoint, shooter.getVelocity());
         double ff = shooterFF.calculate(setpoint, 0);
         double output = pid + ff;
         shooter.set(output);
     }
-    private void setLinearPID(double setpoint){
+
+    private double setLinearPID(double setpoint){
         double pid = linearPID.calculate(setpoint, linear.getVelocity());
         linear.set(pid);
+        return pid;
+    }
+
+    private void setLinearSpeed(double speed){
+        setLinearPID(speed);
     }
 
     public Command StartLinearMotorCommand(DoubleSupplier speed){
@@ -83,6 +66,25 @@ public class Shooter extends SubsystemBase {
         return runEnd(
                 ()-> shooter.set(shooterSpeed.getDouble(0)),
                 shooter::stopMotor).until(noteTrigger.negate());
+    }
+
+    public Command setShooterVelocityCommand(){
+        return this.runEnd(
+                ()-> setShooterPID(SETPOINT_SHOT_SPEAKER),
+                shooter::stopMotor).until(noteTrigger.negate());
+    }
+
+    public Command AMPShooterCommand(){
+        return this.runEnd(
+                ()->{
+                    setLinearPID(SETPOINT_LINEAR_AMP);
+                    setShooterPID(SETPOINT_SHOOT_AMP);
+                },
+                shooter::stopMotor)
+                .andThen(
+                new InstantCommand(()->setLinearPID(0)).until(noteTrigger.negate()));
     }}
+
+
 // Path: src/main/java/frc/robot/subsystems/Shooter.java
 
