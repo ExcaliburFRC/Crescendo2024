@@ -147,6 +147,8 @@ public final class Constants {
         public static final Gains SHOOTER_PID = new Gains(0,0,0);
         public static final Gains SHOOTER_FF = new Gains(0,0,0,0);
         public static final Gains LINEAR_PID = new Gains(0,0,0);
+
+        public static final double LINEAR_LENGTH = 0;
         public static final double LINEAR_SETPOINT = 0;
         public static final double LINEAR_SETPOINT_BACK = 0;
         public static final double SHOOTER_AMP_SPEED = 0.75;
@@ -161,5 +163,6 @@ public final class Constants {
         public static final double MAX_SHOOTING_DISTANCE = 0.0; //TODO: Find Values
         public static final double SET_SHOOTING_RANGE = 0.0; //TODO: find values!
         public static final double SHOOTER_SPEED_PERCENT = 0.0; //TODO: find values!
+
     }
 }
