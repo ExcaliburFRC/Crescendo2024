@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.*;
-import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.LEDs;
@@ -72,7 +71,7 @@ public class Robot extends TimedRobot implements Logged {
     controller.circle().whileTrue(swerve.pathFindToLocation(HM_RIGHT));
 
     //Intake:
-    intake.setDefaultCommand(intake.operateIntakeCommand(operator::getR2Axis, operator::getL2Axis));
+    intake.setDefaultCommand(intake.manualIntakeCommand(operator::getR2Axis, operator::getL2Axis));
   }
 
   // methods
