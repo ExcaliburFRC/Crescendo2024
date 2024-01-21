@@ -40,6 +40,7 @@ public final class Constants {
             public static final int FRONT_RIGHT = 1;
             public static final int BACK_LEFT = 2;
             public static final int BACK_RIGHT = 3;
+
             Modules(int DRIVE_MOTOR_ID,
                     int SPIN_MOTOR_ID,
                     int ABS_ENCODER_CHANNEL,
@@ -58,10 +59,10 @@ public final class Constants {
 
         public static final double TRACK_WIDTH = 0.56665; // m
         public static final SwerveDriveKinematics kSwerveKinematics = new SwerveDriveKinematics(
-                new Translation2d(TRACK_WIDTH / 2, TRACK_WIDTH / 2),
-                new Translation2d(TRACK_WIDTH / 2, -TRACK_WIDTH / 2),
-                new Translation2d(-TRACK_WIDTH / 2, TRACK_WIDTH / 2),
-                new Translation2d(-TRACK_WIDTH / 2, -TRACK_WIDTH / 2));
+          new Translation2d(TRACK_WIDTH / 2, TRACK_WIDTH / 2),
+          new Translation2d(TRACK_WIDTH / 2, -TRACK_WIDTH / 2),
+          new Translation2d(-TRACK_WIDTH / 2, TRACK_WIDTH / 2),
+          new Translation2d(-TRACK_WIDTH / 2, -TRACK_WIDTH / 2));
 
         public static final double MAX_VELOCITY_METER_PER_SECOND = Units.feetToMeters(12); //TODO: find values
         public static final double MAX_VELOCITY_ACCELERATION_METER_PER_SECOND = 3; //TODO: find values
@@ -80,8 +81,8 @@ public final class Constants {
         public static final Gains PATHPLANNER_TRANSLATION_GAINS = new Gains(2.5, 0, 0);
 
         public static final PathConstraints PATH_CONSTRAINTS = new PathConstraints(
-                MAX_VELOCITY_METER_PER_SECOND, MAX_VELOCITY_ACCELERATION_METER_PER_SECOND,
-                MAX_ANGULAR_VELOCITY_RAD_PER_SECOND, MAX_ANGULAR_ACCELERATION_RAD_PER_SECOND);
+          MAX_VELOCITY_METER_PER_SECOND, MAX_VELOCITY_ACCELERATION_METER_PER_SECOND,
+          MAX_ANGULAR_VELOCITY_RAD_PER_SECOND, MAX_ANGULAR_ACCELERATION_RAD_PER_SECOND);
     }
 
     public static final class ModuleConstants {
@@ -101,14 +102,15 @@ public final class Constants {
         public static final int ANGLE_CURRENT_LIMIT = 25;
 
     }
-    public static final class IntakeConstants{
-        public static final Gains PIDGains = new Gains(0, 0, 0);
-        public static final Gains FFangleGains = new Gains(0, 0, 0);
+
+    public static final class IntakeConstants {
+        public static final Gains PID_GAINS = new Gains(0, 0, 0);
+        public static final Gains FF_ANGLE_GAINS = new Gains(0, 0, 0);
 
         public enum INTAKE_ANGLE {
             GROUND(0),
             AMP(0),
-            HUMAN_PLAER(0),
+            HUMAN_PLAYER(0),
             TO_SHOOTER(0),
             IDLE(0);
 
@@ -141,7 +143,7 @@ public final class Constants {
             public String pathName;
             public Pose2d pose2d;
 
-            FieldLocations(String pathName, Pose2d pose){
+            FieldLocations(String pathName, Pose2d pose) {
                 this.pathName = pathName;
                 this.pose2d = pose;
 
