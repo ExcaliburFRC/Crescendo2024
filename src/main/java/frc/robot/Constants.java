@@ -107,12 +107,17 @@ public final class Constants {
         public static final Gains PID_GAINS = new Gains(0, 0, 0);
         public static final Gains FF_ANGLE_GAINS = new Gains(0, 0, 0);
 
+        public static final double INTAKE_MOTOR_POSITION_CONVERSION_FACTOR = 0;
+        public static final double INTAKE_MOTOR_VELOCITY_CONVERSION_FACTOR = 0;
+
+        public static final double INTAKE_ENCODER_OFFSET_POSITION = 0;
+
+
         public enum INTAKE_ANGLE {
             GROUND(0),
             AMP(0),
             HUMAN_PLAYER(0),
-            TO_SHOOTER(0),
-            IDLE(0);
+            SHOOTER(0);
 
             public final int angle;
 
