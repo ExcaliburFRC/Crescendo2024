@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import frc.robot.subsystems.LEDs;
-import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.Shooter.Shooter;
 import frc.robot.subsystems.swerve.Swerve;
 import monologue.Logged;
 import monologue.Monologue;
@@ -72,8 +72,6 @@ public class Robot extends TimedRobot implements Logged {
     controller.triangle().whileTrue(swerve.pathFindToLocation(HM_CENTER));
     controller.circle().whileTrue(swerve.pathFindToLocation(HM_RIGHT));
 
-    shooter.setDefaultCommand(shooter.manualShooterCommand().alongWith(shooter.noneControlStartLinearCommand(controllerOperator::getLeftY)));
-    controllerOperator.circle().onTrue(shooter.setShooterVelocityCommand());
     controllerOperator.triangle().onTrue(shooter.AMPShooterCommand());
   }
 
