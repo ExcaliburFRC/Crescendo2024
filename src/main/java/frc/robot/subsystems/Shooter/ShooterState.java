@@ -30,5 +30,11 @@ public class ShooterState {
         this.IsLinearOpen = false;
     }
 
+    public double getRPM() {
+        return RPM;
+    }
 
+    public boolean isLinearOpen() {
+        return IsLinearOpen;
+    }
 }
