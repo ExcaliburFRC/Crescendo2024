@@ -34,7 +34,7 @@ public class Robot extends TimedRobot implements Logged {
   // subsystems
   private final Swerve swerve = new Swerve();
   private final LEDs leds = LEDs.getInstance();
-
+  private final Intake intake = new Intake();
   // controllers
   private final CommandPS5Controller controller = new CommandPS5Controller(0);
   private final CommandPS5Controller operator = new CommandPS5Controller(0);
@@ -49,12 +49,12 @@ public class Robot extends TimedRobot implements Logged {
   // bindings
   private void configureBindings() {
     swerve.setDefaultCommand(
-            swerve.driveSwerveCommand(
-                    () -> applyDeadband(-controller.getLeftY(), 0.07),
-                    () -> applyDeadband(-controller.getLeftX(), 0.07),
-                    () -> applyDeadband(-controller.getRightX(), 0.07),
-                    controller.L2().negate(),
-                    controller::getR2Axis));
+      swerve.driveSwerveCommand(
+        () -> applyDeadband(-controller.getLeftY(), 0.07),
+        () -> applyDeadband(-controller.getLeftX(), 0.07),
+        () -> applyDeadband(-controller.getRightX(), 0.07),
+        controller.L2().negate(),
+        controller::getR2Axis));
 
     controller.touchpad().whileTrue(toggleMotorsIdleMode().alongWith(leds.applyPatternCommand(SOLID, WHITE.color)));
     controller.PS().onTrue(swerve.setOdometryPositionCommand(new Pose2d(0, 0, new Rotation2d(0))));
@@ -72,14 +72,14 @@ public class Robot extends TimedRobot implements Logged {
     controller.circle().whileTrue(swerve.pathFindToLocation(HM_RIGHT));
 
     //Intake:
-    Intake.intake.setDefaultCommand(Intake.intake.operateIntakeCommand(()-> operator.getR2Axis(), ()-> operator.getL2Axis()));
+    intake.setDefaultCommand(intake.operateIntakeCommand(operator::getR2Axis, operator::getL2Axis));
   }
 
   // methods
   public Command toggleMotorsIdleMode() {
     return new ParallelCommandGroup(
-            swerve.toggleIdleModeCommand()
-            // add other subsystems here
+      swerve.toggleIdleModeCommand()
+      // add other subsystems here
     );
   }
 
@@ -117,10 +117,10 @@ public class Robot extends TimedRobot implements Logged {
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
 
-      // setFileOnly is used to shut off NetworkTables broadcasting for most logging calls.
-      // Basing this condition on the connected state of the FMS is a suggestion only.
-      Monologue.setFileOnly(DriverStation.isFMSAttached());
-      Monologue.updateAll();
+    // setFileOnly is used to shut off NetworkTables broadcasting for most logging calls.
+    // Basing this condition on the connected state of the FMS is a suggestion only.
+    Monologue.setFileOnly(DriverStation.isFMSAttached());
+    Monologue.updateAll();
   }
 
   @Override
