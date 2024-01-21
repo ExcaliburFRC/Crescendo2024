@@ -99,7 +99,6 @@ public final class Constants {
 
         public static final int DRIVE_CURRENT_LIMIT = 65;
         public static final int ANGLE_CURRENT_LIMIT = 25;
-
     }
 
     public static final class FieldConstants {
@@ -140,33 +139,22 @@ public final class Constants {
     public static final class ShooterConstants {
         public static final int LEADER_SHOOTER_MOTOR_ID = 31;
         public static final int FOLLOWER_SHOOTER_MOTOR_ID = 32;
+
         public static final int LEADER_LINEAR_MOTOR_ID = 33;
         public static final int FOLLOWER_LINEAR_MOTOR_ID = 34;
+
         public static final int SHOOTER_BEAMBREAK_CHANNEL = 0;
 
         public static final Gains SHOOTER_PID = new Gains(0,0,0);
         public static final Gains SHOOTER_FF = new Gains(0,0,0,0);
 
-        public static final double LINEAR_LENGTH = 0;
         public static final Gains LINEAR_PID = new Gains(0,0,0);
+        public static final double LINEAR_LENGTH = 0;
 
-        public static final double LINEAR_SETPOINT = 0;
-        public static final double LINEAR_SETPOINT_BACK = 0;
+        public static final double AMP_RPM = 0;
+        public static final double SPEAKER_RPM = 0;
 
-        public static final double SHOOT_AMP_RPM = 0;
-        public static final double MIN_SHOOTING_RPM = 0;
-        public static final double MAX_SHOOTING_RPM = 0;
-
-        public static final double SETPOINT_SHOOT_SPEAKER = 0;
-        public static final double SETPOINT_SHOOT_AMP = 0;
-        public static final double SETPOINT_LINEAR_AMP = 0;
-
-        public static final double SHOOT_SPEAKER_FROM_WOOFER_RPM = 0;
-        public static final double SETPOINT_SHOT_SPEAKER = 0;
-        public static final double MIN_SHOOTING_DISTANCE = 0.0;//TODO: Find Values
-        public static final double MAX_SHOOTING_DISTANCE = 0.0; //TODO: Find Values
-        public static final double SET_SHOOTING_RANGE = 0.0; //TODO: find values!
-        public static final double SHOOTER_SPEED_PERCENT = 0.0; //TODO: find values!
-
+        public static final double SHOOTER_PID_TOLERANCE = 100;
+        public static final double LINEAR_PID_TOLERANCE = 0.01;
     }
 }

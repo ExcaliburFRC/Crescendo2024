@@ -1,40 +1,39 @@
 package frc.robot.subsystems.Shooter;
 
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
-import frc.robot.Constants;
 
-import static frc.robot.Constants.ShooterConstants.MAX_SHOOTING_RPM;
-import static frc.robot.Constants.ShooterConstants.MIN_SHOOTING_RPM;
+import static frc.robot.Constants.ShooterConstants.*;
 
 public class ShooterState {
-    private double RPM;
-    private boolean IsLinearOpen;
-    private InterpolatingDoubleTreeMap Interpolate = new InterpolatingDoubleTreeMap();
-    private enum LinearState{
-        open(Constants.ShooterConstants.LINEAR_LENGTH),
-        close(0);
+    public double RPM;
+    public boolean isLinearOpen;
+    public LinearState linearState;
 
-        LinearState(double linearLength) {
-        }
+    private static InterpolatingDoubleTreeMap metersToRPM = new InterpolatingDoubleTreeMap();
+
+    static {
+        metersToRPM.put(0.0, 0.0);
+//        metersToRPM.put(0, 0);
     }
 
     public ShooterState(double RPM, boolean isLinearOpen) {
         this.RPM = RPM;
-        IsLinearOpen = isLinearOpen;
+        this.isLinearOpen = isLinearOpen;
+        linearState = isLinearOpen? LinearState.OPEN : LinearState.CLOSE;
     }
 
-    public ShooterState(double Meters) {
-        Interpolate.put(MIN_SHOOTING_RPM ,0.0);
-        Interpolate.put(MAX_SHOOTING_RPM,0.0);
-        this.RPM = Interpolate.get(Meters);
-        this.IsLinearOpen = false;
+    public ShooterState(double meters) {
+        this(metersToRPM.get(meters), false);
     }
 
-    public double getRPM() {
-        return RPM;
-    }
+    public enum LinearState {
+        OPEN(LINEAR_LENGTH),
+        CLOSE(0);
 
-    public boolean isLinearOpen() {
-        return IsLinearOpen;
+        public double length;
+
+        LinearState(double length) {
+            this.length = length;
+        }
     }
 }
