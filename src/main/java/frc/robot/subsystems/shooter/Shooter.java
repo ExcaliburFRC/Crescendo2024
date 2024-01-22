@@ -1,4 +1,4 @@
-package frc.robot.subsystems.Shooter;
+package frc.robot.subsystems.shooter;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -9,7 +9,7 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.Neo;
-import frc.robot.subsystems.Shooter.ShooterState.LinearState;
+import frc.robot.subsystems.shooter.ShooterState.LinearState;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;

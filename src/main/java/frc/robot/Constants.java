@@ -40,6 +40,7 @@ public final class Constants {
             public static final int FRONT_RIGHT = 1;
             public static final int BACK_LEFT = 2;
             public static final int BACK_RIGHT = 3;
+
             Modules(int DRIVE_MOTOR_ID,
                     int SPIN_MOTOR_ID,
                     int ABS_ENCODER_CHANNEL,
@@ -102,6 +103,70 @@ public final class Constants {
 
     }
 
+    public static final class IntakeConstants {
+        public static final Gains PID_GAINS = new Gains(0, 0, 0);
+        public static final Gains FF_ANGLE_GAINS = new Gains(0, 0, 0);
+
+        public static final int INTAKE_MOTOR_ID = 0;
+        public static final int ANGLE_MOTOR_ID = 0;
+
+        public static final int INTAKE_ENCODER_ID = 0;
+
+        public static final double INTAKE_MOTOR_POSITION_CONVERSION_FACTOR = 0;
+        public static final double INTAKE_MOTOR_VELOCITY_CONVERSION_FACTOR = 0;
+
+        public static final double INTAKE_ENCODER_OFFSET_POSITION = 0;
+        public static final int SHOOTER_ANGLE_THRESHOLD = 2;
+
+        public static final double AMP_SHOOTER_DC = -0.5;
+        public static final double STALL_DC = 0.1;
+
+        public enum INTAKE_ANGLE {
+            GROUND(0),
+            AMP(0),
+            HUMAN_PLAYER(0),
+            SHOOTER(0);
+
+            public final int angle;
+
+            INTAKE_ANGLE(int angle) {
+                this.angle = angle;
+            }
+        }
+    }
+
+    public static final class IntakeConstants {
+        public static final Gains PID_GAINS = new Gains(0, 0, 0);
+        public static final Gains FF_ANGLE_GAINS = new Gains(0, 0, 0);
+
+        public static final int INTAKE_MOTOR_ID = 0;
+        public static final int ANGLE_MOTOR_ID = 0;
+
+        public static final int INTAKE_ENCODER_ID = 0;
+
+        public static final double INTAKE_MOTOR_POSITION_CONVERSION_FACTOR = 0;
+        public static final double INTAKE_MOTOR_VELOCITY_CONVERSION_FACTOR = 0;
+
+        public static final double INTAKE_ENCODER_OFFSET_POSITION = 0;
+        public static final int SHOOTER_ANGLE_THRESHOLD = 2;
+
+        public static final double AMP_SHOOTER_DC = -0.5;
+        public static final double STALL_DC = 0.1;
+
+        public enum INTAKE_ANGLE {
+            GROUND(0),
+            AMP(0),
+            HUMAN_PLAYER(0),
+            SHOOTER(0);
+
+            public final int angle;
+
+            INTAKE_ANGLE(int angle) {
+                this.angle = angle;
+            }
+        }
+    }
+
     public static final class FieldConstants {
         public static final double FIELD_LENGTH_METERS = 16.54;
         public static final double FIELD_WIDTH_METERS = 8.02;
@@ -123,7 +188,7 @@ public final class Constants {
             public String pathName;
             public Pose2d pose2d;
 
-            FieldLocations(String pathName, Pose2d pose){
+            FieldLocations(String pathName, Pose2d pose) {
                 this.pathName = pathName;
                 this.pose2d = pose;
 
