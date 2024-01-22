@@ -10,7 +10,7 @@ import frc.lib.Neo;
 
 import java.util.function.DoubleSupplier;
 
-import static frc.robot.Constants.IntakeConstants.*;
+import static frc.robot.Constants.intakeConstants.*;
 
 public class Intake extends SubsystemBase {
     private final Neo intakeMotor = new Neo(INTAKE_MOTOR_ID);

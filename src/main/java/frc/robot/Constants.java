@@ -135,7 +135,7 @@ public final class Constants {
         }
     }
 
-    public static final class IntakeConstants {
+    public static final class intakeConstants {
         public static final Gains PID_GAINS = new Gains(0, 0, 0);
         public static final Gains FF_ANGLE_GAINS = new Gains(0, 0, 0);
 
@@ -225,5 +225,8 @@ public final class Constants {
 
         public static final double AMP_PREP_DC = 0;
         public static final double SPEAKER_PREP_DC = 0;
+
+        public static final double MAX_VOLTAGE_SHOOTER = 0;
+        public static final double MAX_VOLTAGE_LINEAR = 0;
     }
 }

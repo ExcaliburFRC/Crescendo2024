@@ -14,8 +14,8 @@ import frc.robot.subsystems.swerve.Swerve;
 
 import static edu.wpi.first.math.MathUtil.applyDeadband;
 import static frc.lib.Color.Colors.WHITE;
-import static frc.robot.Constants.IntakeConstants.INTAKE_ANGLE.GROUND;
-import static frc.robot.Constants.IntakeConstants.INTAKE_ANGLE.HUMAN_PLAYER;
+import static frc.robot.Constants.intakeConstants.INTAKE_ANGLE.GROUND;
+import static frc.robot.Constants.intakeConstants.INTAKE_ANGLE.HUMAN_PLAYER;
 import static frc.robot.subsystems.LEDs.LEDPattern.SOLID;
 
 public class RobotContainer {
