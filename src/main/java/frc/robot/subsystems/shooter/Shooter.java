@@ -66,8 +66,11 @@ public class Shooter extends SubsystemBase {
                 }, shooter::stopMotor);
     }
 
+    public Command closeLinearCommand() {
+        return this.runEnd(() -> setLinearSetpoint(LinearState.CLOSE), linear::stopMotor).until(linearAtSetpoint);
+    }
     public Command shootToAmpCommand() {
-        return setShooterState(new ShooterState(AMP_RPM, true));
+        return setShooterState(new ShooterState(AMP_RPM, true)).andThen(closeLinearCommand());
     }
 
     public Command shootFromWooferCommand() {
