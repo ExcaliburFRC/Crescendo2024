@@ -3,17 +3,23 @@ package frc.robot.subsystems.shooter;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.units.*;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.Neo;
 import frc.robot.subsystems.shooter.ShooterState.LinearState;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
+import static edu.wpi.first.units.MutableMeasure.mutable;
+import static edu.wpi.first.units.Units.*;
+import static edu.wpi.first.units.Units.RPM;
 import static frc.robot.Constants.ShooterConstants.*;
 
 public class Shooter extends SubsystemBase {
@@ -97,5 +103,33 @@ public class Shooter extends SubsystemBase {
             linear.set(speed.getAsDouble());
             shooter.set(shooterSpeed.getDouble(0));
         }, this);
+    }
+
+    // sysid stuff
+    private final MutableMeasure<Voltage> appliedVoltage = mutable(Volts.of(0));
+    private final MutableMeasure<Velocity<Angle>> velocity = mutable(DegreesPerSecond.of(0));
+
+    private final SysIdRoutine shooterSysid = new SysIdRoutine(
+            sysidConfig,
+            new SysIdRoutine.Mechanism(
+                    (Measure<Voltage> volts) -> shooter.setVoltage(volts.in(Volts)),
+                    log -> log.motor("shooterMotor")
+                            .voltage(appliedVoltage.mut_replace(
+                                    shooter.get() * RobotController.getBatteryVoltage(), Volts))
+                            .angularVelocity(velocity.mut_replace(shooter.getVelocity(), RPM)),
+                    this
+            ));
+
+    public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
+        return shooterSysid.quasistatic(direction);
+    }
+
+    public Command sysIdDynamic(SysIdRoutine.Direction direction) {
+        return shooterSysid.dynamic(direction);
+    }
+
+    @Override
+    public String getName() {
+        return "Shooter";
     }
 }

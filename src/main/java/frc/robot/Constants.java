@@ -110,6 +110,37 @@ public final class Constants {
 
     }
 
+    public static final class ShooterConstants {
+        public static final int SHOOTER_LEADER_MOTOR_ID = 31;
+        public static final int SHOOTER_FOLLOWER_MOTOR_ID = 32;
+
+        public static final int LINEAR_LEADER_MOTOR_ID = 33;
+        public static final int LINEAR_FOLLOWER_MOTOR_ID = 34;
+
+        public static final int SHOOTER_BEAMBREAK_CHANNEL = 0;
+
+        public static final Gains SHOOTER_PID = new Gains(0,0,0);
+        public static final Gains SHOOTER_FF = new Gains(0,0,0,0);
+
+        public static final Gains LINEAR_PID = new Gains(0,0,0);
+        public static final double LINEAR_LENGTH = 0;
+
+        public static final double AMP_RPM = 0;
+        public static final double WOOFER_RPM = 0;
+
+        public static final double SHOOTER_PID_TOLERANCE = 100;
+        public static final double LINEAR_PID_TOLERANCE = 0.01;
+
+        public static final double AMP_PREP_DC = 0;
+        public static final double SPEAKER_PREP_DC = 0;
+
+        private static final double RAMP_RATE = 3;
+        private static final double STEP_VOLTAGE = 0.5;
+        private static final double TIMEOUT = 10;
+
+        public static final SysIdRoutine.Config sysidConfig = new SysIdConfig(RAMP_RATE, STEP_VOLTAGE, TIMEOUT);
+    }
+
     public static final class IntakeConstants {
         public static final Gains PID_GAINS = new Gains(0, 0, 0);
         public static final Gains FF_ANGLE_GAINS = new Gains(0, 0, 0);
@@ -128,13 +159,11 @@ public final class Constants {
         public static final double AMP_SHOOTER_DC = -0.5;
         public static final double STALL_DC = 0.1;
 
-
         private static final double RAMP_RATE = 3;
         private static final double STEP_VOLTAGE = 0.5;
         private static final double TIMEOUT = 10;
 
         public static final SysIdRoutine.Config sysidConfig = new SysIdConfig(RAMP_RATE, STEP_VOLTAGE, TIMEOUT);
-
 
         public enum INTAKE_ANGLE {
             GROUND(0),
@@ -180,33 +209,7 @@ public final class Constants {
     }
 
     public static class LedsConstants {
-
         public static final int LEDS_PORT = 0; // pwm
         public static final int LENGTH = 0;
-
-    }
-    public static final class ShooterConstants {
-        public static final int SHOOTER_LEADER_MOTOR_ID = 31;
-        public static final int SHOOTER_FOLLOWER_MOTOR_ID = 32;
-
-        public static final int LINEAR_LEADER_MOTOR_ID = 33;
-        public static final int LINEAR_FOLLOWER_MOTOR_ID = 34;
-
-        public static final int SHOOTER_BEAMBREAK_CHANNEL = 0;
-
-        public static final Gains SHOOTER_PID = new Gains(0,0,0);
-        public static final Gains SHOOTER_FF = new Gains(0,0,0,0);
-
-        public static final Gains LINEAR_PID = new Gains(0,0,0);
-        public static final double LINEAR_LENGTH = 0;
-
-        public static final double AMP_RPM = 0;
-        public static final double WOOFER_RPM = 0;
-
-        public static final double SHOOTER_PID_TOLERANCE = 100;
-        public static final double LINEAR_PID_TOLERANCE = 0.01;
-
-        public static final double AMP_PREP_DC = 0;
-        public static final double SPEAKER_PREP_DC = 0;
     }
 }
