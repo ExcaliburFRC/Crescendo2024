@@ -6,7 +6,6 @@ import static frc.robot.Constants.ShooterConstants.*;
 
 public class ShooterState {
     public double RPM;
-    public boolean isLinearOpen;
     public LinearState linearState;
 
     private static InterpolatingDoubleTreeMap metersToRPM = new InterpolatingDoubleTreeMap();
@@ -18,7 +17,6 @@ public class ShooterState {
 
     public ShooterState(double RPM, boolean isLinearOpen) {
         this.RPM = RPM;
-        this.isLinearOpen = isLinearOpen;
         linearState = isLinearOpen? LinearState.OPEN : LinearState.CLOSE;
     }
 

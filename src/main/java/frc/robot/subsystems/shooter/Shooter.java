@@ -78,11 +78,11 @@ public class Shooter extends SubsystemBase {
         return this.runEnd(() -> setLinearSetpoint(LinearState.CLOSE), linear::stopMotor).until(linearAtSetpoint);
     }
     public Command shootToAmpCommand() {
-        return setShooterState(new ShooterState(AMP_RPM, true)).andThen(closeLinearCommand());
+        return setShooterState(new ShooterState(AMP_RPM)).andThen(closeLinearCommand());
     }
 
     public Command shootFromWooferCommand() {
-        return setShooterState(new ShooterState(WOOFER_RPM, false));
+        return setShooterState(new ShooterState(WOOFER_RPM));
     }
 
     public Command shootFromDistanceCommand(DoubleSupplier distance) {
