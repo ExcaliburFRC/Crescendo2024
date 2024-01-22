@@ -1,6 +1,5 @@
 package frc.robot.subsystems.shooter;
 
-import com.revrobotics.CANSparkBase;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.networktables.GenericEntry;
@@ -17,6 +16,8 @@ import frc.robot.subsystems.shooter.ShooterState.LinearState;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
+import static com.revrobotics.CANSparkBase.IdleMode.kBrake;
+import static com.revrobotics.CANSparkBase.IdleMode.kCoast;
 import static frc.robot.Constants.ShooterConstants.*;
 
 public class Shooter extends SubsystemBase {
@@ -68,7 +69,7 @@ public class Shooter extends SubsystemBase {
 
     private Command setShooterState(ShooterState state) {
         return this.runEnd(
-                ()-> {
+                () -> {
                     setShooterRPM(state.RPM);
                     setLinearSetpoint(state.linearState);
                 }, shooter::stopMotor);
@@ -77,6 +78,7 @@ public class Shooter extends SubsystemBase {
     public Command closeLinearCommand() {
         return this.runEnd(() -> setLinearSetpoint(LinearState.CLOSE), linear::stopMotor).until(linearAtSetpoint);
     }
+
     public Command shootToAmpCommand() {
         return setShooterState(new ShooterState(AMP_RPM)).andThen(closeLinearCommand());
     }
@@ -101,7 +103,9 @@ public class Shooter extends SubsystemBase {
                 }
             } else shooter.stopMotor();
         }, this);
-    };
+    }
+
+    ;
 
     public Command manualShooterCommand(DoubleSupplier speed) {
         return new RunCommand(() -> {
@@ -109,12 +113,17 @@ public class Shooter extends SubsystemBase {
             shooter.set(shooterSpeed.getDouble(0));
         }, this);
     }
-    public Command shooterIdleCommand(){
-        return new RunCommand(() -> {
-            linear.setIdleMode(CANSparkBase.IdleMode.kCoast);
-            linearFollower.setIdleMode(CANSparkBase.IdleMode.kCoast);
-            shooter.setIdleMode(CANSparkBase.IdleMode.kCoast);
-            shooterFollower.setIdleMode(CANSparkBase.IdleMode.kCoast);
-        });
+
+    public Command toggleidleModeCommand() {
+        return new StartEndCommand(
+                () -> {
+                    linear.setIdleMode(kCoast);
+                    shooter.setIdleMode(kCoast);
+                },
+                () -> {
+                    linear.setIdleMode(kBrake);
+                    shooter.setIdleMode(kBrake);
+                }
+        );
     }
 }
