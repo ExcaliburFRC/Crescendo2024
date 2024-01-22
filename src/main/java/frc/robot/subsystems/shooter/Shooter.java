@@ -46,6 +46,8 @@ public class Shooter extends SubsystemBase {
     public Trigger shooterReady = shooterAtSetpoint.and(linearAtSetpoint);
 
     public Shooter() {
+        shooter.setConversionFactors(ROT_TO_DEGREES, RPM_TO_DEG_PER_SEC);
+
         shooterFollower.follow(shooter, true);
         linearFollower.follow(linear);
 
@@ -108,6 +110,8 @@ public class Shooter extends SubsystemBase {
     // sysid stuff
     private final MutableMeasure<Voltage> appliedVoltage = mutable(Volts.of(0));
     private final MutableMeasure<Velocity<Angle>> velocity = mutable(DegreesPerSecond.of(0));
+    private final MutableMeasure<Angle> degrees = mutable(Degrees.of(0));
+
 
     private final SysIdRoutine shooterSysid = new SysIdRoutine(
             sysidConfig,
@@ -116,7 +120,9 @@ public class Shooter extends SubsystemBase {
                     log -> log.motor("shooterMotor")
                             .voltage(appliedVoltage.mut_replace(
                                     shooter.get() * RobotController.getBatteryVoltage(), Volts))
+                            .angularPosition(degrees.mut_replace(shooter.getPosition(), Degrees))
                             .angularVelocity(velocity.mut_replace(shooter.getVelocity(), RPM)),
+
                     this
             ));
 

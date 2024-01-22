@@ -134,6 +134,9 @@ public final class Constants {
         public static final double AMP_PREP_DC = 0;
         public static final double SPEAKER_PREP_DC = 0;
 
+        public static final double ROT_TO_DEGREES = 0;
+        public static final double RPM_TO_DEG_PER_SEC = 0;
+
         private static final double RAMP_RATE = 3;
         private static final double STEP_VOLTAGE = 0.5;
         private static final double TIMEOUT = 10;
