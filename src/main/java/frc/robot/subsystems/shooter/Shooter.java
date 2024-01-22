@@ -5,7 +5,6 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.event.BooleanEvent;
-import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.*;
@@ -28,8 +27,8 @@ public class Shooter extends SubsystemBase {
     private final Neo linearFollower = new Neo(LINEAR_FOLLOWER_MOTOR_ID);
 
     private final DigitalInput beamBreak = new DigitalInput(SHOOTER_BEAMBREAK_CHANNEL);
-    private EventLoop beamBeackEventLoop = new EventLoop();
-    public final BooleanEvent noteTrigger = new BooleanEvent(beamBeackEventLoop, beamBreak::get);
+    public final BooleanEvent noteShotTrigger =
+            new BooleanEvent(CommandScheduler.getInstance().getDefaultButtonLoop(), beamBreak::get).falling().debounce(0.2);
 
     private final PIDController shooterPID = new PIDController(SHOOTER_PID.kp, SHOOTER_PID.ki, SHOOTER_PID.kd);
     private final SimpleMotorFeedforward shooterFF = new SimpleMotorFeedforward(SHOOTER_FF.ks, SHOOTER_FF.kv, SHOOTER_FF.ka);
@@ -72,7 +71,7 @@ public class Shooter extends SubsystemBase {
                 () -> {
                     setShooterRPM(state.RPM);
                     setLinearSetpoint(state.linearState);
-                }, shooter::stopMotor);
+                }, shooter::stopMotor).until(noteShotTrigger);
     }
 
     public Command closeLinearCommand() {
@@ -104,8 +103,6 @@ public class Shooter extends SubsystemBase {
             } else shooter.stopMotor();
         }, this);
     }
-
-    ;
 
     public Command manualShooterCommand(DoubleSupplier speed) {
         return new RunCommand(() -> {
