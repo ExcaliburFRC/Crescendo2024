@@ -6,23 +6,11 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.NamedCommands;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.*;
-import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
-import frc.robot.subsystems.LEDs;
-import frc.robot.subsystems.Shooter.Shooter;
-import frc.robot.subsystems.swerve.Swerve;
 import monologue.Logged;
 import monologue.Monologue;
-
-import static edu.wpi.first.math.MathUtil.applyDeadband;
-import static frc.lib.Color.Colors.WHITE;
-import static frc.robot.Constants.FieldConstants.FieldLocations.*;
-import static frc.robot.subsystems.LEDs.LEDPattern.SOLID;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
