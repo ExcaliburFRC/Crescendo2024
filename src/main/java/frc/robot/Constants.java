@@ -42,6 +42,7 @@ public final class Constants {
             public static final int FRONT_RIGHT = 1;
             public static final int BACK_LEFT = 2;
             public static final int BACK_RIGHT = 3;
+
             Modules(int DRIVE_MOTOR_ID,
                     int SPIN_MOTOR_ID,
                     int ABS_ENCODER_CHANNEL,
@@ -124,6 +125,61 @@ public final class Constants {
         public static final double RIGHT_ARM_LOCATION = 0;
         public static final double MINIMAL_HEIGHT = 0;
         public static final double EXTRA_SAFETY_DISTANCE = 0.1;
+
+        public enum Chain {
+            CHAIN_0(new Translation2d(0, 0), new Translation2d(0, 0), new Translation2d(0, 0)),
+            CHAIN_120(new Translation2d(0, 0), new Translation2d(0, 0), new Translation2d(0, 0)),
+            CHAIN_240(new Translation2d(0, 0), new Translation2d(0, 0), new Translation2d(0, 0)),
+            CHAIN_60(new Translation2d(0, 0), new Translation2d(0, 0), new Translation2d(0, 0)),
+            CHAIN_180(new Translation2d(0, 0), new Translation2d(0, 0), new Translation2d(0, 0)),
+            CHAIN_300(new Translation2d(0, 0), new Translation2d(0, 0), new Translation2d(0, 0));
+
+            private Translation2d negEdge;
+            private Translation2d posEdge;
+            private Translation2d centerStage;
+
+            Chain(Translation2d negEdge, Translation2d posEdge, Translation2d centerStage) {
+                this.negEdge = negEdge;
+                this.posEdge = posEdge;
+                this.centerStage = centerStage;
+            }
+
+            public Translation2d getNegEdge() {
+                return negEdge;
+            }
+
+            public Translation2d getPosEdge() {
+                return posEdge;
+            }
+
+            public boolean inRange(Translation2d robotTranslation) {
+                double robotStageAngle =
+                        Math.atan(robotTranslation.minus(centerStage).getX() / robotTranslation.minus(centerStage).getY());
+                double negAngle = Math.atan(negEdge.minus(centerStage).getX() / negEdge.minus(centerStage).getY());
+                double posAngle = Math.atan(posEdge.minus(centerStage).getX() / posEdge.minus(centerStage).getY());
+
+                if (posAngle > negAngle) return robotStageAngle < posAngle && robotStageAngle > negAngle;
+                return (robotStageAngle > posAngle && robotStageAngle > negAngle)
+                        || (robotStageAngle < posAngle && robotStageAngle < negAngle);
+            }
+            public static Translation2d getProjection(Translation2d robotPose, Chain chain) {
+                double m1 = (chain.getNegEdge().getY() - chain.getPosEdge().getY()) /
+                        (chain.getNegEdge().getX() - chain.getPosEdge().getX());
+                double b1 = chain.getNegEdge().getY() - m1 * chain.getNegEdge().getX();
+
+                double m2 = -m1;
+                double b2 = robotPose.getY() - m2 * robotPose.getX();
+
+                double projectionX = (b1 - b2) / (m2 - m1);
+                double projectionY = m1 * projectionX + b1;
+
+                return new Translation2d(projectionX, projectionY);
+            }
+        }
+
+        public static final double CHAIN_LENGTH_IN_XY_METERS = 2.51;
+        public static final double MINIMAL_CHAIN_HEIGHT_METERS = 0.72;
+        public static final double CHAIN_PARABOLA_PARAMETER = 0.3174;
     }
 
     public static final class FieldConstants {
@@ -147,7 +203,7 @@ public final class Constants {
             public String pathName;
             public Pose2d pose2d;
 
-            FieldLocations(String pathName, Pose2d pose){
+            FieldLocations(String pathName, Pose2d pose) {
                 this.pathName = pathName;
                 this.pose2d = pose;
             }

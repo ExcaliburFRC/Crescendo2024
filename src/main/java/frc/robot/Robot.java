@@ -72,7 +72,7 @@ public class Robot extends TimedRobot implements Logged {
     controller.circle().whileTrue(swerve.pathFindToLocation(HM_RIGHT));
 
     //Clim bear
-    Climber.climber.setDefaultCommand(Climber.climber.manualCommand(()-> operator.getLeftY(), ()-> operator.getRightY()));
+    //Climber.climber.setDefaultCommand(Climber.climber.manualCommand(()-> operator.getLeftY(), ()-> operator.getRightY()));
   }
 
   // methods

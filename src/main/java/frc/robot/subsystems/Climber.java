@@ -2,15 +2,18 @@ package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkBase;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.*;
 import frc.lib.Gains;
 import frc.lib.Neo;
 
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import static frc.robot.Constants.ClimberConstants.*;
+import static frc.robot.util.AllianceUtils.isBlueAlliance;
 
 public class Climber extends SubsystemBase {
     ClimberSide leftSide;
@@ -28,36 +31,45 @@ public class Climber extends SubsystemBase {
         );
     }
 
-    public Command smartOpenCommand(Supplier<Pose3d> robotPoseSupplier){
+    public Command smartOpenCommand(Translation2d robotTranslation) {
         return setClimbHeightsCommand(
-                getChainHeight(robotPoseSupplier.get(), LEFT_ARM_LOCATION) + EXTRA_SAFETY_DISTANCE,
-                getChainHeight(robotPoseSupplier.get(), RIGHT_ARM_LOCATION) + EXTRA_SAFETY_DISTANCE);
+                getChainHeight(robotTranslation, LEFT_ARM_LOCATION) + EXTRA_SAFETY_DISTANCE,
+                getChainHeight(robotTranslation, RIGHT_ARM_LOCATION) + EXTRA_SAFETY_DISTANCE);
     }
-    public Command smartCloseCommand(Supplier<Pose3d> robotPoseSupplier){
-        return new RunCommand(() -> setLiftForces(getChainRoll(robotPoseSupplier.get())))
+
+    public Command smartCloseCommand(DoubleSupplier rollSupplier) {
+        return new RunCommand(() -> setLiftForces(rollSupplier.getAsDouble()))
                 .alongWith(
                         setClimbHeightsCommand(
                                 leftSide.getHeight() - getDesiredHeight(),
                                 rightSide.getHeight() - getDesiredHeight()));
     }
 
-    private double getChainRoll(Pose3d pose) {
-        return 0;//TODO: calculate the robot roll relative to the chain
-    }
-
     private void setLiftForces(double chainRoll) {
         //TODO: add pid calculation and ff to each side lift force
     }
 
-    private double getChainHeight(Pose3d pose, double armLoc) {
-        return 0;/*:TODO implement the next algorithm:
-        1. recognise chain based on alliance color and robot angle from center of stage
-        2. find projection robot on the chain axis
-        3. add to the projection the arm location
-        4. find the height of chain in this point
-        */
+    private double getChainHeight(Translation2d robotTranslation, double armLoc) {
+        Chain chain;
+
+        if (isBlueAlliance()) {
+            if (Chain.CHAIN_0.inRange(robotTranslation)) chain = Chain.CHAIN_0;
+            else if (Chain.CHAIN_120.inRange(robotTranslation)) chain = Chain.CHAIN_120;
+            else chain = Chain.CHAIN_240;
+        } else {
+            if (Chain.CHAIN_60.inRange(robotTranslation)) chain = Chain.CHAIN_60;
+            else if (Chain.CHAIN_180.inRange(robotTranslation)) chain = Chain.CHAIN_180;
+            else chain = Chain.CHAIN_300;
+        }
+
+        Translation2d projection = Chain.getProjection(robotTranslation, chain);
+        double armProjection = CHAIN_LENGTH_IN_XY_METERS / 2 - chain.getPosEdge().getDistance(projection) + armLoc;
+        return CHAIN_PARABOLA_PARAMETER * Math.pow(armProjection,2) + MINIMAL_CHAIN_HEIGHT_METERS;
     }
-    private double getDesiredHeight(){
+
+
+
+    private double getDesiredHeight() {
         return Math.min(leftSide.getHeight(), rightSide.getHeight()) - MINIMAL_HEIGHT;
     }
 
@@ -99,7 +111,8 @@ public class Climber extends SubsystemBase {
         private void setLiftingForce(double liftingForce) {
             this.liftingForce = liftingForce;
         }
-        private double getHeight(){
+
+        private double getHeight() {
             return motor.getPosition();
         }
     }
