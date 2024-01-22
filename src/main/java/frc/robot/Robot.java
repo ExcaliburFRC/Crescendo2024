@@ -71,7 +71,7 @@ public class Robot extends TimedRobot implements Logged {
     controller.circle().whileTrue(swerve.pathFindToLocation(HM_RIGHT));
 
     //Intake:
-    intake.setDefaultCommand(intake.manualIntakeCommand(operator::getR2Axis, operator::getL2Axis));
+    intake.setDefaultCommand(intake.manualCommand(operator::getR2Axis, operator::getL2Axis));
   }
 
   // methods
