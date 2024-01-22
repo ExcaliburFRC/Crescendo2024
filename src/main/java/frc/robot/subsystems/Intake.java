@@ -2,14 +2,19 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.units.*;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.Neo;
 
 import java.util.function.DoubleSupplier;
 
+import static edu.wpi.first.units.MutableMeasure.mutable;
+import static edu.wpi.first.units.Units.*;
 import static frc.robot.Constants.IntakeConstants.*;
 
 public class Intake extends SubsystemBase {
@@ -114,5 +119,35 @@ public class Intake extends SubsystemBase {
                     angleMotor.stopMotor();
                 }
         );
+    }
+
+    // SysId stuff
+    private final MutableMeasure<Voltage> appliedVoltage = mutable(Volts.of(0));
+    private final MutableMeasure<Angle> degrees = mutable(Degrees.of(0));
+    private final MutableMeasure<Velocity<Angle>> velocity = mutable(DegreesPerSecond.of(0));
+
+    private final SysIdRoutine angleSysid = new SysIdRoutine(
+            sysidConfig,
+            new SysIdRoutine.Mechanism(
+                    (Measure<Voltage> volts) -> angleMotor.setVoltage(volts.in(Volts)),
+                    log -> log.motor("angleMotor")
+                            .voltage(appliedVoltage.mut_replace(
+                            angleMotor.get() * RobotController.getBatteryVoltage(), Volts))
+                            .angularPosition(degrees.mut_replace(getAngle(), Degrees))
+                            .angularVelocity(velocity.mut_replace(angleMotor.getVelocity(), RPM)),
+                    this
+            ));
+
+    public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
+        return angleSysid.quasistatic(direction);
+    }
+
+    public Command sysIdDynamic(SysIdRoutine.Direction direction) {
+        return angleSysid.dynamic(direction);
+    }
+
+    @Override
+    public String getName() {
+        return "Intake";
     }
 }

@@ -9,8 +9,15 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Time;
+import edu.wpi.first.units.Velocity;
+import edu.wpi.first.units.Voltage;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.Gains;
+import frc.lib.SysIdConfig;
 
+import static edu.wpi.first.units.Units.*;
 import static frc.robot.util.PositionUtils.getPose;
 import static java.lang.Math.PI;
 
@@ -121,37 +128,13 @@ public final class Constants {
         public static final double AMP_SHOOTER_DC = -0.5;
         public static final double STALL_DC = 0.1;
 
-        public enum INTAKE_ANGLE {
-            GROUND(0),
-            AMP(0),
-            HUMAN_PLAYER(0),
-            SHOOTER(0);
 
-            public final int angle;
+        private static final double RAMP_RATE = 3;
+        private static final double STEP_VOLTAGE = 0.5;
+        private static final double TIMEOUT = 10;
 
-            INTAKE_ANGLE(int angle) {
-                this.angle = angle;
-            }
-        }
-    }
+        public static final SysIdRoutine.Config sysidConfig = new SysIdConfig(RAMP_RATE, STEP_VOLTAGE, TIMEOUT);
 
-    public static final class IntakeConstants {
-        public static final Gains PID_GAINS = new Gains(0, 0, 0);
-        public static final Gains FF_ANGLE_GAINS = new Gains(0, 0, 0);
-
-        public static final int INTAKE_MOTOR_ID = 0;
-        public static final int ANGLE_MOTOR_ID = 0;
-
-        public static final int INTAKE_ENCODER_ID = 0;
-
-        public static final double INTAKE_MOTOR_POSITION_CONVERSION_FACTOR = 0;
-        public static final double INTAKE_MOTOR_VELOCITY_CONVERSION_FACTOR = 0;
-
-        public static final double INTAKE_ENCODER_OFFSET_POSITION = 0;
-        public static final int SHOOTER_ANGLE_THRESHOLD = 2;
-
-        public static final double AMP_SHOOTER_DC = -0.5;
-        public static final double STALL_DC = 0.1;
 
         public enum INTAKE_ANGLE {
             GROUND(0),

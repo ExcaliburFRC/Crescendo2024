@@ -10,12 +10,15 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.swerve.Swerve;
 
 import static edu.wpi.first.math.MathUtil.applyDeadband;
+import static edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction.kForward;
+import static edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction.kReverse;
 import static frc.lib.Color.Colors.WHITE;
 import static frc.robot.Constants.IntakeConstants.INTAKE_ANGLE.GROUND;
 import static frc.robot.Constants.IntakeConstants.INTAKE_ANGLE.HUMAN_PLAYER;
@@ -31,6 +34,7 @@ public class RobotContainer {
     // controllers
     private final CommandPS4Controller controller = new CommandPS4Controller(0);
     private final CommandPS4Controller operator = new CommandPS4Controller(1);
+    private final CommandPS4Controller sysidController = new CommandPS4Controller(2);
 
     public final SendableChooser<Command> shouldDriveToCenterLineChooser = new SendableChooser<>();
     public boolean shooterWorks = true;
@@ -65,6 +69,11 @@ public class RobotContainer {
                         intake.shootToAmpCommand(),
                         ()-> shooterWorks)
         );
+
+        sysidController.circle().whileTrue(intake.sysIdQuasistatic(kForward));
+        sysidController.cross().whileTrue(intake.sysIdQuasistatic(kReverse));
+        sysidController.triangle().whileTrue(intake.sysIdDynamic(kForward));
+        sysidController.square().whileTrue(intake.sysIdDynamic(kReverse));
     }
 
     // methods
