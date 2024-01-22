@@ -1,5 +1,6 @@
 package frc.robot.subsystems.shooter;
 
+import com.revrobotics.CANSparkBase;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.networktables.GenericEntry;
@@ -104,5 +105,13 @@ public class Shooter extends SubsystemBase {
             linear.set(speed.getAsDouble());
             shooter.set(shooterSpeed.getDouble(0));
         }, this);
+    }
+    public Command shooterIdleCommand(){
+        return new RunCommand(() -> {
+            linear.setIdleMode(CANSparkBase.IdleMode.kCoast);
+            linearFollower.setIdleMode(CANSparkBase.IdleMode.kCoast);
+            shooter.setIdleMode(CANSparkBase.IdleMode.kCoast);
+            shooterFollower.setIdleMode(CANSparkBase.IdleMode.kCoast);
+        });
     }
 }
