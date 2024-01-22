@@ -85,8 +85,8 @@ public class Shooter extends SubsystemBase {
         return setShooterState(new ShooterState(WOOFER_RPM, false));
     }
 
-    public Command shootFromDistanceCommand(double distance) {
-        return setShooterState(new ShooterState(distance));
+    public Command shootFromDistanceCommand(DoubleSupplier distance) {
+        return setShooterState(new ShooterState(distance.getAsDouble()));
     }
 
     public Command prepShooterCommand(BooleanSupplier amp, BooleanSupplier speaker, BooleanSupplier hasNote) {
