@@ -50,8 +50,8 @@ public class Shooter extends SubsystemBase {
         shooterPID.setTolerance(SHOOTER_PID_TOLERANCE);
         linearPID.setTolerance(LINEAR_PID_TOLERANCE);
 
-        shooter.setVoltage(MAX_VOLTAGE_SHOOTER);
-        linear.setVoltage(MAX_VOLTAGE_LINEAR);
+        shooter.setSmartCurrentLimit(SHOOTER_CURRENT_LIMIT);
+        linear.setSmartCurrentLimit(LINEAR_CURRENT_LIMIT);
 
     }
 

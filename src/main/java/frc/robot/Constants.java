@@ -226,7 +226,7 @@ public final class Constants {
         public static final double AMP_PREP_DC = 0;
         public static final double SPEAKER_PREP_DC = 0;
 
-        public static final double MAX_VOLTAGE_SHOOTER = 0;
-        public static final double MAX_VOLTAGE_LINEAR = 0;
+        public static final int SHOOTER_CURRENT_LIMIT = 0;
+        public static final int LINEAR_CURRENT_LIMIT = 0;
     }
 }
