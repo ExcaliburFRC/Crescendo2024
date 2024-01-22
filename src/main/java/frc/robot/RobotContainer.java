@@ -5,10 +5,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ConditionalCommand;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.LEDs;
@@ -80,6 +77,11 @@ public class RobotContainer {
         shouldDriveToCenterLineChooser.addOption("drive", Commands.idle()); // this is my commandddd!!
 
         matchTab.addBoolean("Shooter works", ()-> shooterWorks);
+    }
+    public Command ScoreNoteCommand(Command shooterCommand){
+        return new ParallelCommandGroup(
+                shooterCommand,
+                new WaitUntilCommand(shooter.shooterReady).andThen(intake.transportToShooterCommand()));
     }
 
     public Command getAutonomousCommand(){

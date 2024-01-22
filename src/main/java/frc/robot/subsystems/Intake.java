@@ -85,7 +85,7 @@ public class Intake extends SubsystemBase {
                 .until(hasNoteTrigger.negate());
     }
 
-    private Command transportToShooterCommand(){
+    public Command transportToShooterCommand(){
         return new ConditionalCommand(
                 ejectNoteCommand(),
                 Commands.none(),
