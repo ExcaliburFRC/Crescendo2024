@@ -21,6 +21,8 @@ import monologue.Monologue;
 import static edu.wpi.first.math.MathUtil.applyDeadband;
 import static frc.lib.Color.Colors.WHITE;
 import static frc.robot.Constants.FieldConstants.FieldLocations.*;
+import static frc.robot.Constants.IntakeConstants.INTAKE_ANGLE.GROUND;
+import static frc.robot.Constants.IntakeConstants.INTAKE_ANGLE.HUMAN_PLAYER;
 import static frc.robot.subsystems.LEDs.LEDPattern.SOLID;
 
 /**
@@ -58,20 +60,8 @@ public class Robot extends TimedRobot implements Logged {
     controller.touchpad().whileTrue(toggleMotorsIdleMode().alongWith(leds.applyPatternCommand(SOLID, WHITE.color)));
     controller.PS().onTrue(swerve.setOdometryPositionCommand(new Pose2d(0, 0, new Rotation2d(0))));
 
-    // teleop path's
-
-    // speaker pathfinding
-    controller.povLeft().whileTrue(swerve.pathFindToLocation(SPEAKER_TOP));
-    controller.povUp().whileTrue(swerve.pathFindToLocation(SPEAKER_CENTER));
-    controller.povRight().whileTrue(swerve.pathFindToLocation(SPEAKER_BOTTOM));
-
-    // Human player pathfinding
-    controller.square().whileTrue(swerve.pathFindToLocation(HM_LEFT));
-    controller.triangle().whileTrue(swerve.pathFindToLocation(HM_CENTER));
-    controller.circle().whileTrue(swerve.pathFindToLocation(HM_RIGHT));
-
-    //Intake:
-    intake.setDefaultCommand(intake.manualCommand(operator::getR2Axis, operator::getL2Axis));
+    operator.cross().onTrue(intake.intakeFromAngleCommand(GROUND));
+    operator.square().onTrue(intake.intakeFromAngleCommand(HUMAN_PLAYER));
   }
 
   // methods
