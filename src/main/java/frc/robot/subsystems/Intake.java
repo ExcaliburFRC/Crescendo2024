@@ -14,19 +14,21 @@ import java.util.function.DoubleSupplier;
 import static frc.robot.Constants.IntakeConstants.*;
 
 public class Intake extends SubsystemBase {
+
+    // we did this to keep this value
     public int targetPos = INTAKE_ANGLE.SHOOTER.angle;
 
-    private final PIDController anglePIDcontroller = new PIDController(PIDGains.kp, PIDGains.ki, PIDGains.kd);
-    private final ArmFeedforward angleFFcontroller = new ArmFeedforward(FFangleGains.ks, FFangleGains.kg, FFangleGains.kv);
+    private final PIDController anglePIDcontroller = new PIDController(PID_GAINS.kp, PID_GAINS.ki, PID_GAINS.kd);
+    private final ArmFeedforward angleFFcontroller = new ArmFeedforward(FF_ANGLE_GAINS.ks,FF_ANGLE_GAINS.kg, FF_ANGLE_GAINS.kv);
 
-    private final Neo intakeMotor = new Neo(0);
-    private final Neo angleMotor = new Neo(0);
+    private final Neo intakeMotor = new Neo(INTAKE_MOTOR_ID);
+    private final Neo angleMotor = new Neo(ANGLE_MOTOR_ID);
 
-    private final DutyCycleEncoder intakeEncoder = new DutyCycleEncoder(0);
+    private final DutyCycleEncoder intakeEncoder = new DutyCycleEncoder(INTAKE_ENCODER_ID);
 
     private final DigitalInput beamBreak = new DigitalInput(0);
-    private final DigitalInput limitSwitch = new DigitalInput(0);
     private final Trigger beamBreakTrigger = new Trigger(beamBreak::get);
+    public final Trigger isAtShooterTrigger = new Trigger(() -> Math.abs(getAngle() - INTAKE_ANGLE.SHOOTER.angle) < SHOOTER_ANGLE_THRESHOLD).debounce(0.2);
 
     public Intake() {
         intakeMotor.setConversionFactors(INTAKE_MOTOR_POSITION_CONVERSION_FACTOR, INTAKE_MOTOR_VELOCITY_CONVERSION_FACTOR);
@@ -36,7 +38,7 @@ public class Intake extends SubsystemBase {
         setDefaultCommand(resetIntakeCommand());
     }
 
-    private Command ejecetNodeCommand(){
+    private Command ejecetNoteCommand(){
        return  setRollerSpeedCommand(()-> -0.5);
     }
 
@@ -75,6 +77,20 @@ public class Intake extends SubsystemBase {
           (__) -> angleMotor.stopMotor(),
           () -> false
         );
+    }
+    private Command intakeCommand(INTAKE_ANGLE wantedAngle, INTAKE_ANGLE defaultAngle){
+        return new ParallelCommandGroup(setIntakeAngleCommand(wantedAngle), setRollerSpeedCommand(()-> 0.5)
+                .until(()-> beamBreakTrigger.getAsBoolean()).andThen(setIntakeAngleCommand(defaultAngle)));
+    }
+    private Command intakeFromHPCommand(INTAKE_ANGLE wantedAngle){
+        return intakeCommand(wantedAngle, INTAKE_ANGLE.SHOOTER);
+    }
+    private Command shootToAmpCommand(){
+        return new ParallelCommandGroup(setIntakeAngleCommand(INTAKE_ANGLE.AMP), setRollerSpeedCommand(()-> -0.5)
+                .until(beamBreakTrigger.negate()).andThen(setIntakeAngleCommand(INTAKE_ANGLE.SHOOTER)));
+    }
+    private Command TransportNoteToShooterCommand(){
+        return new ConditionalCommand(ejecetNoteCommand(), setIntakeAngleCommand(INTAKE_ANGLE.SHOOTER), ()-> getAngle() == INTAKE_ANGLE.SHOOTER.angle);
     }
 
     public Command resetIntakeCommand() {

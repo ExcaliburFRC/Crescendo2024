@@ -59,10 +59,10 @@ public final class Constants {
 
         public static final double TRACK_WIDTH = 0.56665; // m
         public static final SwerveDriveKinematics kSwerveKinematics = new SwerveDriveKinematics(
-          new Translation2d(TRACK_WIDTH / 2, TRACK_WIDTH / 2),
-          new Translation2d(TRACK_WIDTH / 2, -TRACK_WIDTH / 2),
-          new Translation2d(-TRACK_WIDTH / 2, TRACK_WIDTH / 2),
-          new Translation2d(-TRACK_WIDTH / 2, -TRACK_WIDTH / 2));
+                new Translation2d(TRACK_WIDTH / 2, TRACK_WIDTH / 2),
+                new Translation2d(TRACK_WIDTH / 2, -TRACK_WIDTH / 2),
+                new Translation2d(-TRACK_WIDTH / 2, TRACK_WIDTH / 2),
+                new Translation2d(-TRACK_WIDTH / 2, -TRACK_WIDTH / 2));
 
         public static final double MAX_VELOCITY_METER_PER_SECOND = Units.feetToMeters(12); //TODO: find values
         public static final double MAX_VELOCITY_ACCELERATION_METER_PER_SECOND = 3; //TODO: find values
@@ -81,8 +81,8 @@ public final class Constants {
         public static final Gains PATHPLANNER_TRANSLATION_GAINS = new Gains(2.5, 0, 0);
 
         public static final PathConstraints PATH_CONSTRAINTS = new PathConstraints(
-          MAX_VELOCITY_METER_PER_SECOND, MAX_VELOCITY_ACCELERATION_METER_PER_SECOND,
-          MAX_ANGULAR_VELOCITY_RAD_PER_SECOND, MAX_ANGULAR_ACCELERATION_RAD_PER_SECOND);
+                MAX_VELOCITY_METER_PER_SECOND, MAX_VELOCITY_ACCELERATION_METER_PER_SECOND,
+                MAX_ANGULAR_VELOCITY_RAD_PER_SECOND, MAX_ANGULAR_ACCELERATION_RAD_PER_SECOND);
     }
 
     public static final class ModuleConstants {
@@ -107,11 +107,16 @@ public final class Constants {
         public static final Gains PID_GAINS = new Gains(0, 0, 0);
         public static final Gains FF_ANGLE_GAINS = new Gains(0, 0, 0);
 
+        public static final int INTAKE_MOTOR_ID = 0;
+        public static final int ANGLE_MOTOR_ID = 0;
+
+        public static final int INTAKE_ENCODER_ID = 0;
+
         public static final double INTAKE_MOTOR_POSITION_CONVERSION_FACTOR = 0;
         public static final double INTAKE_MOTOR_VELOCITY_CONVERSION_FACTOR = 0;
 
         public static final double INTAKE_ENCODER_OFFSET_POSITION = 0;
-
+        public static final int SHOOTER_ANGLE_THRESHOLD = 2;
 
         public enum INTAKE_ANGLE {
             GROUND(0),
