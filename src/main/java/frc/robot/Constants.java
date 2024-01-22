@@ -118,6 +118,9 @@ public final class Constants {
         public static final double INTAKE_ENCODER_OFFSET_POSITION = 0;
         public static final int SHOOTER_ANGLE_THRESHOLD = 2;
 
+        public static final double AMP_SHOOTER_DC = -0.5;
+        public static final double STALL_DC = 0.1;
+
         public enum INTAKE_ANGLE {
             GROUND(0),
             AMP(0),
