@@ -103,38 +103,6 @@ public final class Constants {
 
     }
 
-    public static final class IntakeConstants {
-        public static final Gains PID_GAINS = new Gains(0, 0, 0);
-        public static final Gains FF_ANGLE_GAINS = new Gains(0, 0, 0);
-
-        public static final int INTAKE_MOTOR_ID = 0;
-        public static final int ANGLE_MOTOR_ID = 0;
-
-        public static final int INTAKE_ENCODER_ID = 0;
-
-        public static final double INTAKE_MOTOR_POSITION_CONVERSION_FACTOR = 0;
-        public static final double INTAKE_MOTOR_VELOCITY_CONVERSION_FACTOR = 0;
-
-        public static final double INTAKE_ENCODER_OFFSET_POSITION = 0;
-        public static final int SHOOTER_ANGLE_THRESHOLD = 2;
-
-        public static final double AMP_SHOOTER_DC = -0.5;
-        public static final double STALL_DC = 0.1;
-
-        public enum INTAKE_ANGLE {
-            GROUND(0),
-            AMP(0),
-            HUMAN_PLAYER(0),
-            SHOOTER(0);
-
-            public final int angle;
-
-            INTAKE_ANGLE(int angle) {
-                this.angle = angle;
-            }
-        }
-    }
-
     public static final class intakeConstants {
         public static final Gains PID_GAINS = new Gains(0, 0, 0);
         public static final Gains FF_ANGLE_GAINS = new Gains(0, 0, 0);
@@ -183,6 +151,7 @@ public final class Constants {
             SPEAKER_BOTTOM("SpeakerBottom", getPose(0.71, 4.51, 120)),
 
             AMPLIFIER("Amp", getPose(1.86, 7.68, 90)),
+            SPEAKER("", getPose(0, 5.56, 0)),
             PODIUM("Podium", getPose(2.86, 4.09, -28));
 
             public String pathName;
@@ -196,18 +165,15 @@ public final class Constants {
         }
     }
 
-    public static class LedsConstants {
-
-        public static final int LEDS_PORT = 0; // pwm
-        public static final int LENGTH = 0;
-
-    }
     public static final class ShooterConstants {
         public static final int SHOOTER_LEADER_MOTOR_ID = 31;
         public static final int SHOOTER_FOLLOWER_MOTOR_ID = 32;
 
         public static final int LINEAR_LEADER_MOTOR_ID = 33;
         public static final int LINEAR_FOLLOWER_MOTOR_ID = 34;
+
+        public static final int SHOOTER_CURRENT_LIMIT = 0;
+        public static final int LINEAR_CURRENT_LIMIT = 0;
 
         public static final int SHOOTER_BEAMBREAK_CHANNEL = 0;
 
@@ -223,10 +189,15 @@ public final class Constants {
         public static final double SHOOTER_PID_TOLERANCE = 100;
         public static final double LINEAR_PID_TOLERANCE = 0.01;
 
-        public static final double AMP_PREP_DC = 0;
         public static final double SPEAKER_PREP_DC = 0;
+        public static final double SPEAKER_PREP_RADIUS = 0;
 
-        public static final int SHOOTER_CURRENT_LIMIT = 0;
-        public static final int LINEAR_CURRENT_LIMIT = 0;
+    }
+
+    public static class LedsConstants {
+
+        public static final int LEDS_PORT = 0; // pwm
+        public static final int LENGTH = 0;
+
     }
 }

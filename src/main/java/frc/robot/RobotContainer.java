@@ -1,12 +1,11 @@
 package frc.robot;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.shooter.Shooter;
@@ -14,6 +13,8 @@ import frc.robot.subsystems.swerve.Swerve;
 
 import static edu.wpi.first.math.MathUtil.applyDeadband;
 import static frc.lib.Color.Colors.WHITE;
+import static frc.robot.Constants.FieldConstants.FieldLocations.SPEAKER_CENTER;
+import static frc.robot.Constants.ShooterConstants.SPEAKER_PREP_RADIUS;
 import static frc.robot.Constants.intakeConstants.INTAKE_ANGLE.GROUND;
 import static frc.robot.Constants.intakeConstants.INTAKE_ANGLE.HUMAN_PLAYER;
 import static frc.robot.subsystems.LEDs.LEDPattern.SOLID;
@@ -30,7 +31,9 @@ public class RobotContainer {
     private final CommandPS4Controller operator = new CommandPS4Controller(1);
 
     public final SendableChooser<Command> shouldDriveToCenterLineChooser = new SendableChooser<>();
+
     public boolean shooterWorks = true;
+    public final Trigger isAtSpeakerRadius = new Trigger(()-> swerve.getDistanceFromPose(SPEAKER_CENTER.pose2d) < SPEAKER_PREP_RADIUS);
 
     public ShuffleboardTab matchTab = Shuffleboard.getTab("Match settings");
 
@@ -52,6 +55,8 @@ public class RobotContainer {
         controller.touchpad().whileTrue(toggleMotorsIdleMode().alongWith(leds.applyPatternCommand(SOLID, WHITE.color)));
         controller.PS().onTrue(swerve.resetOdometryAngleCommand());
 
+        shooter.setDefaultCommand(shooter.prepShooterCommand(isAtSpeakerRadius, intake));
+
         // manual actions
         // if the shooter doesn't work, we shoot the note from the intake
         operator.circle().toggleOnTrue(new ConditionalCommand(
@@ -62,6 +67,9 @@ public class RobotContainer {
         operator.triangle().toggleOnTrue(shooter.shootFromWooferCommand());
         operator.square().toggleOnTrue(intake.intakeFromAngleCommand(HUMAN_PLAYER));
         operator.cross().toggleOnTrue(intake.intakeFromAngleCommand(GROUND));
+
+        // automated actions
+
     }
 
     // methods
@@ -69,6 +77,13 @@ public class RobotContainer {
         return new ParallelCommandGroup(
                 shooterCommand,
                 new WaitUntilCommand(shooter.shooterReady).andThen(intake.transportToShooterCommand()));
+    }
+
+    public Command scoreNoteCommand(Command swerveCommand, Command shooterCommand){
+        return new SequentialCommandGroup(
+                swerveCommand.deadlineWith(shooter.prepShooterCommand()),
+                scoreNoteCommand(shooterCommand)
+        );
     }
 
     public Command toggleMotorsIdleMode() {

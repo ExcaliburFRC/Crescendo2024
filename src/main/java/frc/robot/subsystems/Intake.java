@@ -20,7 +20,7 @@ public class Intake extends SubsystemBase {
     private final DutyCycleEncoder intakeEncoder = new DutyCycleEncoder(INTAKE_ENCODER_ID);
 
     private final DigitalInput beamBreak = new DigitalInput(0);
-    private final Trigger hasNoteTrigger = new Trigger(beamBreak::get);
+    public final Trigger hasNoteTrigger = new Trigger(beamBreak::get);
 
     private final PIDController anglePIDcontroller = new PIDController(PID_GAINS.kp, PID_GAINS.ki, PID_GAINS.kd);
     private final ArmFeedforward angleFFcontroller = new ArmFeedforward(FF_ANGLE_GAINS.ks, FF_ANGLE_GAINS.kg, FF_ANGLE_GAINS.kv);

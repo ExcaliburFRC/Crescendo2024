@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.Neo;
+import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.shooter.ShooterState.LinearState;
 
 import java.util.function.BooleanSupplier;
@@ -47,12 +48,14 @@ public class Shooter extends SubsystemBase {
         shooterFollower.follow(shooter, true);
         linearFollower.follow(linear);
 
+        shooter.setIdleMode(kCoast);
+        shooterFollower.setIdleMode(kCoast);
+
         shooterPID.setTolerance(SHOOTER_PID_TOLERANCE);
         linearPID.setTolerance(LINEAR_PID_TOLERANCE);
 
         shooter.setSmartCurrentLimit(SHOOTER_CURRENT_LIMIT);
         linear.setSmartCurrentLimit(LINEAR_CURRENT_LIMIT);
-
     }
 
     private void setShooterRPM(double setpoint) {
@@ -90,18 +93,16 @@ public class Shooter extends SubsystemBase {
         return this.runEnd(()-> setShooterRPM(new ShooterState(distance.getAsDouble()).RPM), shooter::stopMotor);
     }
 
-    public Command prepShooterCommand(BooleanSupplier amp, BooleanSupplier speaker, BooleanSupplier hasNote) {
-        return new RunCommand(() -> {
-            if (hasNote.getAsBoolean()) {
-                if (amp.getAsBoolean()) {
-                    shooter.set(AMP_PREP_DC);
-                } else if (speaker.getAsBoolean()) {
-                    shooter.set(SPEAKER_PREP_DC);
-                } else {
-                    shooter.stopMotor();
-                }
-            } else shooter.stopMotor();
-        }, this);
+    public Command prepShooterCommand(Trigger isAtSpeakerRadius, Intake intake) {
+        return new ConditionalCommand(
+                prepShooterCommand(),
+                Commands.runOnce(shooter::stopMotor, this),
+                isAtSpeakerRadius.and(intake.isAtShooterTrigger).and(intake.hasNoteTrigger))
+                .repeatedly();
+    }
+
+    public Command prepShooterCommand() {
+        return this.runOnce(()-> shooter.set(SPEAKER_PREP_DC));
     }
 
     public Command manualShooterCommand(DoubleSupplier speed) {
