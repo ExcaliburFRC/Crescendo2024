@@ -1,16 +1,12 @@
 package frc.robot;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ConditionalCommand;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.shooter.Shooter;
@@ -20,9 +16,10 @@ import static edu.wpi.first.math.MathUtil.applyDeadband;
 import static edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction.kForward;
 import static edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction.kReverse;
 import static frc.lib.Color.Colors.WHITE;
-import static frc.robot.Constants.IntakeConstants.INTAKE_ANGLE.GROUND;
-import static frc.robot.Constants.IntakeConstants.INTAKE_ANGLE.HUMAN_PLAYER;
 import static frc.robot.subsystems.LEDs.LEDPattern.SOLID;
+import static frc.robot.Constants.FieldConstants.FieldLocations.*;
+import static frc.robot.Constants.intakeConstants.INTAKE_ANGLE.*;
+import static frc.robot.Constants.ShooterConstants.SPEAKER_PREP_RADIUS;
 
 public class RobotContainer {
     // subsystems
@@ -32,12 +29,14 @@ public class RobotContainer {
     private final Intake intake = new Intake();
 
     // controllers
-    private final CommandPS4Controller controller = new CommandPS4Controller(0);
+    private final CommandPS4Controller driver = new CommandPS4Controller(0);
     private final CommandPS4Controller operator = new CommandPS4Controller(1);
     private final CommandPS4Controller sysidController = new CommandPS4Controller(2);
 
     public final SendableChooser<Command> shouldDriveToCenterLineChooser = new SendableChooser<>();
+
     public boolean shooterWorks = true;
+    public final Trigger isAtSpeakerRadius = new Trigger(()-> swerve.getDistanceFromPose(SPEAKER_CENTER.pose.get()) < SPEAKER_PREP_RADIUS);
 
     public ShuffleboardTab matchTab = Shuffleboard.getTab("Match settings");
 
@@ -50,25 +49,44 @@ public class RobotContainer {
     private void configureBindings() {
         swerve.setDefaultCommand(
                 swerve.driveSwerveCommand(
-                        () -> applyDeadband(-controller.getLeftY(), 0.07),
-                        () -> applyDeadband(-controller.getLeftX(), 0.07),
-                        () -> applyDeadband(-controller.getRightX(), 0.07),
-                        controller.L2().negate(),
-                        controller::getR2Axis));
+                        () -> applyDeadband(-driver.getLeftY(), 0.07),
+                        () -> applyDeadband(-driver.getLeftX(), 0.07),
+                        () -> applyDeadband(-driver.getRightX(), 0.07),
+                        driver.L2().negate(),
+                        driver::getR2Axis));
 
-        controller.touchpad().whileTrue(toggleMotorsIdleMode().alongWith(leds.applyPatternCommand(SOLID, WHITE.color)));
-        controller.PS().onTrue(swerve.setOdometryPositionCommand(new Pose2d(0, 0, new Rotation2d(0))));
+        driver.touchpad().whileTrue(toggleMotorsIdleMode().alongWith(leds.applyPatternCommand(SOLID, WHITE.color)));
+        driver.PS().onTrue(swerve.resetOdometryAngleCommand());
 
-        operator.triangle().onTrue(shooter.shootToAmpCommand());
+        shooter.setDefaultCommand(shooter.prepShooterCommand(isAtSpeakerRadius, intake));
 
-        operator.square().onTrue(intake.intakeFromAngleCommand(HUMAN_PLAYER));
-        operator.cross().onTrue(intake.intakeFromAngleCommand(GROUND));
-
-        operator.square().onTrue(new ConditionalCommand(
-                        shooter.shootToAmpCommand(),
-                        intake.shootToAmpCommand(),
-                        ()-> shooterWorks)
+        // manual actions
+        // if the shooter doesn't work, we shoot the note from the intake
+        operator.circle().toggleOnTrue(new ConditionalCommand(
+                scoreNoteCommand(shooter.shootToAmpCommand()),
+                intake.shootToAmpCommand(),
+                ()-> shooterWorks)
         );
+        operator.triangle().toggleOnTrue(shooter.shootFromWooferCommand());
+        operator.square().toggleOnTrue(intake.intakeFromAngleCommand(HUMAN_PLAYER));
+        operator.cross().toggleOnTrue(intake.intakeFromAngleCommand(GROUND));
+
+        // automated actions
+        // auto drive to subwoofer and shoot
+        driver.povUp().whileTrue(scoreNoteCommand(
+                swerve.pathFindToLocation(SPEAKER_CENTER),
+                shooter.shootFromWooferCommand()));
+
+        // auto drive to amp and score
+        driver.povDown().whileTrue(scoreNoteCommand(
+                swerve.pathFindToLocation(AMPLIFIER),
+                shooter.shootToAmpCommand()
+        ));
+
+        // auto aim to speaker and shoot with auto calculated RPM
+        driver.povRight().toggleOnTrue(scoreNoteCommand(
+                swerve.turnToLocationCommand(SPEAKER),
+                shooter.shootFromDistanceCommand(()-> swerve.getDistanceFromPose(SPEAKER.pose.get()))));
 
         sysidController.circle().whileTrue(intake.sysIdQuasistatic(kForward));
         sysidController.cross().whileTrue(intake.sysIdQuasistatic(kReverse));
@@ -77,18 +95,30 @@ public class RobotContainer {
     }
 
     // methods
+    public Command scoreNoteCommand(Command shooterCommand){
+        return new ParallelCommandGroup(
+                shooterCommand,
+                new WaitUntilCommand(shooter.shooterReady).andThen(intake.transportToShooterCommand()));
+    }
+
+    public Command scoreNoteCommand(Command swerveCommand, Command shooterCommand){
+        return new SequentialCommandGroup(
+                swerveCommand.deadlineWith(shooter.prepShooterCommand()),
+                scoreNoteCommand(shooterCommand)
+        );
+    }
+
     public Command toggleMotorsIdleMode() {
         return new ParallelCommandGroup(
-                swerve.toggleIdleModeCommand()
-                // add other subsystems here
+                swerve.toggleIdleModeCommand(),
+                shooter.toggleIdleModeCommand(),
+                intake.toggleIdleModeCommand()
         );
     }
 
     private void initSendableChoosers(){
         shouldDriveToCenterLineChooser.setDefaultOption("don't Drive", Commands.none());
         shouldDriveToCenterLineChooser.addOption("drive", Commands.idle()); // this is my commandddd!!
-
-        matchTab.addBoolean("Shooter works", ()-> shooterWorks);
     }
 
     public Command getAutonomousCommand(){

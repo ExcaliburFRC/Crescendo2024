@@ -136,6 +136,10 @@ public class Swerve extends SubsystemBase {
         odometry.resetPosition(getGyroRotation2d(), getModulesPositions(), pose);
     }
 
+    public double getDistanceFromPose(Pose2d pose){
+        return getPose2d().getTranslation().getDistance(pose.getTranslation());
+    }
+
     public Pose2d getPose2d() {
         return odometry.getEstimatedPosition();
     }
@@ -244,6 +248,10 @@ public class Swerve extends SubsystemBase {
                         () -> anglePIDcontroller.calculate(getOdometryRotation2d().getDegrees(), setpoint),
                         () -> false).until(new Trigger(anglePIDcontroller::atSetpoint).debounce(0.1)),
                 setClosedLoop(false));
+    }
+
+    public Command turnToLocationCommand(FieldLocations location){
+        return turnToAngleCommand(getPose2d().minus(location.pose.get()).getRotation().getDegrees());
     }
 
     // other methods

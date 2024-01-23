@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import com.revrobotics.CANSparkBase.IdleMode;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.units.*;
@@ -15,7 +16,7 @@ import java.util.function.DoubleSupplier;
 
 import static edu.wpi.first.units.MutableMeasure.mutable;
 import static edu.wpi.first.units.Units.*;
-import static frc.robot.Constants.IntakeConstants.*;
+import static frc.robot.Constants.intakeConstants.*;
 
 public class Intake extends SubsystemBase {
     private final Neo intakeMotor = new Neo(INTAKE_MOTOR_ID);
@@ -24,10 +25,10 @@ public class Intake extends SubsystemBase {
     private final DutyCycleEncoder intakeEncoder = new DutyCycleEncoder(INTAKE_ENCODER_ID);
 
     private final DigitalInput beamBreak = new DigitalInput(0);
-    private final Trigger hasNoteTrigger = new Trigger(beamBreak::get);
+    public final Trigger hasNoteTrigger = new Trigger(beamBreak::get);
 
     private final PIDController anglePIDcontroller = new PIDController(PID_GAINS.kp, PID_GAINS.ki, PID_GAINS.kd);
-    private final ArmFeedforward angleFFcontroller = new ArmFeedforward(FF_ANGLE_GAINS.ks,FF_ANGLE_GAINS.kg, FF_ANGLE_GAINS.kv);
+    private final ArmFeedforward angleFFcontroller = new ArmFeedforward(FF_ANGLE_GAINS.ks, FF_ANGLE_GAINS.kg, FF_ANGLE_GAINS.kv);
 
     public final Trigger isAtShooterTrigger = new Trigger(() -> Math.abs(getAngle() - INTAKE_ANGLE.SHOOTER.angle) < SHOOTER_ANGLE_THRESHOLD).debounce(0.2);
 
@@ -48,12 +49,12 @@ public class Intake extends SubsystemBase {
         return new RunCommand(() -> intakeMotor.set(speed));
     }
 
-    private Command ejectNoteCommand(){
-       return setRollerSpeedCommand(-0.5);
+    private Command ejectNoteCommand() {
+        return setRollerSpeedCommand(-0.5);
     }
 
-    public Command stallIntakeMotor(){
-        return new RunCommand(()-> {
+    public Command stallIntakeMotor() {
+        return new RunCommand(() -> {
             if (hasNoteTrigger.getAsBoolean()) intakeMotor.set(STALL_DC);
             else intakeMotor.stopMotor();
         });
@@ -61,20 +62,21 @@ public class Intake extends SubsystemBase {
 
     private Command setIntakeAngleCommand(INTAKE_ANGLE angle) {
         return new FunctionalCommand(
-          () -> {},
-          () -> {
-              double pid = anglePIDcontroller.calculate(getAngle(), angle.angle);
-              double ff = angleFFcontroller.calculate(Math.toRadians(angle.angle), 0);
-              double output = pid + (ff / 60.0);
+                () -> {
+                },
+                () -> {
+                    double pid = anglePIDcontroller.calculate(getAngle(), angle.angle);
+                    double ff = angleFFcontroller.calculate(Math.toRadians(angle.angle), 0);
+                    double output = pid + (ff / 60.0);
 
-              angleMotor.setVoltage(output);
-          },
-          (__) -> angleMotor.stopMotor(),
-          () -> false
+                    angleMotor.setVoltage(output);
+                },
+                (__) -> angleMotor.stopMotor(),
+                () -> false
         );
     }
 
-    public Command intakeFromAngleCommand(INTAKE_ANGLE angle){
+    public Command intakeFromAngleCommand(INTAKE_ANGLE angle) {
         return new ParallelCommandGroup(
                 setIntakeAngleCommand(angle),
                 setRollerSpeedCommand(0.5),
@@ -82,7 +84,7 @@ public class Intake extends SubsystemBase {
                 .until(hasNoteTrigger);
     }
 
-    public Command shootToAmpCommand(){
+    public Command shootToAmpCommand() {
         return new ParallelCommandGroup(
                 setIntakeAngleCommand(INTAKE_ANGLE.AMP),
                 setRollerSpeedCommand(AMP_SHOOTER_DC),
@@ -90,7 +92,7 @@ public class Intake extends SubsystemBase {
                 .until(hasNoteTrigger.negate());
     }
 
-    private Command transportToShooterCommand(){
+    public Command transportToShooterCommand() {
         return new ConditionalCommand(
                 ejectNoteCommand(),
                 Commands.none(),
@@ -99,26 +101,33 @@ public class Intake extends SubsystemBase {
 
     public Command resetIntakeCommand() {
         return new ParallelCommandGroup(
-          setIntakeAngleCommand(INTAKE_ANGLE.SHOOTER),
-          stallIntakeMotor(),
-          requirement());
+                setIntakeAngleCommand(INTAKE_ANGLE.SHOOTER),
+                stallIntakeMotor(),
+                requirement());
     }
 
     private Command requirement() {
-        return this.run(()-> {});
+        return this.run(() -> {
+        });
     }
 
     public Command manualCommand(DoubleSupplier speed, DoubleSupplier angle) {
         return this.runEnd(
-                ()-> {
+                () -> {
                     intakeMotor.set(speed.getAsDouble());
                     angleMotor.set(angle.getAsDouble());
                 },
-                ()-> {
+                () -> {
                     intakeMotor.stopMotor();
                     angleMotor.stopMotor();
                 }
         );
+    }
+
+    public Command toggleIdleModeCommand() {
+        return new StartEndCommand(
+                () -> angleMotor.setIdleMode(IdleMode.kCoast),
+                () -> angleMotor.setIdleMode(IdleMode.kBrake));
     }
 
     // SysId stuff

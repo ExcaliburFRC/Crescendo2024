@@ -6,17 +6,21 @@ import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.units.*;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.event.BooleanEvent;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.Neo;
+import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.shooter.ShooterState.LinearState;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
+import static com.revrobotics.CANSparkBase.IdleMode.kBrake;
+import static com.revrobotics.CANSparkBase.IdleMode.kCoast;
 import static edu.wpi.first.units.MutableMeasure.mutable;
 import static edu.wpi.first.units.Units.*;
 import static edu.wpi.first.units.Units.RPM;
@@ -30,7 +34,8 @@ public class Shooter extends SubsystemBase {
     private final Neo linearFollower = new Neo(LINEAR_FOLLOWER_MOTOR_ID);
 
     private final DigitalInput beamBreak = new DigitalInput(SHOOTER_BEAMBREAK_CHANNEL);
-    public final Trigger noteTrigger = new Trigger(beamBreak::get);
+    public final BooleanEvent noteShotTrigger =
+            new BooleanEvent(CommandScheduler.getInstance().getDefaultButtonLoop(), beamBreak::get).falling().debounce(0.2);
 
     private final PIDController shooterPID = new PIDController(SHOOTER_PID.kp, SHOOTER_PID.ki, SHOOTER_PID.kd);
     private final SimpleMotorFeedforward shooterFF = new SimpleMotorFeedforward(SHOOTER_FF.ks, SHOOTER_FF.kv, SHOOTER_FF.ka);
@@ -51,8 +56,14 @@ public class Shooter extends SubsystemBase {
         shooterFollower.follow(shooter, true);
         linearFollower.follow(linear);
 
+        shooter.setIdleMode(kCoast);
+        shooterFollower.setIdleMode(kCoast);
+
         shooterPID.setTolerance(SHOOTER_PID_TOLERANCE);
         linearPID.setTolerance(LINEAR_PID_TOLERANCE);
+
+        shooter.setSmartCurrentLimit(SHOOTER_CURRENT_LIMIT);
+        linear.setSmartCurrentLimit(LINEAR_CURRENT_LIMIT);
     }
 
     private void setShooterRPM(double setpoint) {
@@ -66,45 +77,64 @@ public class Shooter extends SubsystemBase {
         linear.set(linearPID.calculate(state.length, linear.getVelocity()));
     }
 
-    public Command setShooterState(ShooterState state) {
+    private Command setShooterState(ShooterState state) {
         return this.runEnd(
-                ()-> {
+                () -> {
                     setShooterRPM(state.RPM);
                     setLinearSetpoint(state.linearState);
-                }, shooter::stopMotor);
+                }, shooter::stopMotor).until(noteShotTrigger);
+    }
+
+    public Command closeLinearCommand() {
+        return this.runEnd(() -> setLinearSetpoint(LinearState.CLOSE), linear::stopMotor).until(linearAtSetpoint);
     }
 
     public Command shootToAmpCommand() {
-        return setShooterState(new ShooterState(AMP_RPM, true));
+        return setShooterState(new ShooterState(AMP_RPM)).andThen(closeLinearCommand());
     }
 
     public Command shootFromWooferCommand() {
-        return setShooterState(new ShooterState(WOOFER_RPM, false));
+        return setShooterState(new ShooterState(WOOFER_RPM));
     }
 
-    public Command shootFromDistanceCommand(double distance) {
-        return setShooterState(new ShooterState(distance));
+    public Command shootFromDistanceCommand(DoubleSupplier distance) {
+        return this.runEnd(()-> setShooterRPM(new ShooterState(distance.getAsDouble()).RPM), shooter::stopMotor);
     }
 
-    public Command prepShooterCommand(BooleanSupplier amp, BooleanSupplier speaker, BooleanSupplier hasNote) {
-        return new RunCommand(() -> {
-            if (hasNote.getAsBoolean()) {
-                if (amp.getAsBoolean()) {
-                    shooter.set(AMP_PREP_DC);
-                } else if (speaker.getAsBoolean()) {
-                    shooter.set(SPEAKER_PREP_DC);
-                } else {
-                    shooter.stopMotor();
-                }
-            } else shooter.stopMotor();
-        }, this);
-    };
+    public Command prepShooterCommand(Trigger isAtSpeakerRadius, Intake intake) {
+        return new ConditionalCommand(
+                prepShooterCommand(),
+                Commands.runOnce(shooter::stopMotor, this),
+                isAtSpeakerRadius.and(intake.isAtShooterTrigger).and(intake.hasNoteTrigger))
+                .repeatedly();
+    }
+
+    public Command prepShooterCommand() {
+        return this.runOnce(()-> shooter.set(SPEAKER_PREP_DC));
+    }
 
     public Command manualShooterCommand(DoubleSupplier speed) {
         return new RunCommand(() -> {
             linear.set(speed.getAsDouble());
             shooter.set(shooterSpeed.getDouble(0));
         }, this);
+    }
+
+    public Command toggleIdleModeCommand() {
+        return new StartEndCommand(
+                () -> {
+                    linear.setIdleMode(kCoast);
+                    linearFollower.setIdleMode(kCoast);
+                    shooter.setIdleMode(kCoast);
+                    shooterFollower.setIdleMode(kCoast);
+                },
+                () -> {
+                    linear.setIdleMode(kBrake);
+                    linearFollower.setIdleMode(kBrake);
+                    shooter.setIdleMode(kBrake);
+                    shooterFollower.setIdleMode(kBrake);
+                }
+        );
     }
 
     // sysid stuff
