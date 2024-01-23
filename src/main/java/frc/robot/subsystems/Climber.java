@@ -97,9 +97,7 @@ public class Climber extends SubsystemBase {
 
                         TrapezoidProfile.State setpoint = trapezoidProfile.calculate(timer.get(), currentState, goalState);
                         double feedForward = Math.signum(setpoint.velocity) * motor.getGains().ks +
-                                motor.getGains().kv * currentState.velocity +
-                                motor.getGains().kg
-                                + liftingForce;
+                                motor.getGains().kv * currentState.velocity + motor.getGains().kg + liftingForce;
 
                         motor.setReference(setpoint.position, CANSparkBase.ControlType.kPosition, 0, feedForward);
                     },
