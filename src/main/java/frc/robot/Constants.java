@@ -8,17 +8,11 @@ import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.Measure;
-import edu.wpi.first.units.Time;
-import edu.wpi.first.units.Velocity;
-import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.Gains;
 import frc.lib.SysIdConfig;
 import frc.robot.util.AllianceUtils.AlliancePose;
 
-import static edu.wpi.first.units.Units.*;
-import static frc.robot.util.PositionUtils.getPose;
 import static java.lang.Math.PI;
 
 /**
@@ -117,6 +111,9 @@ public final class Constants {
         public static final int LINEAR_LEADER_MOTOR_ID = 33;
         public static final int LINEAR_FOLLOWER_MOTOR_ID = 34;
 
+        public static final int SHOOTER_CURRENT_LIMIT = 70;
+        public static final int LINEAR_CURRENT_LIMIT = 40;
+
         public static final int SHOOTER_BEAMBREAK_CHANNEL = 0;
 
         public static final Gains SHOOTER_PID = new Gains(0,0,0);
@@ -131,12 +128,13 @@ public final class Constants {
         public static final double SHOOTER_PID_TOLERANCE = 100;
         public static final double LINEAR_PID_TOLERANCE = 0.01;
 
-        public static final double AMP_PREP_DC = 0;
         public static final double SPEAKER_PREP_DC = 0;
+        public static final double SPEAKER_PREP_RADIUS = 0;
 
         public static final double ROT_TO_DEGREES = 0;
         public static final double RPM_TO_DEG_PER_SEC = 0;
 
+        // sysid
         private static final double RAMP_RATE = 3;
         private static final double STEP_VOLTAGE = 0.5;
         private static final double TIMEOUT = 10;

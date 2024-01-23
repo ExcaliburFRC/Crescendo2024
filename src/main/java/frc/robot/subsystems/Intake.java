@@ -16,7 +16,7 @@ import java.util.function.DoubleSupplier;
 
 import static edu.wpi.first.units.MutableMeasure.mutable;
 import static edu.wpi.first.units.Units.*;
-import static frc.robot.Constants.intakeConstants.*;
+import static frc.robot.Constants.IntakeConstants.*;
 
 public class Intake extends SubsystemBase {
     private final Neo intakeMotor = new Neo(INTAKE_MOTOR_ID);
@@ -147,11 +147,11 @@ public class Intake extends SubsystemBase {
                     this
             ));
 
-    public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
+    public Command sysidQuasistatic(SysIdRoutine.Direction direction) {
         return angleSysid.quasistatic(direction);
     }
 
-    public Command sysIdDynamic(SysIdRoutine.Direction direction) {
+    public Command sysidDynamic(SysIdRoutine.Direction direction) {
         return angleSysid.dynamic(direction);
     }
 
