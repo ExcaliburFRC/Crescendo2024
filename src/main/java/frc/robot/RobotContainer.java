@@ -50,43 +50,41 @@ public class RobotContainer {
                         controller::getR2Axis));
 
         controller.touchpad().whileTrue(toggleMotorsIdleMode().alongWith(leds.applyPatternCommand(SOLID, WHITE.color)));
-        controller.PS().onTrue(swerve.setOdometryPositionCommand(new Pose2d(0, 0, new Rotation2d(0))));
+        controller.PS().onTrue(swerve.resetOdometryAngleCommand());
 
-        operator.triangle().onTrue(shooter.shootToAmpCommand());
-
-        operator.square().onTrue(intake.intakeFromAngleCommand(HUMAN_PLAYER));
-        operator.cross().onTrue(intake.intakeFromAngleCommand(GROUND));
-
-        operator.square().onTrue(new ConditionalCommand(
-                        shooter.shootToAmpCommand(),
-                        intake.shootToAmpCommand(),
-                        ()-> shooterWorks)
+        // manual actions
+        // if the shooter doesn't work, we shoot the note from the intake
+        operator.circle().toggleOnTrue(new ConditionalCommand(
+                scoreNoteCommand(shooter.shootToAmpCommand()),
+                intake.shootToAmpCommand(),
+                ()-> shooterWorks)
         );
+        operator.triangle().toggleOnTrue(shooter.shootFromWooferCommand());
+        operator.square().toggleOnTrue(intake.intakeFromAngleCommand(HUMAN_PLAYER));
+        operator.cross().toggleOnTrue(intake.intakeFromAngleCommand(GROUND));
     }
 
     // methods
+    public Command scoreNoteCommand(Command shooterCommand){
+        return new ParallelCommandGroup(
+                shooterCommand,
+                new WaitUntilCommand(shooter.shooterReady).andThen(intake.transportToShooterCommand()));
+    }
+
     public Command toggleMotorsIdleMode() {
         return new ParallelCommandGroup(
                 swerve.toggleIdleModeCommand(),
-                shooter.toggleIdleModeCommand()
-                // add other subsystems here
+                shooter.toggleIdleModeCommand(),
+                intake.toggleIdleModeCommand()
         );
     }
 
     private void initSendableChoosers(){
         shouldDriveToCenterLineChooser.setDefaultOption("don't Drive", Commands.none());
         shouldDriveToCenterLineChooser.addOption("drive", Commands.idle()); // this is my commandddd!!
-
-        matchTab.addBoolean("Shooter works", ()-> shooterWorks);
-    }
-    public Command ScoreNoteCommand(Command shooterCommand){
-        return new ParallelCommandGroup(
-                shooterCommand,
-                new WaitUntilCommand(shooter.shooterReady).andThen(intake.transportToShooterCommand()));
     }
 
     public Command getAutonomousCommand(){
         return Commands.none();
     }
-
 }
