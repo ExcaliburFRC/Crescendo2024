@@ -12,11 +12,14 @@ import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.swerve.Swerve;
 
 import static edu.wpi.first.math.MathUtil.applyDeadband;
+import static edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction.kForward;
+import static edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction.kReverse;
 import static frc.lib.Color.Colors.WHITE;
+import static frc.robot.Constants.IntakeConstants.INTAKE_ANGLE.GROUND;
+import static frc.robot.Constants.IntakeConstants.INTAKE_ANGLE.HUMAN_PLAYER;
+import static frc.robot.Constants.ShooterConstants.SPEAKER_PREP_RADIUS;
 import static frc.robot.subsystems.LEDs.LEDPattern.SOLID;
 import static frc.robot.Constants.FieldConstants.FieldLocations.*;
-import static frc.robot.Constants.intakeConstants.INTAKE_ANGLE.*;
-import static frc.robot.Constants.ShooterConstants.SPEAKER_PREP_RADIUS;
 
 public class RobotContainer {
     // subsystems
@@ -28,6 +31,7 @@ public class RobotContainer {
     // controllers
     private final CommandPS4Controller driver = new CommandPS4Controller(0);
     private final CommandPS4Controller operator = new CommandPS4Controller(1);
+    private final CommandPS4Controller sysidController = new CommandPS4Controller(2);
 
     public final SendableChooser<Command> shouldDriveToCenterLineChooser = new SendableChooser<>();
 
@@ -83,6 +87,12 @@ public class RobotContainer {
         driver.povRight().toggleOnTrue(scoreNoteCommand(
                 swerve.turnToLocationCommand(SPEAKER),
                 shooter.shootFromDistanceCommand(()-> swerve.getDistanceFromPose(SPEAKER.pose.get()))));
+
+        // sysid
+        sysidController.circle().whileTrue(intake.sysidQuasistatic(kForward));
+        sysidController.cross().whileTrue(intake.sysidQuasistatic(kReverse));
+        sysidController.triangle().whileTrue(intake.sysidDynamic(kForward));
+        sysidController.square().whileTrue(intake.sysidDynamic(kReverse));
     }
 
     // methods
