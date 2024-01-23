@@ -15,8 +15,7 @@ import static edu.wpi.first.math.MathUtil.applyDeadband;
 import static edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction.kForward;
 import static edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction.kReverse;
 import static frc.lib.Color.Colors.WHITE;
-import static frc.robot.Constants.IntakeConstants.INTAKE_ANGLE.GROUND;
-import static frc.robot.Constants.IntakeConstants.INTAKE_ANGLE.HUMAN_PLAYER;
+import static frc.robot.Constants.IntakeConstants.INTAKE_ANGLE.*;
 import static frc.robot.Constants.ShooterConstants.SPEAKER_PREP_RADIUS;
 import static frc.robot.subsystems.LEDs.LEDPattern.SOLID;
 import static frc.robot.Constants.FieldConstants.FieldLocations.*;
@@ -96,6 +95,14 @@ public class RobotContainer {
     }
 
     // methods
+    public Command matchPrepCommand() {
+        return new SequentialCommandGroup(
+                swerve.straightenModulesCommand(),
+                shooter.closeLinearCommand(),
+                intake.setIntakeAngleCommand(SHOOTER)
+        );
+    }
+
     public Command scoreNoteCommand(Command shooterCommand){
         return new ParallelCommandGroup(
                 shooterCommand,

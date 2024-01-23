@@ -60,7 +60,7 @@ public class Intake extends SubsystemBase {
         });
     }
 
-    private Command setIntakeAngleCommand(INTAKE_ANGLE angle) {
+    public Command setIntakeAngleCommand(INTAKE_ANGLE angle) {
         return new FunctionalCommand(
                 () -> {
                 },
