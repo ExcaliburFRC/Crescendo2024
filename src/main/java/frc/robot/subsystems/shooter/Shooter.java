@@ -111,15 +111,19 @@ public class Shooter extends SubsystemBase {
         }, this);
     }
 
-    public Command toggleidleModeCommand() {
+    public Command toggleIdleModeCommand() {
         return new StartEndCommand(
                 () -> {
                     linear.setIdleMode(kCoast);
+                    linearFollower.setIdleMode(kCoast);
                     shooter.setIdleMode(kCoast);
+                    shooterFollower.setIdleMode(kCoast);
                 },
                 () -> {
                     linear.setIdleMode(kBrake);
+                    linearFollower.setIdleMode(kBrake);
                     shooter.setIdleMode(kBrake);
+                    shooterFollower.setIdleMode(kBrake);
                 }
         );
     }

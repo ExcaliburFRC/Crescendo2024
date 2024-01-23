@@ -68,7 +68,7 @@ public class RobotContainer {
     public Command toggleMotorsIdleMode() {
         return new ParallelCommandGroup(
                 swerve.toggleIdleModeCommand(),
-                shooter.toggleidleModeCommand()
+                shooter.toggleIdleModeCommand()
                 // add other subsystems here
         );
     }
