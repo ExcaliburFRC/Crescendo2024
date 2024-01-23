@@ -38,10 +38,11 @@ public class RobotContainer {
     public final Trigger isAtSpeakerRadius = new Trigger(()-> swerve.getDistanceFromPose(SPEAKER_CENTER.pose.get()) < SPEAKER_PREP_RADIUS);
 
     public ShuffleboardTab matchTab = Shuffleboard.getTab("Match settings");
+    public ShuffleboardTab pitTab = Shuffleboard.getTab("pit");
 
     public RobotContainer(){
         configureBindings();
-        initSendableChoosers();
+        initShuffleBoard();
     }
 
     // bindings
@@ -124,9 +125,12 @@ public class RobotContainer {
         );
     }
 
-    private void initSendableChoosers(){
+    private void initShuffleBoard(){
         shouldDriveToCenterLineChooser.setDefaultOption("don't Drive", Commands.none());
         shouldDriveToCenterLineChooser.addOption("drive", Commands.idle()); // this is my commandddd!!
+
+        pitTab.add("Match prep", matchPrepCommand());
+
     }
 
     public Command getAutonomousCommand(){
