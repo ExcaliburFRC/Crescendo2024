@@ -5,13 +5,12 @@
 package frc.robot;
 
 import com.pathplanner.lib.path.PathConstraints;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
 import frc.lib.Gains;
+import frc.robot.util.AllianceUtils.AlliancePose;
 
-import static frc.robot.util.PositionUtils.getPose;
 import static java.lang.Math.PI;
 
 /**
@@ -103,39 +102,7 @@ public final class Constants {
 
     }
 
-    public static final class IntakeConstants {
-        public static final Gains PID_GAINS = new Gains(0, 0, 0);
-        public static final Gains FF_ANGLE_GAINS = new Gains(0, 0, 0);
-
-        public static final int INTAKE_MOTOR_ID = 0;
-        public static final int ANGLE_MOTOR_ID = 0;
-
-        public static final int INTAKE_ENCODER_ID = 0;
-
-        public static final double INTAKE_MOTOR_POSITION_CONVERSION_FACTOR = 0;
-        public static final double INTAKE_MOTOR_VELOCITY_CONVERSION_FACTOR = 0;
-
-        public static final double INTAKE_ENCODER_OFFSET_POSITION = 0;
-        public static final int SHOOTER_ANGLE_THRESHOLD = 2;
-
-        public static final double AMP_SHOOTER_DC = -0.5;
-        public static final double STALL_DC = 0.1;
-
-        public enum INTAKE_ANGLE {
-            GROUND(0),
-            AMP(0),
-            HUMAN_PLAYER(0),
-            SHOOTER(0);
-
-            public final int angle;
-
-            INTAKE_ANGLE(int angle) {
-                this.angle = angle;
-            }
-        }
-    }
-
-    public static final class IntakeConstants {
+    public static final class intakeConstants {
         public static final Gains PID_GAINS = new Gains(0, 0, 0);
         public static final Gains FF_ANGLE_GAINS = new Gains(0, 0, 0);
 
@@ -173,41 +140,38 @@ public final class Constants {
 
         public enum FieldLocations {
             // Human player locations
-            HM_LEFT("HMLeft", getPose(16.01, 1.21, -60)),
-            HM_CENTER("HMCenter", getPose(15.45, 0.9, -60)),
-            HM_RIGHT("HMRight", getPose(14.95, 0.56, -60)),
+            HM_LEFT("HMLeft", new AlliancePose(16.01, 1.21, -60)),
+            HM_CENTER("HMCenter", new AlliancePose(15.45, 0.9, -60)),
+            HM_RIGHT("HMRight", new AlliancePose(14.95, 0.56, -60)),
 
             // Speaker locations,
-            SPEAKER_TOP("SpeakerTop", getPose(0.82, 6.61, 60)),
-            SPEAKER_CENTER("SpeakerCenter", getPose(1.32, 5.6, 0)),
-            SPEAKER_BOTTOM("SpeakerBottom", getPose(0.71, 4.51, 120)),
+            SPEAKER_TOP("SpeakerTop", new AlliancePose(0.82, 6.61, 60)),
+            SPEAKER_CENTER("SpeakerCenter", new AlliancePose(1.32, 5.6, 0)),
+            SPEAKER_BOTTOM("SpeakerBottom", new AlliancePose(0.71, 4.51, 120)),
 
-            AMPLIFIER("Amp", getPose(1.86, 7.68, 90)),
-            PODIUM("Podium", getPose(2.86, 4.09, -28));
+            AMPLIFIER("Amp", new AlliancePose(1.86, 7.68, 90)),
+            SPEAKER("", new AlliancePose(0, 5.56, 0)),
+            PODIUM("Podium", new AlliancePose(2.86, 4.09, -28));
 
             public String pathName;
-            public Pose2d pose2d;
+            public AlliancePose pose;
 
-            FieldLocations(String pathName, Pose2d pose) {
+            FieldLocations(String pathName, AlliancePose pose) {
                 this.pathName = pathName;
-                this.pose2d = pose;
-
+                this.pose = pose;
             }
         }
     }
 
-    public static class LedsConstants {
-
-        public static final int LEDS_PORT = 0; // pwm
-        public static final int LENGTH = 0;
-
-    }
     public static final class ShooterConstants {
         public static final int SHOOTER_LEADER_MOTOR_ID = 31;
         public static final int SHOOTER_FOLLOWER_MOTOR_ID = 32;
 
         public static final int LINEAR_LEADER_MOTOR_ID = 33;
         public static final int LINEAR_FOLLOWER_MOTOR_ID = 34;
+
+        public static final int SHOOTER_CURRENT_LIMIT = 0;
+        public static final int LINEAR_CURRENT_LIMIT = 0;
 
         public static final int SHOOTER_BEAMBREAK_CHANNEL = 0;
 
@@ -223,7 +187,15 @@ public final class Constants {
         public static final double SHOOTER_PID_TOLERANCE = 100;
         public static final double LINEAR_PID_TOLERANCE = 0.01;
 
-        public static final double AMP_PREP_DC = 0;
         public static final double SPEAKER_PREP_DC = 0;
+        public static final double SPEAKER_PREP_RADIUS = 0;
+
+    }
+
+    public static class LedsConstants {
+
+        public static final int LEDS_PORT = 0; // pwm
+        public static final int LENGTH = 0;
+
     }
 }
