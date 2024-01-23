@@ -5,13 +5,12 @@
 package frc.robot;
 
 import com.pathplanner.lib.path.PathConstraints;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
 import frc.lib.Gains;
+import frc.robot.util.AllianceUtils.AlliancePose;
 
-import static frc.robot.util.PositionUtils.getPose;
 import static java.lang.Math.PI;
 
 /**
@@ -141,26 +140,25 @@ public final class Constants {
 
         public enum FieldLocations {
             // Human player locations
-            HM_LEFT("HMLeft", getPose(16.01, 1.21, -60)),
-            HM_CENTER("HMCenter", getPose(15.45, 0.9, -60)),
-            HM_RIGHT("HMRight", getPose(14.95, 0.56, -60)),
+            HM_LEFT("HMLeft", new AlliancePose(16.01, 1.21, -60)),
+            HM_CENTER("HMCenter", new AlliancePose(15.45, 0.9, -60)),
+            HM_RIGHT("HMRight", new AlliancePose(14.95, 0.56, -60)),
 
             // Speaker locations,
-            SPEAKER_TOP("SpeakerTop", getPose(0.82, 6.61, 60)),
-            SPEAKER_CENTER("SpeakerCenter", getPose(1.32, 5.6, 0)),
-            SPEAKER_BOTTOM("SpeakerBottom", getPose(0.71, 4.51, 120)),
+            SPEAKER_TOP("SpeakerTop", new AlliancePose(0.82, 6.61, 60)),
+            SPEAKER_CENTER("SpeakerCenter", new AlliancePose(1.32, 5.6, 0)),
+            SPEAKER_BOTTOM("SpeakerBottom", new AlliancePose(0.71, 4.51, 120)),
 
-            AMPLIFIER("Amp", getPose(1.86, 7.68, 90)),
-            SPEAKER("", getPose(0, 5.56, 0)),
-            PODIUM("Podium", getPose(2.86, 4.09, -28));
+            AMPLIFIER("Amp", new AlliancePose(1.86, 7.68, 90)),
+            SPEAKER("", new AlliancePose(0, 5.56, 0)),
+            PODIUM("Podium", new AlliancePose(2.86, 4.09, -28));
 
             public String pathName;
-            public Pose2d pose2d;
+            public AlliancePose pose;
 
-            FieldLocations(String pathName, Pose2d pose) {
+            FieldLocations(String pathName, AlliancePose pose) {
                 this.pathName = pathName;
-                this.pose2d = pose;
-
+                this.pose = pose;
             }
         }
     }

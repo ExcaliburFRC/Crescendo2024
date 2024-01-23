@@ -13,11 +13,10 @@ import frc.robot.subsystems.swerve.Swerve;
 
 import static edu.wpi.first.math.MathUtil.applyDeadband;
 import static frc.lib.Color.Colors.WHITE;
-import static frc.robot.Constants.FieldConstants.FieldLocations.SPEAKER_CENTER;
-import static frc.robot.Constants.ShooterConstants.SPEAKER_PREP_RADIUS;
-import static frc.robot.Constants.intakeConstants.INTAKE_ANGLE.GROUND;
-import static frc.robot.Constants.intakeConstants.INTAKE_ANGLE.HUMAN_PLAYER;
 import static frc.robot.subsystems.LEDs.LEDPattern.SOLID;
+import static frc.robot.Constants.FieldConstants.FieldLocations.*;
+import static frc.robot.Constants.intakeConstants.INTAKE_ANGLE.*;
+import static frc.robot.Constants.ShooterConstants.SPEAKER_PREP_RADIUS;
 
 public class RobotContainer {
     // subsystems
@@ -27,13 +26,13 @@ public class RobotContainer {
     private final Intake intake = new Intake();
 
     // controllers
-    private final CommandPS4Controller controller = new CommandPS4Controller(0);
+    private final CommandPS4Controller driver = new CommandPS4Controller(0);
     private final CommandPS4Controller operator = new CommandPS4Controller(1);
 
     public final SendableChooser<Command> shouldDriveToCenterLineChooser = new SendableChooser<>();
 
     public boolean shooterWorks = true;
-    public final Trigger isAtSpeakerRadius = new Trigger(()-> swerve.getDistanceFromPose(SPEAKER_CENTER.pose2d) < SPEAKER_PREP_RADIUS);
+    public final Trigger isAtSpeakerRadius = new Trigger(()-> swerve.getDistanceFromPose(SPEAKER_CENTER.pose.get()) < SPEAKER_PREP_RADIUS);
 
     public ShuffleboardTab matchTab = Shuffleboard.getTab("Match settings");
 
@@ -46,14 +45,14 @@ public class RobotContainer {
     private void configureBindings() {
         swerve.setDefaultCommand(
                 swerve.driveSwerveCommand(
-                        () -> applyDeadband(-controller.getLeftY(), 0.07),
-                        () -> applyDeadband(-controller.getLeftX(), 0.07),
-                        () -> applyDeadband(-controller.getRightX(), 0.07),
-                        controller.L2().negate(),
-                        controller::getR2Axis));
+                        () -> applyDeadband(-driver.getLeftY(), 0.07),
+                        () -> applyDeadband(-driver.getLeftX(), 0.07),
+                        () -> applyDeadband(-driver.getRightX(), 0.07),
+                        driver.L2().negate(),
+                        driver::getR2Axis));
 
-        controller.touchpad().whileTrue(toggleMotorsIdleMode().alongWith(leds.applyPatternCommand(SOLID, WHITE.color)));
-        controller.PS().onTrue(swerve.resetOdometryAngleCommand());
+        driver.touchpad().whileTrue(toggleMotorsIdleMode().alongWith(leds.applyPatternCommand(SOLID, WHITE.color)));
+        driver.PS().onTrue(swerve.resetOdometryAngleCommand());
 
         shooter.setDefaultCommand(shooter.prepShooterCommand(isAtSpeakerRadius, intake));
 
@@ -69,7 +68,21 @@ public class RobotContainer {
         operator.cross().toggleOnTrue(intake.intakeFromAngleCommand(GROUND));
 
         // automated actions
+        // auto drive to subwoofer and shoot
+        driver.povUp().whileTrue(scoreNoteCommand(
+                swerve.pathFindToLocation(SPEAKER_CENTER),
+                shooter.shootFromWooferCommand()));
 
+        // auto drive to amp and score
+        driver.povDown().whileTrue(scoreNoteCommand(
+                swerve.pathFindToLocation(AMPLIFIER),
+                shooter.shootToAmpCommand()
+        ));
+
+        // auto aim to speaker and shoot with auto calculated RPM
+        driver.povRight().toggleOnTrue(scoreNoteCommand(
+                swerve.turnToLocationCommand(SPEAKER),
+                shooter.shootFromDistanceCommand(()-> swerve.getDistanceFromPose(SPEAKER.pose.get()))));
     }
 
     // methods

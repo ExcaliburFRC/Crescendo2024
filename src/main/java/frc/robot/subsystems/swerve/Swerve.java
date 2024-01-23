@@ -250,6 +250,10 @@ public class Swerve extends SubsystemBase {
                 setClosedLoop(false));
     }
 
+    public Command turnToLocationCommand(FieldLocations location){
+        return turnToAngleCommand(getPose2d().minus(location.pose.get()).getRotation().getDegrees());
+    }
+
     // other methods
     private void resetAngleEncoders() {
         foreachModule(SwerveModule::resetEncoders);

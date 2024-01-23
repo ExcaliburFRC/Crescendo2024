@@ -3,6 +3,7 @@ package frc.robot.util;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 import static edu.wpi.first.wpilibj.DriverStation.Alliance.Blue;
 import static frc.robot.Constants.FieldConstants.*;
@@ -39,5 +40,17 @@ public class AllianceUtils {
                 FIELD_LENGTH_METERS - pose.getX(), FIELD_WIDTH_METERS - pose.getY(),
                 pose.getRotation().minus(Rotation2d.fromDegrees(180))
         );
+    }
+
+    public static class AlliancePose {
+        private Pose2d pose;
+
+        public AlliancePose(double x, double y, double degrees){
+            pose = new Pose2d(x, y, Rotation2d.fromDegrees(degrees));
+        }
+
+        public Pose2d get() {
+            return toAlliancePose(pose);
+        }
     }
 }
