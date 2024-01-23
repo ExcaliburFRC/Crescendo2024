@@ -6,13 +6,12 @@ package frc.robot;
 
 import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
 import frc.lib.Gains;
-import frc.robot.util.PositionUtils;
 
+import static frc.robot.util.AllianceUtils.isBlueAlliance;
 import static frc.robot.util.PositionUtils.getPose;
 import static java.lang.Math.PI;
 
@@ -134,9 +133,9 @@ public final class Constants {
             CHAIN_180(new Translation2d(0, 0), new Translation2d(0, 0), new Translation2d(0, 0)),
             CHAIN_300(new Translation2d(0, 0), new Translation2d(0, 0), new Translation2d(0, 0));
 
-            private Translation2d negEdge;
-            private Translation2d posEdge;
-            private Translation2d centerStage;
+            private final Translation2d negEdge;
+            private final Translation2d posEdge;
+            private final Translation2d centerStage;
 
             Chain(Translation2d negEdge, Translation2d posEdge, Translation2d centerStage) {
                 this.negEdge = negEdge;
@@ -152,7 +151,7 @@ public final class Constants {
                 return posEdge;
             }
 
-            public boolean inRange(Translation2d robotTranslation) {
+            private boolean inRange(Translation2d robotTranslation) {
                 double robotStageAngle =
                         Math.atan(robotTranslation.minus(centerStage).getX() / robotTranslation.minus(centerStage).getY());
                 double negAngle = Math.atan(negEdge.minus(centerStage).getX() / negEdge.minus(centerStage).getY());
@@ -162,6 +161,22 @@ public final class Constants {
                 return (robotStageAngle > posAngle && robotStageAngle > negAngle)
                         || (robotStageAngle < posAngle && robotStageAngle < negAngle);
             }
+
+            public static Chain getBestChain(Translation2d robotTranslation) {
+                Chain bestChain;
+                //recognise which chain we want to climb on
+                if (isBlueAlliance()) {
+                    if (Chain.CHAIN_0.inRange(robotTranslation)) bestChain = Chain.CHAIN_0;
+                    else if (Chain.CHAIN_120.inRange(robotTranslation)) bestChain = Chain.CHAIN_120;
+                    else bestChain = Chain.CHAIN_240;
+                } else {
+                    if (Chain.CHAIN_60.inRange(robotTranslation)) bestChain = Chain.CHAIN_60;
+                    else if (Chain.CHAIN_180.inRange(robotTranslation)) bestChain = Chain.CHAIN_180;
+                    else bestChain = Chain.CHAIN_300;
+                }
+                return bestChain;
+            }
+
             public static Translation2d getProjection(Translation2d robotPose, Chain chain) {
                 double m1 = (chain.getNegEdge().getY() - chain.getPosEdge().getY()) /
                         (chain.getNegEdge().getX() - chain.getPosEdge().getX());
@@ -177,8 +192,8 @@ public final class Constants {
             }
         }
 
-        public static final double CHAIN_LENGTH_IN_XY_METERS = 2.51;
         public static final double MINIMAL_CHAIN_HEIGHT_METERS = 0.72;
+        public static final double CHAIN_LENGTH_IN_XY_METERS = 2.51;
         public static final double CHAIN_PARABOLA_PARAMETER = 0.3174;
     }
 
