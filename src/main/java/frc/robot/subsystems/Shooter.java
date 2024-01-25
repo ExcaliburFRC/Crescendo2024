@@ -1,11 +1,13 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.units.*;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.event.BooleanEvent;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -32,8 +34,18 @@ public class Shooter extends SubsystemBase {
     public final BooleanEvent noteShotTrigger =
             new BooleanEvent(CommandScheduler.getInstance().getDefaultButtonLoop(), beamBreak::get).falling().debounce(0.2);
 
+    private final DutyCycleEncoder angleEncoder = new DutyCycleEncoder(0);
+    private final Neo angleMotor = new Neo(0);
+
+
     private final PIDController shooterPID = new PIDController(SHOOTER_PID.kp, SHOOTER_PID.ki, SHOOTER_PID.kd);
     private final SimpleMotorFeedforward shooterFF = new SimpleMotorFeedforward(SHOOTER_FF.ks, SHOOTER_FF.kv, SHOOTER_FF.ka);
+
+
+    private final PIDController anglePIDcontroller = new PIDController
+            (ANGLE_PID_GAINS.kp, ANGLE_PID_GAINS.ki, ANGLE_PID_GAINS.kd);
+    private final ArmFeedforward angleFFcontroller = new ArmFeedforward
+            (ANGLE_FF_ANGLE_GAINS.ks, ANGLE_FF_ANGLE_GAINS.kg, ANGLE_FF_ANGLE_GAINS.kv);
 
     private ShuffleboardTab shooterTab = Shuffleboard.getTab("ShooterTab");
     private final GenericEntry shooterSpeed = shooterTab.add("shootSpeedPercent", 0).getEntry();
@@ -56,7 +68,11 @@ public class Shooter extends SubsystemBase {
         metersToRPM.put(0.0, 0.0);
     }
 
-    private double getPID(double RPM){
+    private double getAngle() {
+        return angleEncoder.getDistance();
+    }
+
+    private double getPID(double RPM) {
         double pid = shooterPID.calculate(shooter.getVelocity(), RPM);
         double ff = shooterFF.calculate(RPM, 0);
 
@@ -78,7 +94,7 @@ public class Shooter extends SubsystemBase {
 
     public Command shootFromDistanceCommand(DoubleSupplier distance) {
         return this.runEnd(
-                () -> shooter.set(getPID(metersToRPM.get(distance.getAsDouble()))), shooter::stopMotor)
+                        () -> shooter.set(getPID(metersToRPM.get(distance.getAsDouble()))), shooter::stopMotor)
                 .until(noteShotTrigger);
     }
 
@@ -91,7 +107,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public Command prepShooterCommand() {
-        return this.runOnce(()-> shooter.set(SPEAKER_PREP_DC));
+        return this.runOnce(() -> shooter.set(SPEAKER_PREP_DC));
     }
 
     public Command manualShooterCommand() {
@@ -104,6 +120,22 @@ public class Shooter extends SubsystemBase {
                 () -> shooter.setIdleMode(kBrake)
         );
     }
+
+    private void setShooterAngle(SHOOTER_ANGLE angle) {
+        double pid = anglePIDcontroller.calculate(getAngle(), angle.angle);
+        double ff = angleFFcontroller.calculate(Math.toRadians(angle.angle), 0);
+
+        angleMotor.setVoltage(pid + ff);
+    }
+
+    public Command shootToAngleCommand(SHOOTER_ANGLE angle, double RPM) {
+        return this.run(
+                ()-> {
+                    setShooterAngle(angle);
+                    setShooterRPMcommand(RPM);
+                });
+    }
+
 
     // sysid stuff
     private final MutableMeasure<Voltage> appliedVoltage = mutable(Volts.of(0));
@@ -129,6 +161,31 @@ public class Shooter extends SubsystemBase {
 
     public Command sysIdDynamic(SysIdRoutine.Direction direction) {
         return shooterSysid.dynamic(direction);
+    }
+
+    // SysId stuff for shooter angle
+    private final MutableMeasure<Voltage> appliedVoltageAngle = mutable(Volts.of(0));
+    private final MutableMeasure<Angle> degreesAngle = mutable(Degrees.of(0));
+    private final MutableMeasure<Velocity<Angle>> velocityAngle = mutable(DegreesPerSecond.of(0));
+
+    private final SysIdRoutine shooterAngleSysid = new SysIdRoutine(
+            sysidConfig,
+            new SysIdRoutine.Mechanism(
+                    (Measure<Voltage> volts) -> angleMotor.setVoltage(volts.in(Volts)),
+                    log -> log.motor("angleMotor")
+                            .voltage(appliedVoltage.mut_replace(
+                                    angleEncoder.get() * RobotController.getBatteryVoltage(), Volts))
+                            .angularPosition(degrees.mut_replace(getAngle(), Degrees))
+                            .angularVelocity(velocity.mut_replace(angleMotor.getVelocity(), RPM)),
+                    this
+            ));
+
+    public Command angleSysIdQuasistatic(SysIdRoutine.Direction direction) {
+        return shooterAngleSysid.quasistatic(direction);
+    }
+
+    public Command angleSysIdDynamic(SysIdRoutine.Direction direction) {
+        return shooterAngleSysid.dynamic(direction);
     }
 
     @Override

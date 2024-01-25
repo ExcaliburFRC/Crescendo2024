@@ -105,6 +105,10 @@ public final class Constants {
     }
 
     public static final class ShooterConstants {
+
+        public static final Gains ANGLE_PID_GAINS = new Gains(0, 0, 0);
+        public static final Gains ANGLE_FF_ANGLE_GAINS = new Gains(0, 0, 0);
+
         public static final int SHOOTER_LEADER_MOTOR_ID = 31;
         public static final int SHOOTER_FOLLOWER_MOTOR_ID = 32;
 
@@ -140,6 +144,19 @@ public final class Constants {
         private static final double TIMEOUT = 10;
 
         public static final SysIdRoutine.Config sysidConfig = new SysIdConfig(RAMP_RATE, STEP_VOLTAGE, TIMEOUT);
+
+        public enum SHOOTER_ANGLE { //the names are goofy ik
+            ZERO_METER(0),
+            ONE_METER(0),
+            TWO_METER(0),
+            THREE_METER(0);
+
+            public final int angle;
+
+            SHOOTER_ANGLE(int angle) {
+                this.angle = angle;
+            }
+        }
     }
 
     public static final class IntakeConstants {
