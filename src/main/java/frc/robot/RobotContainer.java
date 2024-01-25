@@ -8,7 +8,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.LEDs;
-import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.swerve.Swerve;
 
 import static edu.wpi.first.math.MathUtil.applyDeadband;
@@ -99,15 +99,15 @@ public class RobotContainer {
     public Command matchPrepCommand() {
         return new SequentialCommandGroup(
                 swerve.straightenModulesCommand(),
-                shooter.closeLinearCommand(),
                 intake.setIntakeAngleCommand(SHOOTER)
+                // TODO: add close climber telescopic arms
         );
     }
 
     public Command scoreNoteCommand(Command shooterCommand){
         return new ParallelCommandGroup(
                 shooterCommand,
-                new WaitUntilCommand(shooter.shooterReady).andThen(intake.transportToShooterCommand()));
+                new WaitUntilCommand(shooter.shooterReadyTrigger).andThen(intake.transportToShooterCommand()));
     }
 
     public Command scoreNoteCommand(Command swerveCommand, Command shooterCommand){
@@ -130,7 +130,6 @@ public class RobotContainer {
         shouldDriveToCenterLineChooser.addOption("drive", Commands.idle()); // this is my commandddd!!
 
         pitTab.add("Match prep", matchPrepCommand());
-
     }
 
     public Command getAutonomousCommand(){
