@@ -157,7 +157,7 @@ public final class Constants {
         public static final double INTAKE_ENCODER_OFFSET_POSITION = 0;
         public static final int SHOOTER_ANGLE_THRESHOLD = 2;
 
-        public static final double AMP_SHOOTER_DC = -0.5;
+        public static final double AMP_SHOOTER_SPEED = -0.5;
         public static final double STALL_DC = 0.1;
 
         private static final double RAMP_RATE = 3;

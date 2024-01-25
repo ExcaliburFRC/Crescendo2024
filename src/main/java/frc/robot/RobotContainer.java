@@ -99,7 +99,7 @@ public class RobotContainer {
     public Command matchPrepCommand() {
         return new SequentialCommandGroup(
                 swerve.straightenModulesCommand(),
-                intake.setIntakeAngleCommand(SHOOTER)
+                intake.intakeIdleCommand()
                 // TODO: add close climber telescopic arms
         );
     }
