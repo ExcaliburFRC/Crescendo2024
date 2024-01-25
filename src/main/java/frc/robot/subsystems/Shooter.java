@@ -1,7 +1,8 @@
-package frc.robot.subsystems.shooter;
+package frc.robot.subsystems;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.units.*;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -13,10 +14,7 @@ import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.Neo;
-import frc.robot.subsystems.Intake;
-import frc.robot.subsystems.shooter.ShooterState.LinearState;
 
-import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 import static com.revrobotics.CANSparkBase.IdleMode.kBrake;
@@ -30,9 +28,6 @@ public class Shooter extends SubsystemBase {
     private final Neo shooter = new Neo(SHOOTER_LEADER_MOTOR_ID);
     private final Neo shooterFollower = new Neo(SHOOTER_FOLLOWER_MOTOR_ID);
 
-    private final Neo linear = new Neo(LINEAR_LEADER_MOTOR_ID);
-    private final Neo linearFollower = new Neo(LINEAR_FOLLOWER_MOTOR_ID);
-
     private final DigitalInput beamBreak = new DigitalInput(SHOOTER_BEAMBREAK_CHANNEL);
     public final BooleanEvent noteShotTrigger =
             new BooleanEvent(CommandScheduler.getInstance().getDefaultButtonLoop(), beamBreak::get).falling().debounce(0.2);
@@ -40,65 +35,51 @@ public class Shooter extends SubsystemBase {
     private final PIDController shooterPID = new PIDController(SHOOTER_PID.kp, SHOOTER_PID.ki, SHOOTER_PID.kd);
     private final SimpleMotorFeedforward shooterFF = new SimpleMotorFeedforward(SHOOTER_FF.ks, SHOOTER_FF.kv, SHOOTER_FF.ka);
 
-    private final PIDController linearPID = new PIDController(LINEAR_PID.kp, LINEAR_PID.ki, LINEAR_PID.kd);
-
     private ShuffleboardTab shooterTab = Shuffleboard.getTab("ShooterTab");
     private final GenericEntry shooterSpeed = shooterTab.add("shootSpeedPercent", 0).getEntry();
 
-    private Trigger shooterAtSetpoint = new Trigger(shooterPID::atSetpoint);
-    private Trigger linearAtSetpoint = new Trigger(linearPID::atSetpoint);
+    private static InterpolatingDoubleTreeMap metersToRPM = new InterpolatingDoubleTreeMap();
 
-    public Trigger shooterReady = shooterAtSetpoint.and(linearAtSetpoint);
+    public Trigger shooterReadyTrigger = new Trigger(shooterPID::atSetpoint);
 
     public Shooter() {
-        shooter.setConversionFactors(ROT_TO_DEGREES, RPM_TO_DEG_PER_SEC);
-
-        shooterFollower.follow(shooter, true);
-        linearFollower.follow(linear);
-
         shooter.setIdleMode(kCoast);
+        shooter.setConversionFactors(ROT_TO_DEGREES, RPM_TO_DEG_PER_SEC);
+        shooter.setSmartCurrentLimit(SHOOTER_CURRENT_LIMIT);
+
+        shooterFollower.follow(shooter, false);
         shooterFollower.setIdleMode(kCoast);
+        shooterFollower.setSmartCurrentLimit(SHOOTER_CURRENT_LIMIT);
 
         shooterPID.setTolerance(SHOOTER_PID_TOLERANCE);
-        linearPID.setTolerance(LINEAR_PID_TOLERANCE);
 
-        shooter.setSmartCurrentLimit(SHOOTER_CURRENT_LIMIT);
-        linear.setSmartCurrentLimit(LINEAR_CURRENT_LIMIT);
+        metersToRPM.put(0.0, 0.0);
     }
 
-    private void setShooterRPM(double setpoint) {
-        double pid = shooterPID.calculate(shooter.getVelocity(), setpoint);
-        double ff = shooterFF.calculate(setpoint, 0);
+    private double getPID(double RPM){
+        double pid = shooterPID.calculate(shooter.getVelocity(), RPM);
+        double ff = shooterFF.calculate(RPM, 0);
 
-        shooter.set(pid + ff);
+        return pid + ff;
     }
 
-    private void setLinearSetpoint(LinearState state) {
-        linear.set(linearPID.calculate(state.length, linear.getVelocity()));
-    }
-
-    private Command setShooterState(ShooterState state) {
+    private Command setShooterRPMcommand(double RPM) {
         return this.runEnd(
-                () -> {
-                    setShooterRPM(state.RPM);
-                    setLinearSetpoint(state.linearState);
-                }, shooter::stopMotor).until(noteShotTrigger);
-    }
-
-    public Command closeLinearCommand() {
-        return this.runEnd(() -> setLinearSetpoint(LinearState.CLOSE), linear::stopMotor).until(linearAtSetpoint);
+                () -> shooter.set(getPID(RPM)), shooter::stopMotor).until(noteShotTrigger);
     }
 
     public Command shootToAmpCommand() {
-        return setShooterState(new ShooterState(AMP_RPM)).andThen(closeLinearCommand());
+        return setShooterRPMcommand(AMP_RPM);
     }
 
     public Command shootFromWooferCommand() {
-        return setShooterState(new ShooterState(WOOFER_RPM));
+        return setShooterRPMcommand(WOOFER_RPM);
     }
 
     public Command shootFromDistanceCommand(DoubleSupplier distance) {
-        return this.runEnd(()-> setShooterRPM(new ShooterState(distance.getAsDouble()).RPM), shooter::stopMotor);
+        return this.runEnd(
+                () -> shooter.set(getPID(metersToRPM.get(distance.getAsDouble()))), shooter::stopMotor)
+                .until(noteShotTrigger);
     }
 
     public Command prepShooterCommand(Trigger isAtSpeakerRadius, Intake intake) {
@@ -113,27 +94,14 @@ public class Shooter extends SubsystemBase {
         return this.runOnce(()-> shooter.set(SPEAKER_PREP_DC));
     }
 
-    public Command manualShooterCommand(DoubleSupplier speed) {
-        return new RunCommand(() -> {
-            linear.set(speed.getAsDouble());
-            shooter.set(shooterSpeed.getDouble(0));
-        }, this);
+    public Command manualShooterCommand() {
+        return new RunCommand(() -> shooter.set(shooterSpeed.getDouble(0)), this);
     }
 
     public Command toggleIdleModeCommand() {
         return new StartEndCommand(
-                () -> {
-                    linear.setIdleMode(kCoast);
-                    linearFollower.setIdleMode(kCoast);
-                    shooter.setIdleMode(kCoast);
-                    shooterFollower.setIdleMode(kCoast);
-                },
-                () -> {
-                    linear.setIdleMode(kBrake);
-                    linearFollower.setIdleMode(kBrake);
-                    shooter.setIdleMode(kBrake);
-                    shooterFollower.setIdleMode(kBrake);
-                }
+                () -> shooter.setIdleMode(kCoast),
+                () -> shooter.setIdleMode(kBrake)
         );
     }
 
@@ -141,7 +109,6 @@ public class Shooter extends SubsystemBase {
     private final MutableMeasure<Voltage> appliedVoltage = mutable(Volts.of(0));
     private final MutableMeasure<Velocity<Angle>> velocity = mutable(DegreesPerSecond.of(0));
     private final MutableMeasure<Angle> degrees = mutable(Degrees.of(0));
-
 
     private final SysIdRoutine shooterSysid = new SysIdRoutine(
             sysidConfig,

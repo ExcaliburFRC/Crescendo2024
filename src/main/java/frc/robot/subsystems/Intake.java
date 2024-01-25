@@ -38,77 +38,61 @@ public class Intake extends SubsystemBase {
         intakeEncoder.setDistancePerRotation(360);
         intakeEncoder.setPositionOffset(INTAKE_ENCODER_OFFSET_POSITION);
 
-        setDefaultCommand(resetIntakeCommand());
+        setDefaultCommand(intakeIdleCommand());
     }
 
     private double getAngle() {
         return intakeEncoder.getDistance();
     }
 
-    private Command setRollerSpeedCommand(double speed) {
-        return new RunCommand(() -> intakeMotor.set(speed));
+    private void setIntakeSpeed(double speed) {
+        intakeMotor.set(speed);
     }
 
-    private Command ejectNoteCommand() {
-        return setRollerSpeedCommand(-0.5);
+    private void setIntakeAngle(INTAKE_ANGLE angle) {
+        double pid = anglePIDcontroller.calculate(getAngle(), angle.angle);
+        double ff = angleFFcontroller.calculate(Math.toRadians(angle.angle), 0);
+
+        angleMotor.setVoltage(pid + ff);
     }
 
-    public Command stallIntakeMotor() {
-        return new RunCommand(() -> {
-            if (hasNoteTrigger.getAsBoolean()) intakeMotor.set(STALL_DC);
-            else intakeMotor.stopMotor();
-        });
+    private void stopMotors(){
+        intakeMotor.stopMotor();
+        angleMotor.stopMotor();
     }
 
-    public Command setIntakeAngleCommand(INTAKE_ANGLE angle) {
-        return new FunctionalCommand(
-                () -> {
-                },
-                () -> {
-                    double pid = anglePIDcontroller.calculate(getAngle(), angle.angle);
-                    double ff = angleFFcontroller.calculate(Math.toRadians(angle.angle), 0);
-                    double output = pid + (ff / 60.0);
+    private void stallIntakeMotor() {
+        if (hasNoteTrigger.getAsBoolean()) intakeMotor.set(STALL_DC);
+        else intakeMotor.stopMotor();
+    }
 
-                    angleMotor.setVoltage(output);
-                },
-                (__) -> angleMotor.stopMotor(),
-                () -> false
-        );
+    private Command setIntakeCommand(double speed, INTAKE_ANGLE angle) {
+        return this.runEnd(()-> {
+            setIntakeAngle(angle);
+            setIntakeSpeed(speed);
+        }, this::stopMotors);
     }
 
     public Command intakeFromAngleCommand(INTAKE_ANGLE angle) {
-        return new ParallelCommandGroup(
-                setIntakeAngleCommand(angle),
-                setRollerSpeedCommand(0.5),
-                requirement())
-                .until(hasNoteTrigger);
+        return setIntakeCommand(0.5, angle).until(hasNoteTrigger);
     }
 
     public Command shootToAmpCommand() {
-        return new ParallelCommandGroup(
-                setIntakeAngleCommand(INTAKE_ANGLE.AMP),
-                setRollerSpeedCommand(AMP_SHOOTER_DC),
-                requirement())
-                .until(hasNoteTrigger.negate());
+        return setIntakeCommand(AMP_SHOOTER_SPEED, INTAKE_ANGLE.AMP).until(hasNoteTrigger.negate());
     }
 
     public Command transportToShooterCommand() {
-        return new ConditionalCommand(
-                ejectNoteCommand(),
-                Commands.none(),
-                isAtShooterTrigger).repeatedly().until(hasNoteTrigger.negate());
+        return new SequentialCommandGroup(
+                setIntakeCommand(0, INTAKE_ANGLE.SHOOTER).until(isAtShooterTrigger),
+                setIntakeCommand(-0.5, INTAKE_ANGLE.SHOOTER).until(hasNoteTrigger.negate()));
     }
 
-    public Command resetIntakeCommand() {
-        return new ParallelCommandGroup(
-                setIntakeAngleCommand(INTAKE_ANGLE.SHOOTER),
-                stallIntakeMotor(),
-                requirement());
-    }
-
-    private Command requirement() {
-        return this.run(() -> {
-        });
+    public Command intakeIdleCommand() {
+        return this.run(
+                ()-> {
+                    setIntakeAngle(INTAKE_ANGLE.SHOOTER);
+                    stallIntakeMotor();
+                });
     }
 
     public Command manualCommand(DoubleSupplier speed, DoubleSupplier angle) {
@@ -141,7 +125,7 @@ public class Intake extends SubsystemBase {
                     (Measure<Voltage> volts) -> angleMotor.setVoltage(volts.in(Volts)),
                     log -> log.motor("angleMotor")
                             .voltage(appliedVoltage.mut_replace(
-                            angleMotor.get() * RobotController.getBatteryVoltage(), Volts))
+                                    angleMotor.get() * RobotController.getBatteryVoltage(), Volts))
                             .angularPosition(degrees.mut_replace(getAngle(), Degrees))
                             .angularVelocity(velocity.mut_replace(angleMotor.getVelocity(), RPM)),
                     this
