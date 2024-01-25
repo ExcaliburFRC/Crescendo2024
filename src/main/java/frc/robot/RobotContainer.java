@@ -15,8 +15,7 @@ import static edu.wpi.first.math.MathUtil.applyDeadband;
 import static edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction.kForward;
 import static edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction.kReverse;
 import static frc.lib.Color.Colors.WHITE;
-import static frc.robot.Constants.IntakeConstants.INTAKE_ANGLE.GROUND;
-import static frc.robot.Constants.IntakeConstants.INTAKE_ANGLE.HUMAN_PLAYER;
+import static frc.robot.Constants.IntakeConstants.INTAKE_ANGLE.*;
 import static frc.robot.Constants.ShooterConstants.SPEAKER_PREP_RADIUS;
 import static frc.robot.subsystems.LEDs.LEDPattern.SOLID;
 import static frc.robot.Constants.FieldConstants.FieldLocations.*;
@@ -39,10 +38,11 @@ public class RobotContainer {
     public final Trigger isAtSpeakerRadius = new Trigger(()-> swerve.getDistanceFromPose(SPEAKER_CENTER.pose.get()) < SPEAKER_PREP_RADIUS);
 
     public ShuffleboardTab matchTab = Shuffleboard.getTab("Match settings");
+    public ShuffleboardTab pitTab = Shuffleboard.getTab("pit");
 
     public RobotContainer(){
         configureBindings();
-        initSendableChoosers();
+        initShuffleBoard();
     }
 
     // bindings
@@ -96,6 +96,14 @@ public class RobotContainer {
     }
 
     // methods
+    public Command matchPrepCommand() {
+        return new SequentialCommandGroup(
+                swerve.straightenModulesCommand(),
+                shooter.closeLinearCommand(),
+                intake.setIntakeAngleCommand(SHOOTER)
+        );
+    }
+
     public Command scoreNoteCommand(Command shooterCommand){
         return new ParallelCommandGroup(
                 shooterCommand,
@@ -117,9 +125,12 @@ public class RobotContainer {
         );
     }
 
-    private void initSendableChoosers(){
+    private void initShuffleBoard(){
         shouldDriveToCenterLineChooser.setDefaultOption("don't Drive", Commands.none());
         shouldDriveToCenterLineChooser.addOption("drive", Commands.idle()); // this is my commandddd!!
+
+        pitTab.add("Match prep", matchPrepCommand());
+
     }
 
     public Command getAutonomousCommand(){
