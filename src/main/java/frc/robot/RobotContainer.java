@@ -1,10 +1,12 @@
 package frc.robot;
 
+import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
+import edu.wpi.first.wpilibj2.command.button.NetworkButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.LEDs;
@@ -34,11 +36,12 @@ public class RobotContainer {
 
     public final SendableChooser<Command> shouldDriveToCenterLineChooser = new SendableChooser<>();
 
-    public boolean shooterWorks = true;
     public final Trigger isAtSpeakerRadius = new Trigger(()-> swerve.getDistanceFromPose(SPEAKER_CENTER.pose.get()) < SPEAKER_PREP_RADIUS);
 
     public ShuffleboardTab matchTab = Shuffleboard.getTab("Match settings");
     public ShuffleboardTab pitTab = Shuffleboard.getTab("pit");
+
+    public boolean shooterWorks = true;
 
     public RobotContainer(){
         configureBindings();
@@ -130,6 +133,8 @@ public class RobotContainer {
         shouldDriveToCenterLineChooser.addOption("drive", Commands.idle()); // this is my commandddd!!
 
         pitTab.add("Match prep", matchPrepCommand());
+
+        matchTab.add(new InstantCommand(()-> shooterWorks = !shooterWorks));
     }
 
     public Command getAutonomousCommand(){
