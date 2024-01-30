@@ -12,6 +12,7 @@ import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.swerve.Swerve;
 
 import static edu.wpi.first.math.MathUtil.applyDeadband;
+import static edu.wpi.first.wpilibj.GenericHID.RumbleType.kBothRumble;
 import static edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction.kForward;
 import static edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction.kReverse;
 import static frc.lib.Color.Colors.WHITE;
@@ -28,9 +29,10 @@ public class RobotContainer {
     private final Intake intake = new Intake();
 
     // controllers
-    private final CommandPS4Controller driver = new CommandPS4Controller(0);
-    private final CommandPS4Controller operator = new CommandPS4Controller(1);
-    private final CommandPS4Controller sysidController = new CommandPS4Controller(2);
+    private final CommandPS5Controller driver = new CommandPS5Controller(0);
+    private final CommandPS5Controller operator = new CommandPS5Controller(1);
+    private final CommandPS5Controller sysidController = new CommandPS5Controller(2);
+    private final XboxController driverVibration = new XboxController(4);
 
     public final SendableChooser<Command> shouldDriveToCenterLineChooser = new SendableChooser<>();
 
@@ -115,6 +117,13 @@ public class RobotContainer {
                 swerveCommand.deadlineWith(shooter.prepShooterCommand()),
                 scoreNoteCommand(shooterCommand)
         );
+    }
+
+    private Command vibrateControllerCOmmand(int intensity, double seconds){
+        return Commands.runEnd(
+                ()-> driverVibration.setRumble(kBothRumble, intensity / 100.0),
+                ()-> driverVibration.setRumble(kBothRumble, 0))
+                .withTimeout(seconds).ignoringDisable(true);
     }
 
     public Command toggleMotorsIdleMode() {
