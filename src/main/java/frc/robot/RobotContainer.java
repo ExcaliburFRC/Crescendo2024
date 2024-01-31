@@ -1,10 +1,11 @@
 package frc.robot;
 
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.*;
-import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
+import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.LEDs;
@@ -12,13 +13,15 @@ import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.swerve.Swerve;
 
 import static edu.wpi.first.math.MathUtil.applyDeadband;
+import static edu.wpi.first.wpilibj.GenericHID.RumbleType.kBothRumble;
 import static edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction.kForward;
 import static edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction.kReverse;
 import static frc.lib.Color.Colors.WHITE;
-import static frc.robot.Constants.IntakeConstants.INTAKE_ANGLE.*;
+import static frc.robot.Constants.FieldConstants.FieldLocations.*;
+import static frc.robot.Constants.IntakeConstants.INTAKE_ANGLE.GROUND;
+import static frc.robot.Constants.IntakeConstants.INTAKE_ANGLE.HUMAN_PLAYER;
 import static frc.robot.Constants.ShooterConstants.SPEAKER_PREP_RADIUS;
 import static frc.robot.subsystems.LEDs.LEDPattern.SOLID;
-import static frc.robot.Constants.FieldConstants.FieldLocations.*;
 
 public class RobotContainer {
     // subsystems
@@ -28,9 +31,10 @@ public class RobotContainer {
     private final Intake intake = new Intake();
 
     // controllers
-    private final CommandPS4Controller driver = new CommandPS4Controller(0);
-    private final CommandPS4Controller operator = new CommandPS4Controller(1);
-    private final CommandPS4Controller sysidController = new CommandPS4Controller(2);
+    private final CommandPS5Controller driver = new CommandPS5Controller(0);
+    private final CommandPS5Controller operator = new CommandPS5Controller(1);
+    private final CommandPS5Controller sysidController = new CommandPS5Controller(2);
+    private final XboxController driverVibration = new XboxController(4);
 
     public final SendableChooser<Command> shouldDriveToCenterLineChooser = new SendableChooser<>();
 
@@ -115,6 +119,13 @@ public class RobotContainer {
                 swerveCommand.deadlineWith(shooter.prepShooterCommand()),
                 scoreNoteCommand(shooterCommand)
         );
+    }
+
+    private Command vibrateControllerCOmmand(int intensity, double seconds){
+        return Commands.runEnd(
+                ()-> driverVibration.setRumble(kBothRumble, intensity / 100.0),
+                ()-> driverVibration.setRumble(kBothRumble, 0))
+                .withTimeout(seconds).ignoringDisable(true);
     }
 
     public Command toggleMotorsIdleMode() {
