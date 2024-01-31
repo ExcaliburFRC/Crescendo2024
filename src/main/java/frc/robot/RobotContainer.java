@@ -14,8 +14,6 @@ import frc.robot.subsystems.swerve.Swerve;
 
 import static edu.wpi.first.math.MathUtil.applyDeadband;
 import static edu.wpi.first.wpilibj.GenericHID.RumbleType.kBothRumble;
-import static edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction.kForward;
-import static edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction.kReverse;
 import static frc.lib.Color.Colors.WHITE;
 import static frc.robot.Constants.FieldConstants.FieldLocations.*;
 import static frc.robot.Constants.IntakeConstants.INTAKE_ANGLE.GROUND;
@@ -33,8 +31,9 @@ public class RobotContainer {
     // controllers
     private final CommandPS5Controller driver = new CommandPS5Controller(0);
     private final CommandPS5Controller operator = new CommandPS5Controller(1);
-    private final CommandPS5Controller sysidController = new CommandPS5Controller(2);
     private final XboxController driverVibration = new XboxController(4);
+
+    private final CommandPS5Controller sysidController = new CommandPS5Controller(5);
 
     public final SendableChooser<Command> shouldDriveToCenterLineChooser = new SendableChooser<>();
 
@@ -91,12 +90,6 @@ public class RobotContainer {
         driver.povRight().toggleOnTrue(scoreNoteCommand(
                 swerve.turnToLocationCommand(SPEAKER),
                 shooter.shootFromDistanceCommand(()-> swerve.getDistanceFromPose(SPEAKER.pose.get()))));
-
-        // sysid
-        sysidController.circle().whileTrue(intake.sysidQuasistatic(kForward));
-        sysidController.cross().whileTrue(intake.sysidQuasistatic(kReverse));
-        sysidController.triangle().whileTrue(intake.sysidDynamic(kForward));
-        sysidController.square().whileTrue(intake.sysidDynamic(kReverse));
     }
 
     // methods
@@ -108,20 +101,30 @@ public class RobotContainer {
         );
     }
 
-    public Command scoreNoteCommand(Command shooterCommand){
+    private Command scoreNoteCommand(Command shooterCommand){
         return new ParallelCommandGroup(
                 shooterCommand,
                 new WaitUntilCommand(shooter.shooterReadyTrigger).andThen(intake.transportToShooterCommand()));
     }
 
-    public Command scoreNoteCommand(Command swerveCommand, Command shooterCommand){
+    private Command scoreNoteCommand(Command swerveCommand, Command shooterCommand){
         return new SequentialCommandGroup(
                 swerveCommand.deadlineWith(shooter.prepShooterCommand()),
                 scoreNoteCommand(shooterCommand)
         );
     }
 
-    private Command vibrateControllerCOmmand(int intensity, double seconds){
+    private Command systemTesterCommand(){
+        return new SequentialCommandGroup(
+                swerve.driveSwerveCommand(()-> 0.25, ()-> 0, ()-> 0.25, ()-> false).withTimeout(5),
+                intake.intakeFromAngleCommand(HUMAN_PLAYER),
+                new WaitUntilCommand(intake.isAtShooterTrigger),
+                scoreNoteCommand(shooter.shootToAmpCommand()),
+                /// TODO: add climber test
+        );
+    }
+
+    private Command vibrateControllerCommand(int intensity, double seconds){
         return Commands.runEnd(
                 ()-> driverVibration.setRumble(kBothRumble, intensity / 100.0),
                 ()-> driverVibration.setRumble(kBothRumble, 0))
@@ -141,6 +144,9 @@ public class RobotContainer {
         shouldDriveToCenterLineChooser.addOption("drive", Commands.idle()); // this is my commandddd!!
 
         pitTab.add("Match prep", matchPrepCommand());
+        pitTab.add("System tester", systemTesterCommand());
+
+        matchTab.add(new InstantCommand(()-> shooterWorks = !shooterWorks));
     }
 
     public Command getAutonomousCommand(){

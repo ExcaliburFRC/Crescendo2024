@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 
-public class Limelight {
+public class PhotonVision {
     PhotonCamera camera;// = new PhotonCamera("bob");
     AprilTagFieldLayout fieldLayout;
 
@@ -22,9 +22,9 @@ public class Limelight {
 
     private final Transform3d robotToCamera = new Transform3d();
 
-    public static Limelight INSTANCE = new Limelight();
+    public static PhotonVision INSTANCE = new PhotonVision();
 
-    private Limelight() {
+    private PhotonVision() {
         camera.setDriverMode(true);
 
         try {

@@ -56,7 +56,7 @@ public class Shooter extends SubsystemBase {
         metersToRPM.put(0.0, 0.0);
     }
 
-    private double getPID(double RPM){
+    private double getPIDtoSetpoint(double RPM){
         double pid = shooterPID.calculate(shooter.getVelocity(), RPM);
         double ff = shooterFF.calculate(RPM, 0);
 
@@ -65,7 +65,7 @@ public class Shooter extends SubsystemBase {
 
     private Command setShooterRPMcommand(double RPM) {
         return this.runEnd(
-                () -> shooter.set(getPID(RPM)), shooter::stopMotor).until(noteShotTrigger);
+                () -> shooter.set(getPIDtoSetpoint(RPM)), shooter::stopMotor).until(noteShotTrigger);
     }
 
     public Command shootToAmpCommand() {
@@ -78,7 +78,7 @@ public class Shooter extends SubsystemBase {
 
     public Command shootFromDistanceCommand(DoubleSupplier distance) {
         return this.runEnd(
-                () -> shooter.set(getPID(metersToRPM.get(distance.getAsDouble()))), shooter::stopMotor)
+                () -> shooter.set(getPIDtoSetpoint(metersToRPM.get(distance.getAsDouble()))), shooter::stopMotor)
                 .until(noteShotTrigger);
     }
 
