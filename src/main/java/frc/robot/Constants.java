@@ -120,8 +120,11 @@ public final class Constants {
         public static final double kRotToMeterPerSec = kRotToMeter / 60;
         public static final int leftID = 0;
         public static final int rightID = 0;
+        //representing the location of the arms on an axis
+        // that is parallel to the middle of the robot (the 0 point is the middle of the robot)
         public static final double LEFT_ARM_LOCATION = 0;
         public static final double RIGHT_ARM_LOCATION = 0;
+
         public static final double MINIMAL_HEIGHT = 0;
         public static final double EXTRA_SAFETY_DISTANCE = 0.1;
 
@@ -133,9 +136,9 @@ public final class Constants {
             CHAIN_180(new Translation2d(0, 0), new Translation2d(0, 0), new Translation2d(0, 0)),
             CHAIN_300(new Translation2d(0, 0), new Translation2d(0, 0), new Translation2d(0, 0));
 
-            private final Translation2d negEdge;
-            private final Translation2d posEdge;
-            private final Translation2d centerStage;
+            public final Translation2d negEdge;
+            public final Translation2d posEdge;
+            public final Translation2d centerStage;
 
             Chain(Translation2d negEdge, Translation2d posEdge, Translation2d centerStage) {
                 this.negEdge = negEdge;
@@ -143,48 +146,49 @@ public final class Constants {
                 this.centerStage = centerStage;
             }
 
-            public Translation2d getNegEdge() {
-                return negEdge;
-            }
-
-            public Translation2d getPosEdge() {
-                return posEdge;
-            }
-
-            private boolean inRange(Translation2d robotTranslation) {
+            //gets the robot translation, returns true if the robot's angle from
+            //the center of the stage is in the range of angles defined for this chain
+            public boolean inRange(Translation2d robotTranslation) {
+                //calculate the robot's angle from the center of the stage (relative to the x axis)
                 double robotStageAngle =
                         Math.atan(robotTranslation.minus(centerStage).getX() / robotTranslation.minus(centerStage).getY());
+                //calculate the same thing for the neg and pos edges
                 double negAngle = Math.atan(negEdge.minus(centerStage).getX() / negEdge.minus(centerStage).getY());
                 double posAngle = Math.atan(posEdge.minus(centerStage).getX() / posEdge.minus(centerStage).getY());
-
+                //returns true if the robot angle is between the neg and pos angles
                 if (posAngle > negAngle) return robotStageAngle < posAngle && robotStageAngle > negAngle;
                 return (robotStageAngle > posAngle && robotStageAngle > negAngle)
                         || (robotStageAngle < posAngle && robotStageAngle < negAngle);
             }
 
+            //this function returns the chain that is both in
+            //the robot's color in returns true to the inRange function
             public static Chain getBestChain(Translation2d robotTranslation) {
-                Chain bestChain;
                 //recognise which chain we want to climb on
                 if (isBlueAlliance()) {
-                    if (Chain.CHAIN_0.inRange(robotTranslation)) bestChain = Chain.CHAIN_0;
-                    else if (Chain.CHAIN_120.inRange(robotTranslation)) bestChain = Chain.CHAIN_120;
-                    else bestChain = Chain.CHAIN_240;
-                } else {
-                    if (Chain.CHAIN_60.inRange(robotTranslation)) bestChain = Chain.CHAIN_60;
-                    else if (Chain.CHAIN_180.inRange(robotTranslation)) bestChain = Chain.CHAIN_180;
-                    else bestChain = Chain.CHAIN_300;
+                    if (Chain.CHAIN_0.inRange(robotTranslation)) return Chain.CHAIN_0;
+                    else if (Chain.CHAIN_120.inRange(robotTranslation)) return Chain.CHAIN_120;
+                    return Chain.CHAIN_240;
                 }
-                return bestChain;
+
+                if (Chain.CHAIN_60.inRange(robotTranslation)) return Chain.CHAIN_60;
+                else if (Chain.CHAIN_180.inRange(robotTranslation)) return Chain.CHAIN_180;
+                return Chain.CHAIN_300;
             }
+            //this function returns the projection point of the robot's translation on the
+            //line that connects negEdge and posEdge
+            public Translation2d getProjection(Translation2d robotTranslation) {
+                //calculate m and b for the y = mx + b expression that represents the
+                //linear function that is on both posEdge and negEdge
+                double m1 = (this.negEdge.getY() - this.posEdge.getY()) /
+                        (this.negEdge.getX() - this.posEdge.getX());
+                double b1 = this.negEdge.getY() - m1 * this.negEdge.getX();
+                //calculate m and b for the y = mx + b expression that represents the
+                //linear function that is on both robotTranslation and the projection point
+                double m2 = -1/m1;
+                double b2 = robotTranslation.getY() - m2 * robotTranslation.getX();
 
-            public static Translation2d getProjection(Translation2d robotPose, Chain chain) {
-                double m1 = (chain.getNegEdge().getY() - chain.getPosEdge().getY()) /
-                        (chain.getNegEdge().getX() - chain.getPosEdge().getX());
-                double b1 = chain.getNegEdge().getY() - m1 * chain.getNegEdge().getX();
-
-                double m2 = -m1;
-                double b2 = robotPose.getY() - m2 * robotPose.getX();
-
+                //calculate the x and y values of the point the two lines cross aka the projection point
                 double projectionX = (b1 - b2) / (m2 - m1);
                 double projectionY = m1 * projectionX + b1;
 

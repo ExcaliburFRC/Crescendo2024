@@ -1,6 +1,7 @@
-package frc.robot.subsystems.Climber;
+package frc.robot.subsystems.climber;
 
 import com.revrobotics.CANSparkBase;
+import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -13,8 +14,6 @@ import static frc.robot.Constants.ClimberConstants.kMaxLinearAcceleration;
 
 public class ClimberSide {
     private final Neo motor;
-    private TrapezoidProfile trapezoidProfile;
-    private final Timer timer = new Timer();
     private double liftingForce = 0;
 
     public ClimberSide(Gains motorGains, int motorID) {
@@ -23,21 +22,22 @@ public class ClimberSide {
     }
 
     public Command setLengthCommand(double length) {
+        final TrapezoidProfile trapezoidProfile =
+                new TrapezoidProfile(new TrapezoidProfile.Constraints(kMaxLinearVelocity, kMaxLinearAcceleration));
+        ElevatorFeedforward feedforwardController =
+                new ElevatorFeedforward(motor.getGains().ks,motor.getGains().kg,motor.getGains().kv);
+        final Timer timer = new Timer();
         //returns a command that sets the arm to a desired height
         return new FunctionalCommand(
-                () -> {
-                    //initialization
-                    timer.restart();
-                    trapezoidProfile = new TrapezoidProfile(new TrapezoidProfile.Constraints(kMaxLinearVelocity, kMaxLinearAcceleration));
-                },
+                //initialization
+                timer::restart,
                 () -> {
                     TrapezoidProfile.State currentState = new TrapezoidProfile.State(motor.getPosition(), motor.getVelocity());
                     TrapezoidProfile.State goalState = new TrapezoidProfile.State(length, 0);
                     TrapezoidProfile.State setpoint = trapezoidProfile.calculate(timer.get(), currentState, goalState);
 
                     //calculate the feed forward
-                    double feedForward = Math.signum(setpoint.velocity) * motor.getGains().ks +
-                            motor.getGains().kv * currentState.velocity + motor.getGains().kg + liftingForce;
+                    double feedForward = feedforwardController.calculate(currentState.velocity) + liftingForce;
                     //set motor reference with the current setpoint and ff
                     motor.setReference(setpoint.position, CANSparkBase.ControlType.kPosition, 0, feedForward);
                 },

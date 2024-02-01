@@ -1,10 +1,9 @@
-package frc.robot.subsystems.Climber;
+package frc.robot.subsystems.climber;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.*;
 import java.util.function.DoubleSupplier;
 import static frc.robot.Constants.ClimberConstants.*;
-import static frc.robot.util.AllianceUtils.isBlueAlliance;
 
 public class Climber extends SubsystemBase {
     private final ClimberSide leftSide;
@@ -51,9 +50,9 @@ public class Climber extends SubsystemBase {
         Chain chain = Chain.getBestChain(robotTranslation);
         //find the robot projection on the chain
         //same as where in the chain we want to climb
-        Translation2d projection = Chain.getProjection(robotTranslation, chain);
+        Translation2d projection = chain.getProjection(robotTranslation);
         //calculate where on the chain the robot arm supposed to be
-        double armProjection = CHAIN_LENGTH_IN_XY_METERS / 2 - chain.getPosEdge().getDistance(projection) + armLoc;
+        double armProjection = CHAIN_LENGTH_IN_XY_METERS / 2 - chain.posEdge.getDistance(projection) + armLoc;
         //return the height in this place
         return CHAIN_PARABOLA_PARAMETER * Math.pow(armProjection, 2) + MINIMAL_CHAIN_HEIGHT_METERS;
     }
