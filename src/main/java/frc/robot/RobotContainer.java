@@ -1,5 +1,6 @@
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -30,17 +31,19 @@ public class RobotContainer {
 
     // controllers
     private final CommandPS5Controller driver = new CommandPS5Controller(0);
-    private final CommandPS5Controller operator = new CommandPS5Controller(1);
     private final XboxController driverVibration = new XboxController(4);
-
-    private final CommandPS5Controller sysidController = new CommandPS5Controller(5);
 
     public final SendableChooser<Command> shouldDriveToCenterLineChooser = new SendableChooser<>();
 
     public boolean shooterWorks = true;
     public final Trigger isAtSpeakerRadius = new Trigger(()-> swerve.getDistanceFromPose(SPEAKER_CENTER.pose.get()) < SPEAKER_PREP_RADIUS);
 
-    public ShuffleboardTab matchTab = Shuffleboard.getTab("Match settings");
+    // TODO: find leftX & leftY axis indexes
+    public final Trigger terminatePathTrigger = new Trigger(driver.axisGreaterThan(0, 0.5).or(driver.axisGreaterThan(0, 0.5)));
+
+    private final Pose2d emptyPose = new Pose2d();
+
+    public ShuffleboardTab matchTab = Shuffleboard.getTab("match");
     public ShuffleboardTab pitTab = Shuffleboard.getTab("pit");
 
     public RobotContainer(){
@@ -55,30 +58,38 @@ public class RobotContainer {
                         () -> applyDeadband(-driver.getLeftY(), 0.07),
                         () -> applyDeadband(-driver.getLeftX(), 0.07),
                         () -> applyDeadband(-driver.getRightX(), 0.07),
-                        driver.L2().negate(),
-                        driver::getR2Axis));
+                        driver.R3().and(()-> intake.getCurrentCommand().getName().equals("intakeCommand")), // activate robot oriented only while intaking
+                        driver::getL2Axis,
+                        ()-> driver.R1().getAsBoolean()? SPEAKER.pose.get() : emptyPose)
+        );
+
+        shooter.setDefaultCommand(shooter.prepShooterCommand(isAtSpeakerRadius, intake));
 
         driver.touchpad().whileTrue(toggleMotorsIdleMode().alongWith(leds.applyPatternCommand(SOLID, WHITE.color)));
         driver.PS().onTrue(swerve.resetOdometryAngleCommand());
 
-        shooter.setDefaultCommand(shooter.prepShooterCommand(isAtSpeakerRadius, intake));
+        // show intake cam while pressing R3
+        driver.R3().whileTrue(Commands.startEnd(()-> Shuffleboard.selectTab("intakeCam"), ()-> Shuffleboard.selectTab("match")));
+
+        // if R1 is pressed and the robot is stationary, shoot to speaker
+        driver.R1().and(()-> Math.max(swerve.getRobotRelativeSpeeds().vxMetersPerSecond, swerve.getRobotRelativeSpeeds().vyMetersPerSecond) < 0.2)
+        .whileTrue(scoreNoteCommand(shooter.shootFromWooferCommand()));
 
         // manual actions
         // if the shooter doesn't work, we shoot the note from the intake
-        operator.circle().toggleOnTrue(new ConditionalCommand(
+        driver.square().toggleOnTrue(new ConditionalCommand(
                 scoreNoteCommand(shooter.shootToAmpCommand()),
                 intake.shootToAmpCommand(),
                 ()-> shooterWorks)
         );
-        operator.triangle().toggleOnTrue(shooter.shootFromWooferCommand());
-        operator.square().toggleOnTrue(intake.intakeFromAngleCommand(HUMAN_PLAYER));
-        operator.cross().toggleOnTrue(intake.intakeFromAngleCommand(GROUND));
+        driver.triangle().toggleOnTrue(shooter.shootFromWooferCommand());
+        driver.cross().toggleOnTrue(intake.intakeFromAngleCommand(HUMAN_PLAYER));
+        driver.circle().toggleOnTrue(intake.intakeFromAngleCommand(GROUND));
 
-        // automated actions
-        // auto drive to subwoofer and shoot
-        driver.povUp().whileTrue(scoreNoteCommand(
-                swerve.pathFindToLocation(SPEAKER_CENTER),
-                shooter.shootFromWooferCommand()));
+        // autonomous intake from HP stations
+        driver.povRight().onTrue(swerve.pathFindToLocation(HP_RIGHT).alongWith(intake.intakeFromAngleCommand(HUMAN_PLAYER)).until(terminatePathTrigger));
+        driver.povUp().onTrue(swerve.pathFindToLocation(HP_CENTER).alongWith(intake.intakeFromAngleCommand(HUMAN_PLAYER)).until(terminatePathTrigger));
+        driver.povLeft().onTrue(swerve.pathFindToLocation(HP_LEFT).alongWith(intake.intakeFromAngleCommand(HUMAN_PLAYER)).until(terminatePathTrigger));
 
         // auto drive to amp and score
         driver.povDown().whileTrue(scoreNoteCommand(
@@ -86,10 +97,9 @@ public class RobotContainer {
                 shooter.shootToAmpCommand()
         ));
 
-        // auto aim to speaker and shoot with auto calculated RPM
-        driver.povRight().toggleOnTrue(scoreNoteCommand(
-                swerve.turnToLocationCommand(SPEAKER),
-                shooter.shootFromDistanceCommand(()-> swerve.getDistanceFromPose(SPEAKER.pose.get()))));
+        // vibrate driver controller after note intake
+        new Trigger(intake.noteIntakedTrigger.and(()-> intake.getCurrentCommand().getName().equals("intakeCommand")))
+                .onTrue(vibrateControllerCommand(50, 0.5));
     }
 
     // methods
@@ -119,7 +129,7 @@ public class RobotContainer {
                 swerve.driveSwerveCommand(()-> 0.25, ()-> 0, ()-> 0.25, ()-> false).withTimeout(5),
                 intake.intakeFromAngleCommand(HUMAN_PLAYER),
                 new WaitUntilCommand(intake.isAtShooterTrigger),
-                scoreNoteCommand(shooter.shootToAmpCommand()),
+                scoreNoteCommand(shooter.shootToAmpCommand())
                 /// TODO: add climber test
         );
     }

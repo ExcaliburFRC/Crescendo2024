@@ -87,7 +87,6 @@ public final class Constants {
     }
 
     public static final class ModuleConstants {
-
         public static final double kWheelDiameterMeters = Units.inchesToMeters(4);
         public static final double kDriveMotorGearRatio = 1 / 8.14;
         public static final double kDriveEncoderRotationsToMeters = kDriveMotorGearRatio * PI * kWheelDiameterMeters;
@@ -108,25 +107,17 @@ public final class Constants {
         public static final int SHOOTER_LEADER_MOTOR_ID = 31;
         public static final int SHOOTER_FOLLOWER_MOTOR_ID = 32;
 
-        public static final int LINEAR_LEADER_MOTOR_ID = 33;
-        public static final int LINEAR_FOLLOWER_MOTOR_ID = 34;
-
         public static final int SHOOTER_CURRENT_LIMIT = 70;
-        public static final int LINEAR_CURRENT_LIMIT = 40;
 
         public static final int SHOOTER_BEAMBREAK_CHANNEL = 0;
 
         public static final Gains SHOOTER_PID = new Gains(0,0,0);
         public static final Gains SHOOTER_FF = new Gains(0,0,0,0);
 
-        public static final Gains LINEAR_PID = new Gains(0,0,0);
-        public static final double LINEAR_LENGTH = 0;
-
         public static final double AMP_RPM = 0;
         public static final double WOOFER_RPM = 0;
 
         public static final double SHOOTER_PID_TOLERANCE = 100;
-        public static final double LINEAR_PID_TOLERANCE = 0.01;
 
         public static final double SPEAKER_PREP_DC = 0;
         public static final double SPEAKER_PREP_RADIUS = 0;
@@ -149,7 +140,8 @@ public final class Constants {
         public static final int INTAKE_MOTOR_ID = 0;
         public static final int ANGLE_MOTOR_ID = 0;
 
-        public static final int INTAKE_ENCODER_ID = 0;
+        public static final int ENCODER_PORT = 0;
+        public static final int BEAMBREAK_PORT = 0;
 
         public static final double INTAKE_MOTOR_POSITION_CONVERSION_FACTOR = 0;
         public static final double INTAKE_MOTOR_VELOCITY_CONVERSION_FACTOR = 0;
@@ -186,9 +178,9 @@ public final class Constants {
 
         public enum FieldLocations {
             // Human player locations
-            HM_LEFT("HMLeft", new AlliancePose(16.01, 1.21, -60)),
-            HM_CENTER("HMCenter", new AlliancePose(15.45, 0.9, -60)),
-            HM_RIGHT("HMRight", new AlliancePose(14.95, 0.56, -60)),
+            HP_LEFT("HMLeft", new AlliancePose(16.01, 1.21, -60)),
+            HP_CENTER("HMCenter", new AlliancePose(15.45, 0.9, -60)),
+            HP_RIGHT("HMRight", new AlliancePose(14.95, 0.56, -60)),
 
             // Speaker locations,
             SPEAKER_TOP("SpeakerTop", new AlliancePose(0.82, 6.61, 60)),
