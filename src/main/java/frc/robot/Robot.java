@@ -67,7 +67,6 @@ public class Robot extends TimedRobot implements Logged {
 
   @Override
   public void autonomousInit() {
-    NamedCommands.registerCommand("ShouldDriveToCenterLine", robotContainer.shouldDriveToCenterLineChooser.getSelected());
     autonomousCommand = robotContainer.getAutonomousCommand();
     Shuffleboard.selectTab("match");
 

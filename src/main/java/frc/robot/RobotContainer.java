@@ -33,8 +33,6 @@ public class RobotContainer {
     private final CommandPS5Controller driver = new CommandPS5Controller(0);
     private final XboxController driverVibration = new XboxController(4);
 
-    public final SendableChooser<Command> shouldDriveToCenterLineChooser = new SendableChooser<>();
-
     public boolean shooterWorks = true;
     public final Trigger isAtSpeakerRadius = new Trigger(()-> swerve.getDistanceFromPose(SPEAKER_CENTER.pose.get()) < SPEAKER_PREP_RADIUS);
 
@@ -47,8 +45,8 @@ public class RobotContainer {
     public ShuffleboardTab pitTab = Shuffleboard.getTab("pit");
 
     public RobotContainer(){
+        init();
         configureBindings();
-        initShuffleBoard();
     }
 
     // bindings
@@ -127,7 +125,6 @@ public class RobotContainer {
         return new SequentialCommandGroup(
                 swerve.driveSwerveCommand(()-> 0.25, ()-> 0, ()-> 0.25, ()-> false).withTimeout(5),
                 intake.intakeFromAngleCommand(HUMAN_PLAYER),
-                new WaitUntilCommand(intake.isAtShooterTrigger),
                 scoreNoteCommand(shooter.shootToAmpCommand())
                 /// TODO: add climber test
         );
@@ -148,14 +145,11 @@ public class RobotContainer {
         );
     }
 
-    private void initShuffleBoard(){
-        shouldDriveToCenterLineChooser.setDefaultOption("don't Drive", Commands.none());
-        shouldDriveToCenterLineChooser.addOption("drive", Commands.idle()); // this is my commandddd!!
-
+    private void init(){
         pitTab.add("Match prep", matchPrepCommand());
         pitTab.add("System tester", systemTesterCommand());
 
-        matchTab.add(new InstantCommand(()-> shooterWorks = !shooterWorks));
+        matchTab.add(new InstantCommand(()-> shooterWorks = !shooterWorks)); // TODO: display as toggle (not as button) in shuffleboard
     }
 
     public Command getAutonomousCommand(){
