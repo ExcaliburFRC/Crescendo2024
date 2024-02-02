@@ -27,7 +27,6 @@ public class Intake extends SubsystemBase {
 
     private final DigitalInput beamBreak = new DigitalInput(BEAMBREAK_PORT);
     public final Trigger hasNoteTrigger = new Trigger(beamBreak::get).debounce(0.2);
-    public final BooleanEvent noteIntakedTrigger = new BooleanEvent(CommandScheduler.getInstance().getActiveButtonLoop(), beamBreak::get).rising();
 
     private final PIDController anglePIDcontroller = new PIDController(PID_GAINS.kp, PID_GAINS.ki, PID_GAINS.kd);
     private final ArmFeedforward angleFFcontroller = new ArmFeedforward(FF_ANGLE_GAINS.ks, FF_ANGLE_GAINS.kg, FF_ANGLE_GAINS.kv);
@@ -77,6 +76,10 @@ public class Intake extends SubsystemBase {
 
     public Command intakeFromAngleCommand(INTAKE_ANGLE angle) {
         return setIntakeCommand(0.5, angle).until(hasNoteTrigger).withName("intakeCommand");
+    }
+
+    public Command intakeFromAngleCommand(INTAKE_ANGLE angle, Command vibrateCommand) {
+        return intakeFromAngleCommand(angle).andThen(vibrateCommand::schedule); // schedule it instead of composing it to free up the intake requirement immediately
     }
 
     public Command shootToAmpCommand() {

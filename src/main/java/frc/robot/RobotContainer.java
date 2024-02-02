@@ -59,8 +59,8 @@ public class RobotContainer {
                         () -> applyDeadband(-driver.getLeftX(), 0.07),
                         () -> applyDeadband(-driver.getRightX(), 0.07),
                         driver.R3().and(()-> intake.getCurrentCommand().getName().equals("intakeCommand")), // activate robot oriented only while intaking
-                        driver::getL2Axis,
-                        ()-> driver.R1().getAsBoolean()? SPEAKER.pose.get() : emptyPose)
+                        driver::getL2Axis, // decelerator
+                        ()-> driver.R1().getAsBoolean()? SPEAKER.pose.get() : emptyPose) // if R1 pressed, turn swerve to Speaker
         );
 
         shooter.setDefaultCommand(shooter.prepShooterCommand(isAtSpeakerRadius, intake));
@@ -86,8 +86,8 @@ public class RobotContainer {
                 ()-> shooterWorks)
         );
         driver.triangle().toggleOnTrue(shooter.shootFromWooferCommand());
-        driver.cross().toggleOnTrue(intake.intakeFromAngleCommand(HUMAN_PLAYER));
-        driver.circle().toggleOnTrue(intake.intakeFromAngleCommand(GROUND));
+        driver.cross().toggleOnTrue(intake.intakeFromAngleCommand(HUMAN_PLAYER, vibrateControllerCommand(50, 0.5)));
+        driver.circle().toggleOnTrue(intake.intakeFromAngleCommand(GROUND, vibrateControllerCommand(50, 0.5)));
 
         // autonomous intake from HP stations
         driver.povRight().onTrue(swerve.pathFindToLocation(HP_RIGHT).alongWith(intake.intakeFromAngleCommand(HUMAN_PLAYER)).until(terminateAutoTrigger));
@@ -99,10 +99,6 @@ public class RobotContainer {
                 swerve.pathFindToLocation(AMPLIFIER),
                 shooter.shootToAmpCommand()
         ));
-
-        // vibrate driver controller after note intake
-        new Trigger(intake.noteIntakedTrigger.and(()-> intake.getCurrentCommand().getName().equals("intakeCommand")))
-                .onTrue(vibrateControllerCommand(50, 0.5));
     }
 
     // methods
