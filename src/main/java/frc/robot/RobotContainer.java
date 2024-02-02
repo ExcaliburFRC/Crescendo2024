@@ -39,7 +39,7 @@ public class RobotContainer {
     public final Trigger isAtSpeakerRadius = new Trigger(()-> swerve.getDistanceFromPose(SPEAKER_CENTER.pose.get()) < SPEAKER_PREP_RADIUS);
 
     // TODO: find leftX & leftY axis indexes
-    public final Trigger terminatePathTrigger = new Trigger(driver.axisGreaterThan(0, 0.5).or(driver.axisGreaterThan(0, 0.5)));
+    public final Trigger terminateAutoTrigger = new Trigger(driver.axisGreaterThan(0, 0.5).or(driver.axisGreaterThan(0, 0.5)));
 
     private final Pose2d emptyPose = new Pose2d();
 
@@ -75,6 +75,9 @@ public class RobotContainer {
         driver.R1().and(()-> Math.max(swerve.getRobotRelativeSpeeds().vxMetersPerSecond, swerve.getRobotRelativeSpeeds().vyMetersPerSecond) < 0.2)
         .whileTrue(scoreNoteCommand(shooter.shootFromWooferCommand()));
 
+        // "fake" shooter in motion using preset path w/ shoot command
+        driver.R2().onTrue(swerve.shootInMotionCommand().until(terminateAutoTrigger));
+
         // manual actions
         // if the shooter doesn't work, we shoot the note from the intake
         driver.square().toggleOnTrue(new ConditionalCommand(
@@ -87,9 +90,9 @@ public class RobotContainer {
         driver.circle().toggleOnTrue(intake.intakeFromAngleCommand(GROUND));
 
         // autonomous intake from HP stations
-        driver.povRight().onTrue(swerve.pathFindToLocation(HP_RIGHT).alongWith(intake.intakeFromAngleCommand(HUMAN_PLAYER)).until(terminatePathTrigger));
-        driver.povUp().onTrue(swerve.pathFindToLocation(HP_CENTER).alongWith(intake.intakeFromAngleCommand(HUMAN_PLAYER)).until(terminatePathTrigger));
-        driver.povLeft().onTrue(swerve.pathFindToLocation(HP_LEFT).alongWith(intake.intakeFromAngleCommand(HUMAN_PLAYER)).until(terminatePathTrigger));
+        driver.povRight().onTrue(swerve.pathFindToLocation(HP_RIGHT).alongWith(intake.intakeFromAngleCommand(HUMAN_PLAYER)).until(terminateAutoTrigger));
+        driver.povUp().onTrue(swerve.pathFindToLocation(HP_CENTER).alongWith(intake.intakeFromAngleCommand(HUMAN_PLAYER)).until(terminateAutoTrigger));
+        driver.povLeft().onTrue(swerve.pathFindToLocation(HP_LEFT).alongWith(intake.intakeFromAngleCommand(HUMAN_PLAYER)).until(terminateAutoTrigger));
 
         // auto drive to amp and score
         driver.povDown().whileTrue(scoreNoteCommand(

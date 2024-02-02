@@ -364,6 +364,17 @@ public class Swerve extends SubsystemBase {
     public Command pathFindToPose(Pose2d pose) {
         return pathFindToPose(pose, PATH_CONSTRAINTS, 0);
     }
+
+    public Command shootInMotionCommand(){
+        PathPlannerPath topPath = PathPlannerPath.fromPathFile("ShootInMotionTop");
+        PathPlannerPath bottomPath = PathPlannerPath.fromPathFile("ShootInMotionBottom");
+
+        return new ConditionalCommand(
+                AutoBuilder.pathfindThenFollowPath(topPath, PATH_CONSTRAINTS),
+                AutoBuilder.pathfindThenFollowPath(bottomPath, PATH_CONSTRAINTS),
+                ()-> getDistanceFromPose(topPath.getStartingDifferentialPose()) < getDistanceFromPose(bottomPath.getStartingDifferentialPose())
+        );
+    }
     // ----------
 
     private void initShuffleboardData() {
