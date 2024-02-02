@@ -8,6 +8,7 @@ package frc.robot;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import monologue.Logged;
@@ -68,6 +69,7 @@ public class Robot extends TimedRobot implements Logged {
   public void autonomousInit() {
     NamedCommands.registerCommand("ShouldDriveToCenterLine", robotContainer.shouldDriveToCenterLineChooser.getSelected());
     autonomousCommand = robotContainer.getAutonomousCommand();
+    Shuffleboard.selectTab("match");
 
     // schedule the autonomous command (example)
     if (autonomousCommand != null) {

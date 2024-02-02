@@ -1,0 +1,123 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 2.36516036668437,
+        "y": 2.472117671508071
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 1.2403288862521782,
+        "y": 2.758259013021522
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 1.2177246172674163,
+        "y": 5.569261320340823
+      },
+      "prevControl": {
+        "x": 1.2014120858382886,
+        "y": 4.878697489841084
+      },
+      "nextControl": {
+        "x": 1.2457108550580738,
+        "y": 6.754012053478652
+      },
+      "isLocked": false,
+      "linkedName": "StartingMiddle"
+    },
+    {
+      "anchor": {
+        "x": 3.6711847969150484,
+        "y": 7.061860669175885
+      },
+      "prevControl": {
+        "x": 2.6636802364513823,
+        "y": 7.145819382547856
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.7,
+      "rotationDegrees": 180.0,
+      "rotateFast": true
+    },
+    {
+      "waypointRelativePos": 1.3,
+      "rotationDegrees": 180.0,
+      "rotateFast": false
+    }
+  ],
+  "constraintZones": [
+    {
+      "name": "SlowForShoot",
+      "minWaypointRelativePos": 0.6,
+      "maxWaypointRelativePos": 1.35,
+      "constraints": {
+        "maxVelocity": 1.5,
+        "maxAcceleration": 1.0,
+        "maxAngularVelocity": 360.0,
+        "maxAngularAcceleration": 360.0
+      }
+    }
+  ],
+  "eventMarkers": [
+    {
+      "name": "shoot",
+      "waypointRelativePos": 0.85,
+      "command": {
+        "type": "sequential",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "shootFromWoofer"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "prepShooter",
+      "waypointRelativePos": 0,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "prepShooter"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 5.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 720.0,
+    "maxAngularAcceleration": 720.0
+  },
+  "goalEndState": {
+    "velocity": 2.0,
+    "rotation": 0,
+    "rotateFast": true
+  },
+  "reversed": false,
+  "folder": "Teleop",
+  "previewStartingState": null,
+  "useDefaultConstraints": false
+}

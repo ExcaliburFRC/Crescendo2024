@@ -7,6 +7,7 @@ import edu.wpi.first.units.*;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.event.BooleanEvent;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -22,10 +23,11 @@ public class Intake extends SubsystemBase {
     private final Neo intakeMotor = new Neo(INTAKE_MOTOR_ID);
     private final Neo angleMotor = new Neo(ANGLE_MOTOR_ID);
 
-    private final DutyCycleEncoder intakeEncoder = new DutyCycleEncoder(INTAKE_ENCODER_ID);
+    private final DutyCycleEncoder intakeEncoder = new DutyCycleEncoder(ENCODER_PORT);
 
-    private final DigitalInput beamBreak = new DigitalInput(0);
-    public final Trigger hasNoteTrigger = new Trigger(beamBreak::get);
+    private final DigitalInput beamBreak = new DigitalInput(BEAMBREAK_PORT);
+    public final Trigger hasNoteTrigger = new Trigger(beamBreak::get).debounce(0.2);
+    public final BooleanEvent noteIntakedTrigger = new BooleanEvent(CommandScheduler.getInstance().getActiveButtonLoop(), beamBreak::get).rising();
 
     private final PIDController anglePIDcontroller = new PIDController(PID_GAINS.kp, PID_GAINS.ki, PID_GAINS.kd);
     private final ArmFeedforward angleFFcontroller = new ArmFeedforward(FF_ANGLE_GAINS.ks, FF_ANGLE_GAINS.kg, FF_ANGLE_GAINS.kv);
@@ -74,7 +76,7 @@ public class Intake extends SubsystemBase {
     }
 
     public Command intakeFromAngleCommand(INTAKE_ANGLE angle) {
-        return setIntakeCommand(0.5, angle).until(hasNoteTrigger);
+        return setIntakeCommand(0.5, angle).until(hasNoteTrigger).withName("intakeCommand");
     }
 
     public Command shootToAmpCommand() {
