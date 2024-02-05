@@ -39,11 +39,10 @@ public class RobotContainer {
 
     // swerve
     boolean robotRelativeDrive = false;
+    final Pose2d emptyPose = new Pose2d();
 
     FieldLocations HP_Station = HP_CENTER;
     FieldLocations shooter_Location = AMPLIFIER;
-
-    final Pose2d emptyPose = new Pose2d();
 
     // TODO: find leftX & leftY axis indexes
     final Trigger terminateAutoTrigger = new Trigger(driver.axisGreaterThan(0, 0.5).or(driver.axisGreaterThan(0, 0.5)));
@@ -51,7 +50,6 @@ public class RobotContainer {
     // shooter
     boolean shooterWorks = true;
     final Trigger isAtSpeakerRadius = new Trigger(() -> swerve.getDistanceFromPose(SPEAKER_CENTER.pose.get()) < SPEAKER_PREP_RADIUS);
-    final GenericEntry shooterVelOffset = matchTab.add("shooterVelOffset", 0).getEntry();
 
     // intake
     boolean intakeWorks = true;
@@ -106,7 +104,7 @@ public class RobotContainer {
                 intake.intakeFromAngleCommand(HUMAN_PLAYER, vibrateControllerCommand(50, 0.5)),
                 shooter.intakeFromShooterCommand(),
                 () -> intakeWorks));
-        driver.triangle().toggleOnTrue(shooter.shootFromWooferCommand(()-> shooterVelOffset.getDouble(0)));
+        driver.triangle().toggleOnTrue(shooter.shootFromWooferCommand());
         driver.circle().toggleOnTrue(intake.intakeFromAngleCommand(GROUND, vibrateControllerCommand(50, 0.5)));
 
         // TODO: add auto intake from ground

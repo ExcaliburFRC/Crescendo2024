@@ -69,23 +69,18 @@ public class Shooter extends SubsystemBase {
                 () -> shooter.set(getPIDtoSetpoint(RPM)), shooter::stopMotor).until(noteShotTrigger);
     }
 
-    private Command setShooterRPMcommand(DoubleSupplier RPM){
-        return this.runEnd(
-                () -> shooter.set(getPIDtoSetpoint(RPM.getAsDouble())), shooter::stopMotor).until(noteShotTrigger);
-    }
-
     public Command shootToAmpCommand() {
         return setShooterRPMcommand(AMP_RPM);
     }
 
-    public Command shootFromWooferCommand(DoubleSupplier offset) {
-        return setShooterRPMcommand(()-> WOOFER_RPM + offset.getAsDouble());
+    public Command shootFromWooferCommand() {
+        return setShooterRPMcommand(WOOFER_RPM);
     }
 
     public Command shootToLocationCommand(FieldLocations locations){
         return new ConditionalCommand(
                 shootToAmpCommand(),
-                shootFromWooferCommand(()-> 0),
+                shootFromWooferCommand(),
                 () -> locations.equals(FieldLocations.AMPLIFIER));
     }
 
