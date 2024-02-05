@@ -7,7 +7,6 @@ import edu.wpi.first.units.*;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.event.BooleanEvent;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -32,6 +31,8 @@ public class Intake extends SubsystemBase {
     private final ArmFeedforward angleFFcontroller = new ArmFeedforward(FF_ANGLE_GAINS.ks, FF_ANGLE_GAINS.kg, FF_ANGLE_GAINS.kv);
 
     public final Trigger isAtShooterTrigger = new Trigger(() -> Math.abs(getAngle() - INTAKE_ANGLE.SHOOTER.angle) < SHOOTER_ANGLE_THRESHOLD).debounce(0.2);
+
+    public final Trigger intakingTrigger = new Trigger(()-> getCurrentCommand().equals("IntakeCommand"));
 
     public Intake() {
         intakeMotor.setConversionFactors(INTAKE_MOTOR_POSITION_CONVERSION_FACTOR, INTAKE_MOTOR_VELOCITY_CONVERSION_FACTOR);
