@@ -7,7 +7,6 @@ import edu.wpi.first.units.*;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.event.BooleanEvent;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -27,12 +26,13 @@ public class Intake extends SubsystemBase {
 
     private final DigitalInput beamBreak = new DigitalInput(BEAMBREAK_PORT);
     public final Trigger hasNoteTrigger = new Trigger(beamBreak::get).debounce(0.2);
-    public final BooleanEvent noteIntakedTrigger = new BooleanEvent(CommandScheduler.getInstance().getActiveButtonLoop(), beamBreak::get).rising();
 
     private final PIDController anglePIDcontroller = new PIDController(PID_GAINS.kp, PID_GAINS.ki, PID_GAINS.kd);
     private final ArmFeedforward angleFFcontroller = new ArmFeedforward(FF_ANGLE_GAINS.ks, FF_ANGLE_GAINS.kg, FF_ANGLE_GAINS.kv);
 
     public final Trigger isAtShooterTrigger = new Trigger(() -> Math.abs(getAngle() - INTAKE_ANGLE.SHOOTER.angle) < SHOOTER_ANGLE_THRESHOLD).debounce(0.2);
+
+    public final Trigger intakingTrigger = new Trigger(()-> getCurrentCommand().equals("IntakeCommand"));
 
     public Intake() {
         intakeMotor.setConversionFactors(INTAKE_MOTOR_POSITION_CONVERSION_FACTOR, INTAKE_MOTOR_VELOCITY_CONVERSION_FACTOR);
@@ -77,6 +77,10 @@ public class Intake extends SubsystemBase {
 
     public Command intakeFromAngleCommand(INTAKE_ANGLE angle) {
         return setIntakeCommand(0.5, angle).until(hasNoteTrigger).withName("intakeCommand");
+    }
+
+    public Command intakeFromAngleCommand(INTAKE_ANGLE angle, Command vibrateCommand) {
+        return intakeFromAngleCommand(angle).andThen(vibrateCommand::schedule); // schedule it instead of composing it to free up the intake requirement immediately
     }
 
     public Command shootToAmpCommand() {

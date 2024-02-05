@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.Neo;
+import frc.robot.Constants.FieldConstants.FieldLocations;
 
 import java.util.function.DoubleSupplier;
 
@@ -76,10 +77,21 @@ public class Shooter extends SubsystemBase {
         return setShooterRPMcommand(WOOFER_RPM);
     }
 
+    public Command shootToLocationCommand(FieldLocations locations){
+        return new ConditionalCommand(
+                shootToAmpCommand(),
+                shootFromWooferCommand(),
+                () -> locations.equals(FieldLocations.AMPLIFIER));
+    }
+
     public Command shootFromDistanceCommand(DoubleSupplier distance) {
         return this.runEnd(
                 () -> shooter.set(getPIDtoSetpoint(metersToRPM.get(distance.getAsDouble()))), shooter::stopMotor)
                 .until(noteShotTrigger);
+    }
+
+    public Command intakeFromShooterCommand() {
+        return this.runEnd(()-> shooter.set(-0.5), shooter::stopMotor).until(beamBreak::get);
     }
 
     public Command prepShooterCommand(Trigger isAtSpeakerRadius, Intake intake) {
@@ -104,10 +116,10 @@ public class Shooter extends SubsystemBase {
                 () -> shooter.setIdleMode(kBrake)
         );
     }
-
     // sysid stuff
     private final MutableMeasure<Voltage> appliedVoltage = mutable(Volts.of(0));
     private final MutableMeasure<Velocity<Angle>> velocity = mutable(DegreesPerSecond.of(0));
+
     private final MutableMeasure<Angle> degrees = mutable(Degrees.of(0));
 
     private final SysIdRoutine shooterSysid = new SysIdRoutine(
