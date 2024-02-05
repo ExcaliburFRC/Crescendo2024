@@ -1,6 +1,7 @@
 package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -33,23 +34,27 @@ public class RobotContainer {
     private final CommandPS5Controller driver = new CommandPS5Controller(0);
     private final XboxController driverVibration = new XboxController(4);
 
-    public boolean shooterWorks = true;
-    public boolean intakeWorks = true;
-
-    public boolean robotRelativeDrive = false;
-
-    public FieldLocations HP_Station = HP_CENTER;
-    public FieldLocations shooter_Location = AMPLIFIER;
-
-    public final Trigger isAtSpeakerRadius = new Trigger(() -> swerve.getDistanceFromPose(SPEAKER_CENTER.pose.get()) < SPEAKER_PREP_RADIUS);
-
-    // TODO: find leftX & leftY axis indexes
-    public final Trigger terminateAutoTrigger = new Trigger(driver.axisGreaterThan(0, 0.5).or(driver.axisGreaterThan(0, 0.5)));
-
-    private final Pose2d emptyPose = new Pose2d();
-
     public ShuffleboardTab matchTab = Shuffleboard.getTab("match");
     public ShuffleboardTab pitTab = Shuffleboard.getTab("pit");
+
+    // swerve
+    boolean robotRelativeDrive = false;
+
+    FieldLocations HP_Station = HP_CENTER;
+    FieldLocations shooter_Location = AMPLIFIER;
+
+    final Pose2d emptyPose = new Pose2d();
+
+    // TODO: find leftX & leftY axis indexes
+    final Trigger terminateAutoTrigger = new Trigger(driver.axisGreaterThan(0, 0.5).or(driver.axisGreaterThan(0, 0.5)));
+
+    // shooter
+    boolean shooterWorks = true;
+    final Trigger isAtSpeakerRadius = new Trigger(() -> swerve.getDistanceFromPose(SPEAKER_CENTER.pose.get()) < SPEAKER_PREP_RADIUS);
+    final GenericEntry shooterVelOffset = matchTab.add("shooterVelOffset", 0).getEntry();
+
+    // intake
+    boolean intakeWorks = true;
 
     public RobotContainer() {
         init();
@@ -101,10 +106,9 @@ public class RobotContainer {
                 intake.intakeFromAngleCommand(HUMAN_PLAYER, vibrateControllerCommand(50, 0.5)),
                 shooter.intakeFromShooterCommand(),
                 () -> intakeWorks));
-        driver.triangle().toggleOnTrue(shooter.shootFromWooferCommand());
+        driver.triangle().toggleOnTrue(shooter.shootFromWooferCommand(()-> shooterVelOffset.getDouble(0)));
         driver.circle().toggleOnTrue(intake.intakeFromAngleCommand(GROUND, vibrateControllerCommand(50, 0.5)));
 
-        // autonomous intake from HP stations
         // TODO: add auto intake from ground
 //        driver.povDown().onTrue(swerve.intakeNoteCommand().alongWith(intake.intakeFromAngleCommand(GROUND)).until(terminateAutoTrigger));
         driver.povRight().onTrue(swerve.shootInMotionCommand().until(terminateAutoTrigger));
