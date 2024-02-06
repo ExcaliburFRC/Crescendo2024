@@ -114,12 +114,13 @@ public final class Constants {
         public static final double kMaxLinearAcceleration = 0;
 
         public static final double kGearing = 0;
-        public static final double kDriveWheelRaius = 0;
+        public static final double kWinchRadius = 0;
 
-        public static final double kRotToMeter = 2 * PI * kDriveWheelRaius * kGearing;
+        public static final double kRotToMeter = 2 * PI * kWinchRadius * kGearing;
         public static final double kRotToMeterPerSec = kRotToMeter / 60;
         public static final int leftID = 0;
         public static final int rightID = 0;
+        public static final double kG = 0; //the weight of the robot
         //representing the location of the arms on an axis
         // that is parallel to the middle of the robot (the 0 point is the middle of the robot)
         public static final double LEFT_ARM_LOCATION = 0;

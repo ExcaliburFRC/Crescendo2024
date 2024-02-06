@@ -2,18 +2,17 @@ package frc.robot.subsystems.climber;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.*;
+import frc.robot.Constants;
+import org.opencv.core.Mat;
+
 import java.util.function.DoubleSupplier;
+
 import static frc.robot.Constants.ClimberConstants.*;
+import static frc.robot.Constants.SwerveConstants.TRACK_WIDTH;
 
 public class Climber extends SubsystemBase {
-    private final ClimberSide leftSide;
-    private final ClimberSide rightSide;
-
-
-    public Climber() {
-        leftSide = new ClimberSide(LEFT_GAINS, leftID);
-        rightSide = new ClimberSide(RIGHT_GAINS, rightID);
-    }
+    private final ClimberSide leftSide = new ClimberSide(LEFT_GAINS, leftID);
+    private final ClimberSide rightSide = new ClimberSide(RIGHT_GAINS, rightID);
 
     public Command setClimbHeightsCommand(double leftLength, double rightLength) {
         return new ParallelCommandGroup(
@@ -42,8 +41,21 @@ public class Climber extends SubsystemBase {
                                 rightSide.getHeight() - getDesiredHeight()));
     }
 
-    private void setLiftForces(double chainRoll) {
-        //TODO: add pid calculation and ff to each side lift force
+    private void setLiftForces(double chainRollRad) {
+        //TODO: finish the function
+        if (chainRollRad > 0) {
+            leftSide.setLiftingForce(
+                    -kG * (TRACK_WIDTH / 2 * Math.cos(chainRollRad) - rightSide.getHeight() * Math.sin(chainRollRad)) /
+                            ((rightSide.getHeight() + leftSide.getHeight()) * Math.cos(chainRollRad))
+            );
+
+            rightSide.setLiftingForce(
+                    kG +
+                            kG * (TRACK_WIDTH/2 * Math.cos(chainRollRad) - )
+            );
+        } else {
+
+        }
     }
 
     private double getChainHeight(Translation2d robotTranslation, double armLoc) {
