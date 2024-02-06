@@ -41,20 +41,30 @@ public class Climber extends SubsystemBase {
                                 rightSide.getHeight() - getDesiredHeight()));
     }
 
+    //Resnick did some physics stuff for us
     private void setLiftForces(double chainRollRad) {
-        //TODO: finish the function
         if (chainRollRad > 0) {
             leftSide.setLiftingForce(
                     -kG * (TRACK_WIDTH / 2 * Math.cos(chainRollRad) - rightSide.getHeight() * Math.sin(chainRollRad)) /
-                            ((rightSide.getHeight() + leftSide.getHeight()) * Math.cos(chainRollRad))
+                            ((rightSide.getHeight() + leftSide.getHeight()) * Math.sin(chainRollRad))
             );
 
             rightSide.setLiftingForce(
                     kG +
-                            kG * (TRACK_WIDTH/2 * Math.cos(chainRollRad) - )
+                            kG * (TRACK_WIDTH / 2 * Math.cos(chainRollRad) - rightSide.getHeight() * Math.sin(chainRollRad)) /
+                                    ((rightSide.getHeight() + leftSide.getHeight()) * Math.sin(chainRollRad))
             );
         } else {
+            leftSide.setLiftingForce(
+                    kG +
+                            kG * (TRACK_WIDTH / 2 * Math.cos(-chainRollRad) - leftSide.getHeight() * Math.sin(-chainRollRad)) /
+                                    ((rightSide.getHeight() + leftSide.getHeight()) * Math.sin(-chainRollRad))
+            );
 
+            rightSide.setLiftingForce(
+                    -kG * (TRACK_WIDTH / 2 * Math.cos(-chainRollRad) - leftSide.getHeight() * Math.sin(-chainRollRad)) /
+                            ((rightSide.getHeight() + leftSide.getHeight()) * Math.sin(-chainRollRad))
+            );
         }
     }
 
