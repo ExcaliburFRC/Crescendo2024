@@ -75,8 +75,8 @@ public class Shooter extends SubsystemBase {
                     shooter.set(getPIDtoSetpoint(AMP_LOWER_SHOOTER_RPM));
                     shooterFollower.set(getPIDtoSetpoint(AMP_UPPER_SHOOTER_RPM));
                 },
-                shooter::stopMotor
-        );
+                shooter::stopMotor)
+                .until(noteShotTrigger);
     }
 
     public Command shootFromWooferCommand() {
