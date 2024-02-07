@@ -23,7 +23,10 @@ import static com.revrobotics.CANSparkBase.IdleMode.kCoast;
 import static edu.wpi.first.units.MutableMeasure.mutable;
 import static edu.wpi.first.units.Units.*;
 import static edu.wpi.first.units.Units.RPM;
+import static frc.lib.Color.Colors.GREEN;
 import static frc.robot.Constants.ShooterConstants.*;
+import static frc.robot.subsystems.LEDs.LEDPattern.BLINKING;
+import static frc.robot.subsystems.LEDs.LEDPattern.SOLID;
 
 public class Shooter extends SubsystemBase {
     private final Neo shooter = new Neo(SHOOTER_LEADER_MOTOR_ID);
@@ -41,7 +44,11 @@ public class Shooter extends SubsystemBase {
 
     private static InterpolatingDoubleTreeMap metersToRPM = new InterpolatingDoubleTreeMap();
 
-    public Trigger shooterReadyTrigger = new Trigger(shooterPID::atSetpoint);
+    LEDs leds = LEDs.getInstance();
+
+    public Trigger shooterReadyTrigger = new Trigger(shooterPID::atSetpoint)
+            .onTrue(leds.applyPatternCommand(SOLID, GREEN.color))
+            .onFalse(new InstantCommand(()-> leds.restoreLEDs()));
 
     public Shooter() {
         shooter.setIdleMode(kCoast);
@@ -71,11 +78,11 @@ public class Shooter extends SubsystemBase {
 
     public Command shootToAmpCommand() {
         return this.runEnd(
-                () -> {
-                    shooter.set(getPIDtoSetpoint(AMP_LOWER_SHOOTER_RPM));
-                    shooterFollower.set(getPIDtoSetpoint(AMP_UPPER_SHOOTER_RPM));
-                },
-                shooter::stopMotor)
+                        () -> {
+                            shooter.set(getPIDtoSetpoint(AMP_LOWER_SHOOTER_RPM));
+                            shooterFollower.set(getPIDtoSetpoint(AMP_UPPER_SHOOTER_RPM));
+                        },
+                        shooter::stopMotor)
                 .until(noteShotTrigger);
     }
 
@@ -102,7 +109,10 @@ public class Shooter extends SubsystemBase {
 
     public Command prepShooterCommand(Trigger isAtSpeakerRadius, Intake intake) {
         return new ConditionalCommand(
-                prepShooterCommand(),
+                new ParallelCommandGroup(
+                        prepShooterCommand(),
+                        leds.applyPatternCommand(BLINKING, GREEN.color)
+                ),
                 Commands.runOnce(shooter::stopMotor, this),
                 isAtSpeakerRadius.and(intake.isAtShooterTrigger).and(intake.hasNoteTrigger))
                 .repeatedly();

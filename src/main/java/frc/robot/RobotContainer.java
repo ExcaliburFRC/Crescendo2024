@@ -1,7 +1,6 @@
 package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -16,12 +15,11 @@ import frc.robot.subsystems.swerve.Swerve;
 
 import static edu.wpi.first.math.MathUtil.applyDeadband;
 import static edu.wpi.first.wpilibj.GenericHID.RumbleType.kBothRumble;
-import static frc.lib.Color.Colors.WHITE;
+import static frc.lib.Color.Colors.*;
 import static frc.robot.Constants.FieldConstants.FieldLocations.*;
-import static frc.robot.Constants.IntakeConstants.INTAKE_ANGLE.GROUND;
-import static frc.robot.Constants.IntakeConstants.INTAKE_ANGLE.HUMAN_PLAYER;
+import static frc.robot.Constants.IntakeConstants.INTAKE_ANGLE.*;
 import static frc.robot.Constants.ShooterConstants.SPEAKER_PREP_RADIUS;
-import static frc.robot.subsystems.LEDs.LEDPattern.SOLID;
+import static frc.robot.subsystems.LEDs.LEDPattern.*;
 
 public class RobotContainer {
     // subsystems
@@ -72,7 +70,6 @@ public class RobotContainer {
         );
 
         shooter.setDefaultCommand(shooter.prepShooterCommand(isAtSpeakerRadius, intake));
-
         driver.touchpad().whileTrue(toggleMotorsIdleMode().alongWith(leds.applyPatternCommand(SOLID, WHITE.color)));
         driver.PS().onTrue(swerve.resetOdometryAngleCommand());
 
@@ -112,6 +109,8 @@ public class RobotContainer {
         driver.povRight().onTrue(swerve.shootInMotionCommand().until(terminateAutoTrigger));
         driver.povUp().onTrue(swerve.pathFindToLocation(HP_Station).alongWith(intake.intakeFromAngleCommand(HUMAN_PLAYER)).until(terminateAutoTrigger));
         driver.povLeft().onTrue(scoreNoteCommand(swerve.pathFindToLocation(shooter_Location), shooter.shootToLocationCommand(shooter_Location)).until(terminateAutoTrigger));
+
+        leds.setDefaultCommand(leds.applyPatternCommand(TRAIN, TEAM_GOLD.color, TEAM_BLUE.color));
     }
 
     // methods
@@ -126,7 +125,11 @@ public class RobotContainer {
     private Command scoreNoteCommand(Command shooterCommand) {
         return new ParallelCommandGroup(
                 shooterCommand,
-                new WaitUntilCommand(shooter.shooterReadyTrigger).andThen(intake.transportToShooterCommand()));
+                new WaitUntilCommand(shooter.shooterReadyTrigger).andThen(
+                        new ParallelCommandGroup(
+                        intake.transportToShooterCommand(),
+                        leds.applyPatternCommand(SOLID, RED.color)))
+        );
     }
 
     private Command scoreNoteCommand(Command swerveCommand, Command shooterCommand) {

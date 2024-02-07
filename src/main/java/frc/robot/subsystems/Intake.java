@@ -16,7 +16,9 @@ import java.util.function.DoubleSupplier;
 
 import static edu.wpi.first.units.MutableMeasure.mutable;
 import static edu.wpi.first.units.Units.*;
+import static frc.lib.Color.Colors.ORANGE;
 import static frc.robot.Constants.IntakeConstants.*;
+import static frc.robot.subsystems.LEDs.LEDPattern.BLINKING;
 
 public class Intake extends SubsystemBase {
     private final Neo intakeMotor = new Neo(INTAKE_MOTOR_ID);
@@ -72,6 +74,7 @@ public class Intake extends SubsystemBase {
         return this.runEnd(()-> {
             setIntakeAngle(angle);
             setIntakeSpeed(speed);
+            LEDs.getInstance().applyPatternCommand(BLINKING, ORANGE.color);
         }, this::stopMotors);
     }
 

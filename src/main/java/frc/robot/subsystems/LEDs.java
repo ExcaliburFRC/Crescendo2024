@@ -17,6 +17,11 @@ import static frc.lib.Color.Colors.OFF;
 import static frc.robot.Constants.LedsConstants.LEDS_PORT;
 import static frc.robot.Constants.LedsConstants.LENGTH;
 
+// shooterPreparing - Green Blinking
+// shooterReady - Green Solid
+// intaking - Orange Blinking
+//shooting - Red Solid
+
 public class LEDs extends SubsystemBase {
     private final AddressableLED LedStrip = new AddressableLED(LEDS_PORT);
     private final AddressableLEDBuffer buffer = new AddressableLEDBuffer(LENGTH);
