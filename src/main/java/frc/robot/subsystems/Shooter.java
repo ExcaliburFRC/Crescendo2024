@@ -57,7 +57,7 @@ public class Shooter extends SubsystemBase {
         metersToRPM.put(0.0, 0.0);
     }
 
-    private double getPIDtoSetpoint(double RPM){
+    private double getPIDtoSetpoint(double RPM) {
         double pid = shooterPID.calculate(shooter.getVelocity(), RPM);
         double ff = shooterFF.calculate(RPM, 0);
 
@@ -70,14 +70,20 @@ public class Shooter extends SubsystemBase {
     }
 
     public Command shootToAmpCommand() {
-        return setShooterRPMcommand(AMP_RPM);
+        return this.runEnd(
+                () -> {
+                    shooter.set(getPIDtoSetpoint(AMP_LOWER_SHOOTER_RPM));
+                    shooterFollower.set(getPIDtoSetpoint(AMP_UPPER_SHOOTER_RPM));
+                },
+                shooter::stopMotor)
+                .until(noteShotTrigger);
     }
 
     public Command shootFromWooferCommand() {
         return setShooterRPMcommand(WOOFER_RPM);
     }
 
-    public Command shootToLocationCommand(FieldLocations locations){
+    public Command shootToLocationCommand(FieldLocations locations) {
         return new ConditionalCommand(
                 shootToAmpCommand(),
                 shootFromWooferCommand(),
@@ -86,12 +92,12 @@ public class Shooter extends SubsystemBase {
 
     public Command shootFromDistanceCommand(DoubleSupplier distance) {
         return this.runEnd(
-                () -> shooter.set(getPIDtoSetpoint(metersToRPM.get(distance.getAsDouble()))), shooter::stopMotor)
+                        () -> shooter.set(getPIDtoSetpoint(metersToRPM.get(distance.getAsDouble()))), shooter::stopMotor)
                 .until(noteShotTrigger);
     }
 
     public Command intakeFromShooterCommand() {
-        return this.runEnd(()-> shooter.set(-0.5), shooter::stopMotor).until(beamBreak::get);
+        return this.runEnd(() -> shooter.set(-0.5), shooter::stopMotor).until(beamBreak::get);
     }
 
     public Command prepShooterCommand(Trigger isAtSpeakerRadius, Intake intake) {
@@ -103,7 +109,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public Command prepShooterCommand() {
-        return this.runOnce(()-> shooter.set(SPEAKER_PREP_DC));
+        return this.runOnce(() -> shooter.set(SPEAKER_PREP_DC));
     }
 
     public Command manualShooterCommand() {
@@ -116,6 +122,7 @@ public class Shooter extends SubsystemBase {
                 () -> shooter.setIdleMode(kBrake)
         );
     }
+
     // sysid stuff
     private final MutableMeasure<Voltage> appliedVoltage = mutable(Volts.of(0));
     private final MutableMeasure<Velocity<Angle>> velocity = mutable(DegreesPerSecond.of(0));

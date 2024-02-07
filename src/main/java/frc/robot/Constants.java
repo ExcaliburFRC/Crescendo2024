@@ -114,7 +114,8 @@ public final class Constants {
         public static final Gains SHOOTER_PID = new Gains(0,0,0);
         public static final Gains SHOOTER_FF = new Gains(0,0,0,0);
 
-        public static final double AMP_RPM = 0;
+        public static final double AMP_LOWER_SHOOTER_RPM = 0;
+        public static final double AMP_UPPER_SHOOTER_RPM = 0;
         public static final double WOOFER_RPM = 0;
 
         public static final double SHOOTER_PID_TOLERANCE = 100;
