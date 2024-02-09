@@ -126,7 +126,7 @@ public class RobotContainer {
         return new ParallelCommandGroup(
                 shooterCommand,
                 new WaitUntilCommand(shooter.shooterReadyTrigger).andThen(
-                        new ParallelCommandGroup(
+                        new ParallelDeadlineGroup(
                         intake.transportToShooterCommand(),
                         leds.applyPatternCommand(SOLID, RED.color)))
         );

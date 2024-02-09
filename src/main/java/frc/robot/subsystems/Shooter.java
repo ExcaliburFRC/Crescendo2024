@@ -44,11 +44,11 @@ public class Shooter extends SubsystemBase {
 
     private static InterpolatingDoubleTreeMap metersToRPM = new InterpolatingDoubleTreeMap();
 
-    LEDs leds = LEDs.getInstance();
+    private final LEDs leds = LEDs.getInstance();
 
     public Trigger shooterReadyTrigger = new Trigger(shooterPID::atSetpoint)
             .onTrue(leds.applyPatternCommand(SOLID, GREEN.color))
-            .onFalse(new InstantCommand(()-> leds.restoreLEDs()));
+            .onFalse(leds.restoreLEDs());
 
     public Shooter() {
         shooter.setIdleMode(kCoast);
@@ -113,13 +113,12 @@ public class Shooter extends SubsystemBase {
                         prepShooterCommand(),
                         leds.applyPatternCommand(BLINKING, GREEN.color)
                 ),
-                Commands.runOnce(shooter::stopMotor, this),
-                isAtSpeakerRadius.and(intake.isAtShooterTrigger).and(intake.hasNoteTrigger))
-                .repeatedly();
+                new RunCommand(shooter::stopMotor, this),
+                isAtSpeakerRadius.and(intake.isAtShooterTrigger).and(intake.hasNoteTrigger));
     }
 
     public Command prepShooterCommand() {
-        return this.runOnce(() -> shooter.set(SPEAKER_PREP_DC));
+        return new RunCommand(() -> shooter.set(SPEAKER_PREP_DC), this);
     }
 
     public Command manualShooterCommand() {

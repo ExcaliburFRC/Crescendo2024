@@ -36,6 +36,8 @@ public class Intake extends SubsystemBase {
 
     public final Trigger intakingTrigger = new Trigger(()-> getCurrentCommand().equals("IntakeCommand"));
 
+    private final LEDs leds = LEDs.getInstance();
+
     public Intake() {
         intakeMotor.setConversionFactors(INTAKE_MOTOR_POSITION_CONVERSION_FACTOR, INTAKE_MOTOR_VELOCITY_CONVERSION_FACTOR);
 
@@ -74,7 +76,7 @@ public class Intake extends SubsystemBase {
         return this.runEnd(()-> {
             setIntakeAngle(angle);
             setIntakeSpeed(speed);
-            LEDs.getInstance().applyPatternCommand(BLINKING, ORANGE.color);
+            leds.applyPatternCommand(BLINKING, ORANGE.color);
         }, this::stopMotors);
     }
 
