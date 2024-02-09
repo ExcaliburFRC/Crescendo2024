@@ -1,15 +1,15 @@
 package frc.lib;
 
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkPIDController;
+import com.revrobotics.*;
 
-public class Neo extends CANSparkMax{
+import static com.revrobotics.CANSparkLowLevel.MotorType.kBrushless;
+
+public class Neo extends CANSparkBase {
     private final SparkPIDController pidController;
     private final RelativeEncoder encoder;
 
     public Neo(int motorID){
-        super(motorID, MotorType.kBrushless);
+        super(motorID, kBrushless);
         this.encoder = this.getEncoder();
         this.pidController = this.getPIDController();
         setBrake(true); // motors default to brake mode
