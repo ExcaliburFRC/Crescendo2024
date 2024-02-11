@@ -8,18 +8,18 @@ import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.FieldConstants.FieldLocations;
-import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.LEDs;
-import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.swerve.Swerve;
 
 import static edu.wpi.first.math.MathUtil.applyDeadband;
 import static edu.wpi.first.wpilibj.GenericHID.RumbleType.kBothRumble;
 import static frc.lib.Color.Colors.*;
 import static frc.robot.Constants.FieldConstants.FieldLocations.*;
-import static frc.robot.Constants.IntakeConstants.INTAKE_ANGLE.*;
 import static frc.robot.Constants.ShooterConstants.SPEAKER_PREP_RADIUS;
 import static frc.robot.subsystems.LEDs.LEDPattern.*;
+import static frc.robot.subsystems.intake.IntakeState.intakeAngle.*;
 
 public class RobotContainer {
     // subsystems

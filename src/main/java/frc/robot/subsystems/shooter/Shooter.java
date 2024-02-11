@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.shooter;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -13,9 +13,11 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.lib.ContinuouslyConditionalCommand;
+import frc.robot.util.ContinuouslyConditionalCommand;
 import frc.lib.Neo;
 import frc.robot.Constants.FieldConstants.FieldLocations;
+import frc.robot.subsystems.LEDs;
+import frc.robot.subsystems.intake.Intake;
 
 import java.util.function.DoubleSupplier;
 
@@ -110,12 +112,9 @@ public class Shooter extends SubsystemBase {
 
     public Command prepShooterCommand(Trigger isAtSpeakerRadius, Intake intake) {
         return new ContinuouslyConditionalCommand(
-                new ParallelCommandGroup(
-                        prepShooterCommand(),
-                        leds.applyPatternCommand(BLINKING, GREEN.color)
-                ),
+                prepShooterCommand().alongWith(leds.applyPatternCommand(BLINKING, GREEN.color)),
                 new RunCommand(shooter::stopMotor, this),
-                isAtSpeakerRadius.and(intake.isAtShooterTrigger).and(intake.hasNoteTrigger)
+                isAtSpeakerRadius.and(intake.atShooterTrigger).and(intake.hasNoteTrigger)
         );
     }
 
@@ -159,10 +158,5 @@ public class Shooter extends SubsystemBase {
 
     public Command sysIdDynamic(SysIdRoutine.Direction direction) {
         return shooterSysid.dynamic(direction);
-    }
-
-    @Override
-    public String getName() {
-        return "Shooter";
     }
 }

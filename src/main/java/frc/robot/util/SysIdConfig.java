@@ -1,4 +1,4 @@
-package frc.lib;
+package frc.robot.util;
 
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 

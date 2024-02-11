@@ -10,7 +10,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.Gains;
-import frc.lib.SysIdConfig;
+import frc.robot.util.SysIdConfig;
 import frc.robot.util.AllianceUtils.AlliancePose;
 
 import static java.lang.Math.PI;
@@ -148,7 +148,8 @@ public final class Constants {
         public static final double INTAKE_MOTOR_VELOCITY_CONVERSION_FACTOR = 0;
 
         public static final double INTAKE_ENCODER_OFFSET_POSITION = 0;
-        public static final int SHOOTER_ANGLE_THRESHOLD = 2;
+        public static final int ANGLE_THRESHOLD = 2;
+        public static final int MINIMAL_INTAKE_ANGLE = 2;
 
         public static final double AMP_SHOOTER_SPEED = -0.5;
         public static final double STALL_DC = 0.1;
@@ -158,19 +159,6 @@ public final class Constants {
         private static final double TIMEOUT = 10;
 
         public static final SysIdRoutine.Config sysidConfig = new SysIdConfig(RAMP_RATE, STEP_VOLTAGE, TIMEOUT);
-
-        public enum INTAKE_ANGLE {
-            GROUND(0),
-            AMP(0),
-            HUMAN_PLAYER(0),
-            SHOOTER(0);
-
-            public final int angle;
-
-            INTAKE_ANGLE(int angle) {
-                this.angle = angle;
-            }
-        }
     }
 
     public static final class FieldConstants {
