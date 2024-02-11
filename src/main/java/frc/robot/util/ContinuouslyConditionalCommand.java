@@ -31,8 +31,7 @@ public class ContinuouslyConditionalCommand extends Command {
     }
 
     public void initialize() {
-        if (this.m_condition.getAsBoolean()) m_onTrue.schedule();
-        else this.m_onFalse.schedule();
+        getCurrentCommand().schedule();
     }
 
     public void execute() {
