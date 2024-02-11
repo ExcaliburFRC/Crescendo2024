@@ -61,7 +61,8 @@ public class Shooter extends SubsystemBase {
     }
 
     private void stopMotors(){
-
+        upperShooter.stopMotor();
+        lowerShooter.stopMotor();
     }
 
     private Command setShooterRPMcommand(ShooterState state) {
