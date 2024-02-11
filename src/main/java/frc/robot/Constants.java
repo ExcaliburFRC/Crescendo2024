@@ -104,36 +104,40 @@ public final class Constants {
     }
 
     public static final class ShooterConstants {
+
+        // ports & IDs
         public static final int UPPER_SHOOTER_MOTOR_ID = 31;
         public static final int LOWER_SHOOTER_MOTOR_ID = 32;
         public static final int ANGLE_SHOOTER_ID = 33;
 
-        public static final int SHOOTER_CURRENT_LIMIT = 70;
-
         public static final int SHOOTER_BEAMBREAK_CHANNEL = 0;
         public static final int SHOOTER_ENCODER_CHANNEL = 0;
 
+        public static final int SHOOTER_CURRENT_LIMIT = 70;
+        public static final double ANGLE_ENCODER_OFFSET = 0;
+
+        // gains
         public static final Gains UPPER_GAINS = new Gains(new Gains(0, 0,0), new Gains(0, 0, 0, 0));
         public static final Gains LOWER_GAINS = new Gains(new Gains(0, 0,0), new Gains(0, 0, 0, 0));
         public static final Gains ANGLE_GAINS = new Gains(new Gains(0, 0,0), new Gains(0, 0, 0, 0));
 
+        // RPM
         public static final double INTAKE_FROM_SHOOTER_RPM = 0;
         public static final double AMP_LOWER_SHOOTER_RPM = 0;
         public static final double AMP_UPPER_SHOOTER_RPM = 0;
         public static final double WOOFER_RPM = 0;
 
+        // Angle
         public static final double AMP_ANGLE = 0;
         public static final double WOOFER_ANGLE = 0;
         public static final double INTAKE_FROM_SHOOTER_ANGLE = 0;
 
-        public static final double SHOOTER_PID_TOLERANCE = 100;
+        // Tolerance
+        public static final double SHOOTER_PID_VELOCITY_TOLERANCE = 100;
         public static final double SHOOTER_PID_ANGLE_TOLERANCE = 0;
 
         public static final double SPEAKER_PREP_DC = 0;
         public static final double SPEAKER_PREP_RADIUS = 0;
-
-        public static final double ROT_TO_DEGREES = 0;
-        public static final double RPM_TO_DEG_PER_SEC = 0;
 
         // sysid
         private static final double RAMP_RATE = 3;

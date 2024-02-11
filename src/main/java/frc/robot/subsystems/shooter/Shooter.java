@@ -19,6 +19,7 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.util.ContinuouslyConditionalCommand;
 
 import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 import static com.revrobotics.CANSparkBase.IdleMode.kBrake;
 import static com.revrobotics.CANSparkBase.IdleMode.kCoast;
@@ -40,14 +41,9 @@ public class Shooter extends SubsystemBase {
     private final DigitalInput beamBreak = new DigitalInput(SHOOTER_BEAMBREAK_CHANNEL);
     public final BooleanEvent noteShotTrigger =
             new BooleanEvent(CommandScheduler.getInstance().getDefaultButtonLoop(), beamBreak::get).falling().debounce(0.2);
+
     private final DutyCycleEncoder shooterEncoder = new DutyCycleEncoder(SHOOTER_ENCODER_CHANNEL);
 
-    private final ShuffleboardTab shooterTab = Shuffleboard.getTab("ShooterTab");
-    private final GenericEntry shooterSpeed = shooterTab.add("shootSpeedPercent", 0).getEntry();
-    private final GenericEntry shooterAngle = shooterTab.add("shooterAngle", 0/*TODO: find default value*/).getEntry();
-
-    private static final InterpolatingDoubleTreeMap metersToRPM = new InterpolatingDoubleTreeMap();
-    private static final InterpolatingDoubleTreeMap metersToShooterAngle = new InterpolatingDoubleTreeMap();
 
     private final LEDs leds = LEDs.getInstance();
 
@@ -57,7 +53,6 @@ public class Shooter extends SubsystemBase {
 
     public Shooter() {
         upperShooter.setIdleMode(kCoast);
-        upperShooter.setConversionFactors(ROT_TO_DEGREES, RPM_TO_DEG_PER_SEC);
         upperShooter.setSmartCurrentLimit(SHOOTER_CURRENT_LIMIT);
 
         lowerShooter.setIdleMode(kCoast);
@@ -65,11 +60,11 @@ public class Shooter extends SubsystemBase {
 
         shooterAngleMotor.setIdleMode(kBrake);
 
-        metersToRPM.put(0.0, 0.0);
-        metersToShooterAngle.put(0.0, 0.0);
+        shooterEncoder.setPositionOffset(ANGLE_ENCODER_OFFSET);
+        shooterEncoder.setDistancePerRotation(360);
     }
 
-    private void stopShootMotors() {
+    private void stopShooterMotors() {
         upperShooter.stopMotor();
         lowerShooter.stopMotor();
     }
@@ -78,12 +73,12 @@ public class Shooter extends SubsystemBase {
         return this.runEnd(
                 () -> {
                     state.setVelocities(upperShooter.getVelocity(), lowerShooter.getVelocity());
-                    state.setAngleVelocity(shooterAngleMotor.getVelocity());
+                    state.setShooterAngle(shooterEncoder.getDistance());
 
                     upperShooter.set(state.upperVelocity);
                     lowerShooter.set(state.lowerVelocity);
-                    shooterAngleMotor.set(state.angleVelocity);
-                }, this::stopShootMotors).until(noteShotTrigger);
+                    shooterAngleMotor.set(state.shooterAngle);
+                }, this::stopShooterMotors).until(noteShotTrigger);
     }
 
     public Command shootToAmpCommand() {
@@ -102,32 +97,34 @@ public class Shooter extends SubsystemBase {
     }
 
     public Command shootFromDistanceCommand(DoubleSupplier distance) {
-        return setShooterStateCommand(new ShooterState(metersToRPM.get(distance.getAsDouble()), metersToShooterAngle.get(distance.getAsDouble())));
+        return this.runEnd(
+                () -> {
+                    ShooterState currentState = new ShooterState(distance.getAsDouble());
+
+                    currentState.setVelocities(upperShooter.getVelocity(), lowerShooter.getVelocity());
+                    currentState.setShooterAngle(shooterEncoder.getDistance());
+
+                    upperShooter.set(currentState.upperVelocity);
+                    lowerShooter.set(currentState.lowerVelocity);
+                    shooterAngleMotor.set(currentState.shooterAngle);
+                }, this::stopShooterMotors).until(noteShotTrigger);
     }
 
     public Command intakeFromShooterCommand() {
         return this.runEnd(() -> setShooterStateCommand(new ShooterState(INTAKE_FROM_SHOOTER_RPM, INTAKE_FROM_SHOOTER_ANGLE)),
-                this::stopShootMotors).until(beamBreak::get);
+                this::stopShooterMotors).until(beamBreak::get);
     }
 
     public Command prepShooterCommand(Trigger isAtSpeakerRadius, Intake intake) {
         return new ContinuouslyConditionalCommand(
                 prepShooterCommand().alongWith(leds.applyPatternCommand(BLINKING, GREEN.color)),
-                new RunCommand(this::stopShootMotors, this),
+                new RunCommand(this::stopShooterMotors, this),
                 isAtSpeakerRadius.and(intake.atShooterTrigger).and(intake.hasNoteTrigger)
         );
     }
 
     public Command prepShooterCommand() {
         return new RunCommand(() -> upperShooter.set(SPEAKER_PREP_DC), this);
-    }
-
-    public Command manualShooterCommand() {
-        return new RunCommand(() -> {
-            upperShooter.set(shooterSpeed.getDouble(0));
-            shooterAngleMotor.set(anglePIDcontroller.calculate(shooterEncoder.get(), shooterAngle.getDouble(0)) +
-                    angleFFcontroller.calculate(Math.toRadians(shooterAngle.getDouble(0)), 0));
-        }, this);
     }
 
     public Command toggleIdleModeCommand() {
