@@ -104,15 +104,15 @@ public final class Constants {
     }
 
     public static final class ShooterConstants {
-        public static final int SHOOTER_LEADER_MOTOR_ID = 31;
-        public static final int SHOOTER_FOLLOWER_MOTOR_ID = 32;
+        public static final int UPPER_SHOOTER_MOTOR_ID = 31;
+        public static final int LOWER_SHOOTER_MOTOR_ID = 32;
 
         public static final int SHOOTER_CURRENT_LIMIT = 70;
 
         public static final int SHOOTER_BEAMBREAK_CHANNEL = 0;
 
-        public static final Gains SHOOTER_PID = new Gains(0,0,0);
-        public static final Gains SHOOTER_FF = new Gains(0,0,0,0);
+        public static final Gains UPPER_GAINS = new Gains(new Gains(0, 0,0), new Gains(0, 0, 0, 0));
+        public static final Gains LOWER_GAINS = new Gains(new Gains(0, 0,0), new Gains(0, 0, 0, 0));
 
         public static final double AMP_LOWER_SHOOTER_RPM = 0;
         public static final double AMP_UPPER_SHOOTER_RPM = 0;

@@ -12,7 +12,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.Neo;
 import frc.robot.subsystems.LEDs;
-import frc.robot.subsystems.intake.IntakeState;
 import frc.robot.subsystems.intake.IntakeState.intakeAngle;
 
 import java.util.function.DoubleSupplier;
@@ -74,10 +73,6 @@ public class Intake extends SubsystemBase {
         angleMotor.stopMotor();
     }
 
-    private void stallIntakeMotor() {
-        if (hasNoteTrigger.getAsBoolean()) intakeMotor.set(STALL_DC);
-        else intakeMotor.stopMotor();
-    }
 
     private Command setIntakeCommand(IntakeState intakeState) {
         return this.runEnd(()-> {
@@ -85,8 +80,8 @@ public class Intake extends SubsystemBase {
 
             setIntakeAngle(intakeState.angle);
 
-            if (!intakeState.waitForAngle) setIntakeSpeed(intakeState.dc);
-            else if (atSetpointTrigger.getAsBoolean()) setIntakeSpeed(intakeState.dc);
+            if (!intakeState.waitForAngle) setIntakeSpeed(intakeState.intakeDC);
+            else if (atSetpointTrigger.getAsBoolean()) setIntakeSpeed(intakeState.intakeDC);
             else setIntakeSpeed(0);
 
         }, this::stopMotors);

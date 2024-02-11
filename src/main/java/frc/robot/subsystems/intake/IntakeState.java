@@ -3,7 +3,7 @@ package frc.robot.subsystems.intake;
 import static frc.robot.Constants.IntakeConstants.*;
 
 public class IntakeState {
-    public double dc;
+    public double intakeDC;
     public intakeAngle angle;
     public boolean waitForAngle;
 
@@ -22,7 +22,7 @@ public class IntakeState {
     }
 
     public IntakeState(double dc, intakeAngle angle, boolean waitForAngle) {
-        this.dc = dc;
+        this.intakeDC = dc;
         this.angle = angle;
         this.waitForAngle = waitForAngle;
     }
