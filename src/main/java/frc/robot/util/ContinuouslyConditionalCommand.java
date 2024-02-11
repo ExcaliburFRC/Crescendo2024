@@ -10,14 +10,14 @@ public class ContinuouslyConditionalCommand extends Command {
     private final Command m_onTrue;
     private final Command m_onFalse;
     private final BooleanSupplier m_condition;
-    private boolean m_negated;
+    private boolean negated;
 
     public ContinuouslyConditionalCommand(Command onTrue, Command onFalse, BooleanSupplier condition) {
         this.m_onTrue = ErrorMessages.requireNonNullParam(onTrue, "onTrue", "ConditionalCommand");
         this.m_onFalse = ErrorMessages.requireNonNullParam(onFalse, "onFalse", "ConditionalCommand");
         this.m_condition = ErrorMessages.requireNonNullParam(condition, "condition", "ConditionalCommand");
         CommandScheduler.getInstance().registerComposedCommands(onTrue, onFalse);
-        this.m_negated = condition.getAsBoolean();
+        negated = condition.getAsBoolean();
     }
 
     private Command getCurrentCommand(){
@@ -31,14 +31,15 @@ public class ContinuouslyConditionalCommand extends Command {
     }
 
     public void initialize() {
-        getCurrentCommand().schedule();
+        if (this.m_condition.getAsBoolean()) m_onTrue.schedule();
+        else this.m_onFalse.schedule();
     }
 
     public void execute() {
-        if (m_negated != m_condition.getAsBoolean()) {
+        if (negated != m_condition.getAsBoolean()) {
             getOtherCommand().cancel();
             getCurrentCommand().schedule();
-            m_negated = !m_negated;
+            negated = !negated;
         }
     }
 }
