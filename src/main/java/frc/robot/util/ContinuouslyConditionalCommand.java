@@ -6,7 +6,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 import java.util.function.BooleanSupplier;
 
-public class ContinuouslyConditionalCommand extends Command {
+public class ContinuouslyConditionalCommand extends Command{
     private final Command m_onTrue;
     private final Command m_onFalse;
     private final BooleanSupplier m_condition;
@@ -17,8 +17,6 @@ public class ContinuouslyConditionalCommand extends Command {
         this.m_onFalse = ErrorMessages.requireNonNullParam(onFalse, "onFalse", "ConditionalCommand");
         this.m_condition = ErrorMessages.requireNonNullParam(condition, "condition", "ConditionalCommand");
         CommandScheduler.getInstance().registerComposedCommands(onTrue, onFalse);
-        this.m_requirements.addAll(this.m_onTrue.getRequirements());
-        this.m_requirements.addAll(this.m_onFalse.getRequirements());
         this.m_negated = condition.getAsBoolean();
     }
 
