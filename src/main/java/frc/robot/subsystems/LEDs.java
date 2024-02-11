@@ -17,6 +17,11 @@ import static frc.lib.Color.Colors.OFF;
 import static frc.robot.Constants.LedsConstants.LEDS_PORT;
 import static frc.robot.Constants.LedsConstants.LENGTH;
 
+// shooterPreparing - Green Blinking
+// shooterReady - Green Solid
+// intaking - Orange Blinking
+//shooting - Red Solid
+
 public class LEDs extends SubsystemBase {
     private final AddressableLED LedStrip = new AddressableLED(LEDS_PORT);
     private final AddressableLEDBuffer buffer = new AddressableLEDBuffer(LENGTH);
@@ -140,7 +145,7 @@ public class LEDs extends SubsystemBase {
 
             case RAINBOW:
                 AtomicInteger firstHue = new AtomicInteger(0);
-                command = this.run(()->{
+                command = this.run(() -> {
                     for (var i = 0; i < LENGTH; i++) {
                         final var hue = (firstHue.get() + (i * 180 / LENGTH)) % 180;
                         buffer.setHSV(i, hue, 255, 128);
@@ -161,22 +166,21 @@ public class LEDs extends SubsystemBase {
     }
 
 
-
     public Command setLEDsCommand(Color[] colors) {
-        return this.runOnce(()-> setLedStrip(colors)).ignoringDisable(true);
+        return this.runOnce(() -> setLedStrip(colors)).ignoringDisable(true);
     }
 
-    public Command circleLEDs(Color[] colors){
+    public Command circleLEDs(Color[] colors) {
         return Commands.repeatingSequence(
-                setLEDsCommand(colors),
-                new WaitCommand(0.1),
-                new InstantCommand(()-> shiftLeds(colors)))
+                        setLEDsCommand(colors),
+                        new WaitCommand(0.1),
+                        new InstantCommand(() -> shiftLeds(colors)))
                 .ignoringDisable(true);
     }
 
-    public void restoreLEDs() {
-        CommandScheduler.getInstance().cancel(
-                CommandScheduler.getInstance().requiring(this));
+    public Command restoreLEDs() {
+        return new InstantCommand(() ->
+                CommandScheduler.getInstance().cancel(CommandScheduler.getInstance().requiring(this)));
     }
 
     public enum LEDPattern {

@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.shooter;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -13,8 +13,11 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.util.ContinuouslyConditionalCommand;
 import frc.lib.Neo;
 import frc.robot.Constants.FieldConstants.FieldLocations;
+import frc.robot.subsystems.LEDs;
+import frc.robot.subsystems.intake.Intake;
 
 import java.util.function.DoubleSupplier;
 
@@ -23,7 +26,10 @@ import static com.revrobotics.CANSparkBase.IdleMode.kCoast;
 import static edu.wpi.first.units.MutableMeasure.mutable;
 import static edu.wpi.first.units.Units.*;
 import static edu.wpi.first.units.Units.RPM;
+import static frc.lib.Color.Colors.GREEN;
 import static frc.robot.Constants.ShooterConstants.*;
+import static frc.robot.subsystems.LEDs.LEDPattern.BLINKING;
+import static frc.robot.subsystems.LEDs.LEDPattern.SOLID;
 
 public class Shooter extends SubsystemBase {
     private final Neo shooter = new Neo(SHOOTER_LEADER_MOTOR_ID);
@@ -41,7 +47,11 @@ public class Shooter extends SubsystemBase {
 
     private static InterpolatingDoubleTreeMap metersToRPM = new InterpolatingDoubleTreeMap();
 
-    public Trigger shooterReadyTrigger = new Trigger(shooterPID::atSetpoint);
+    private final LEDs leds = LEDs.getInstance();
+
+    public Trigger shooterReadyTrigger = new Trigger(shooterPID::atSetpoint)
+            .onTrue(leds.applyPatternCommand(SOLID, GREEN.color))
+            .onFalse(leds.restoreLEDs());
 
     public Shooter() {
         shooter.setIdleMode(kCoast);
@@ -71,11 +81,11 @@ public class Shooter extends SubsystemBase {
 
     public Command shootToAmpCommand() {
         return this.runEnd(
-                () -> {
-                    shooter.set(getPIDtoSetpoint(AMP_LOWER_SHOOTER_RPM));
-                    shooterFollower.set(getPIDtoSetpoint(AMP_UPPER_SHOOTER_RPM));
-                },
-                shooter::stopMotor)
+                        () -> {
+                            shooter.set(getPIDtoSetpoint(AMP_LOWER_SHOOTER_RPM));
+                            shooterFollower.set(getPIDtoSetpoint(AMP_UPPER_SHOOTER_RPM));
+                        },
+                        shooter::stopMotor)
                 .until(noteShotTrigger);
     }
 
@@ -101,15 +111,15 @@ public class Shooter extends SubsystemBase {
     }
 
     public Command prepShooterCommand(Trigger isAtSpeakerRadius, Intake intake) {
-        return new ConditionalCommand(
-                prepShooterCommand(),
-                Commands.runOnce(shooter::stopMotor, this),
-                isAtSpeakerRadius.and(intake.isAtShooterTrigger).and(intake.hasNoteTrigger))
-                .repeatedly();
+        return new ContinuouslyConditionalCommand(
+                prepShooterCommand().alongWith(leds.applyPatternCommand(BLINKING, GREEN.color)),
+                new RunCommand(shooter::stopMotor, this),
+                isAtSpeakerRadius.and(intake.atShooterTrigger).and(intake.hasNoteTrigger)
+        );
     }
 
     public Command prepShooterCommand() {
-        return this.runOnce(() -> shooter.set(SPEAKER_PREP_DC));
+        return new RunCommand(() -> shooter.set(SPEAKER_PREP_DC), this);
     }
 
     public Command manualShooterCommand() {
@@ -148,10 +158,5 @@ public class Shooter extends SubsystemBase {
 
     public Command sysIdDynamic(SysIdRoutine.Direction direction) {
         return shooterSysid.dynamic(direction);
-    }
-
-    @Override
-    public String getName() {
-        return "Shooter";
     }
 }

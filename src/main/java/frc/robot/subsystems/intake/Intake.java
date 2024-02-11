@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.intake;
 
 import com.revrobotics.CANSparkBase.IdleMode;
 import edu.wpi.first.math.controller.ArmFeedforward;
@@ -11,12 +11,17 @@ import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.Neo;
+import frc.robot.subsystems.LEDs;
+import frc.robot.subsystems.intake.IntakeState;
+import frc.robot.subsystems.intake.IntakeState.intakeAngle;
 
 import java.util.function.DoubleSupplier;
 
 import static edu.wpi.first.units.MutableMeasure.mutable;
 import static edu.wpi.first.units.Units.*;
+import static frc.lib.Color.Colors.ORANGE;
 import static frc.robot.Constants.IntakeConstants.*;
+import static frc.robot.subsystems.LEDs.LEDPattern.BLINKING;
 
 public class Intake extends SubsystemBase {
     private final Neo intakeMotor = new Neo(INTAKE_MOTOR_ID);
@@ -24,15 +29,19 @@ public class Intake extends SubsystemBase {
 
     private final DutyCycleEncoder intakeEncoder = new DutyCycleEncoder(ENCODER_PORT);
 
+    private intakeAngle setpoint = intakeAngle.SHOOTER;
     private final DigitalInput beamBreak = new DigitalInput(BEAMBREAK_PORT);
     public final Trigger hasNoteTrigger = new Trigger(beamBreak::get).debounce(0.2);
 
     private final PIDController anglePIDcontroller = new PIDController(PID_GAINS.kp, PID_GAINS.ki, PID_GAINS.kd);
     private final ArmFeedforward angleFFcontroller = new ArmFeedforward(FF_ANGLE_GAINS.ks, FF_ANGLE_GAINS.kg, FF_ANGLE_GAINS.kv);
 
-    public final Trigger isAtShooterTrigger = new Trigger(() -> Math.abs(getAngle() - INTAKE_ANGLE.SHOOTER.angle) < SHOOTER_ANGLE_THRESHOLD).debounce(0.2);
+    public final Trigger atSetpointTrigger = new Trigger(() -> Math.abs(getAngle() - setpoint.angle) < ANGLE_THRESHOLD).debounce(0.2);
+    public final Trigger atShooterTrigger = atSetpointTrigger.and(()-> setpoint == intakeAngle.SHOOTER);
 
-    public final Trigger intakingTrigger = new Trigger(()-> getCurrentCommand().equals("IntakeCommand"));
+    public final Trigger intakingTrigger = new Trigger(()-> getCurrentCommand().equals("intakeCommand"));
+
+    private final LEDs leds = LEDs.getInstance();
 
     public Intake() {
         intakeMotor.setConversionFactors(INTAKE_MOTOR_POSITION_CONVERSION_FACTOR, INTAKE_MOTOR_VELOCITY_CONVERSION_FACTOR);
@@ -51,7 +60,9 @@ public class Intake extends SubsystemBase {
         intakeMotor.set(speed);
     }
 
-    private void setIntakeAngle(INTAKE_ANGLE angle) {
+    private void setIntakeAngle(intakeAngle angle) {
+        this.setpoint = angle;
+
         double pid = anglePIDcontroller.calculate(getAngle(), angle.angle);
         double ff = angleFFcontroller.calculate(Math.toRadians(angle.angle), 0);
 
@@ -68,37 +79,37 @@ public class Intake extends SubsystemBase {
         else intakeMotor.stopMotor();
     }
 
-    private Command setIntakeCommand(double speed, INTAKE_ANGLE angle) {
+    private Command setIntakeCommand(IntakeState intakeState) {
         return this.runEnd(()-> {
-            setIntakeAngle(angle);
-            setIntakeSpeed(speed);
+            leds.applyPatternCommand(BLINKING, ORANGE.color);
+
+            setIntakeAngle(intakeState.angle);
+
+            if (!intakeState.waitForAngle) setIntakeSpeed(intakeState.dc);
+            else if (atSetpointTrigger.getAsBoolean()) setIntakeSpeed(intakeState.dc);
+            else setIntakeSpeed(0);
+
         }, this::stopMotors);
     }
 
-    public Command intakeFromAngleCommand(INTAKE_ANGLE angle) {
-        return setIntakeCommand(0.5, angle).until(hasNoteTrigger).withName("intakeCommand");
+    public Command intakeFromAngleCommand(intakeAngle angle) {
+        return setIntakeCommand(new IntakeState(0.5, angle, true)).until(hasNoteTrigger).withName("intakeCommand");
     }
 
-    public Command intakeFromAngleCommand(INTAKE_ANGLE angle, Command vibrateCommand) {
+    public Command intakeFromAngleCommand(intakeAngle angle, Command vibrateCommand) {
         return intakeFromAngleCommand(angle).andThen(vibrateCommand::schedule); // schedule it instead of composing it to free up the intake requirement immediately
     }
 
     public Command shootToAmpCommand() {
-        return setIntakeCommand(AMP_SHOOTER_SPEED, INTAKE_ANGLE.AMP).until(hasNoteTrigger.negate());
+        return setIntakeCommand(new IntakeState(AMP_SHOOTER_SPEED, intakeAngle.AMP, true)).until(hasNoteTrigger.negate());
     }
 
     public Command transportToShooterCommand() {
-        return new SequentialCommandGroup(
-                setIntakeCommand(0, INTAKE_ANGLE.SHOOTER).until(isAtShooterTrigger),
-                setIntakeCommand(-0.5, INTAKE_ANGLE.SHOOTER).until(hasNoteTrigger.negate()));
+        return setIntakeCommand(new IntakeState(-0.5, intakeAngle.SHOOTER, true)).until(hasNoteTrigger.negate());
     }
 
     public Command intakeIdleCommand() {
-        return this.run(
-                ()-> {
-                    setIntakeAngle(INTAKE_ANGLE.SHOOTER);
-                    stallIntakeMotor();
-                });
+        return setIntakeCommand(new IntakeState(STALL_DC, intakeAngle.SHOOTER, false));
     }
 
     public Command manualCommand(DoubleSupplier speed, DoubleSupplier angle) {
@@ -143,10 +154,5 @@ public class Intake extends SubsystemBase {
 
     public Command sysidDynamic(SysIdRoutine.Direction direction) {
         return angleSysid.dynamic(direction);
-    }
-
-    @Override
-    public String getName() {
-        return "Intake";
     }
 }
