@@ -17,9 +17,6 @@ public class ContinuouslyConditionalCommand extends Command {
         this.m_onFalse = ErrorMessages.requireNonNullParam(onFalse, "onFalse", "ConditionalCommand");
         this.m_condition = ErrorMessages.requireNonNullParam(condition, "condition", "ConditionalCommand");
         CommandScheduler.getInstance().registerComposedCommands(onTrue, onFalse);
-        this.m_requirements.addAll(this.m_onTrue.getRequirements());
-        this.m_requirements.addAll(this.m_onFalse.getRequirements());
-
         negated = condition.getAsBoolean();
     }
 
@@ -34,8 +31,7 @@ public class ContinuouslyConditionalCommand extends Command {
     }
 
     public void initialize() {
-        if (this.m_condition.getAsBoolean()) m_onTrue.schedule();
-        else this.m_onFalse.schedule();
+        getCurrentCommand().schedule();
     }
 
     public void execute() {
