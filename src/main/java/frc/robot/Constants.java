@@ -56,17 +56,18 @@ public final class Constants {
                 this.SPIN_MOTOR_REVERSED = SPIN_MOTOR_REVERSED;
             }
         }
+
         public static final int PIGEON_ID = 19;
 
-        public static final double TRACK_WIDTH = 0.56665; // m
+        public static final double TRACK_WIDTH = 0.51; // m
         public static final SwerveDriveKinematics kSwerveKinematics = new SwerveDriveKinematics(
                 new Translation2d(TRACK_WIDTH / 2, TRACK_WIDTH / 2),
                 new Translation2d(TRACK_WIDTH / 2, -TRACK_WIDTH / 2),
                 new Translation2d(-TRACK_WIDTH / 2, TRACK_WIDTH / 2),
                 new Translation2d(-TRACK_WIDTH / 2, -TRACK_WIDTH / 2));
 
-        public static final double MAX_VELOCITY_METER_PER_SECOND = Units.feetToMeters(12); //TODO: find values
-        public static final double MAX_VELOCITY_ACCELERATION_METER_PER_SECOND = 3; //TODO: find values
+        public static final double MAX_VELOCITY_METER_PER_SECOND = Units.feetToMeters(19.3);
+        public static final double MAX_VELOCITY_ACCELERATION_METER_PER_SECOND = 6; //TODO: find values
 
         public static final double MAX_ANGULAR_VELOCITY_RAD_PER_SECOND = 2 * PI; //TODO: find values
         public static final double MAX_ANGULAR_ACCELERATION_RAD_PER_SECOND = 2 * 2 * PI; //TODO: find values
@@ -88,7 +89,7 @@ public final class Constants {
 
     public static final class ModuleConstants {
         public static final double kWheelDiameterMeters = Units.inchesToMeters(4);
-        public static final double kDriveMotorGearRatio = 1 / 8.14;
+        public static final double kDriveMotorGearRatio = 1 / 6.12;
         public static final double kDriveEncoderRotationsToMeters = kDriveMotorGearRatio * PI * kWheelDiameterMeters;
         public static final double kDriveEncoderRPMToMeterPerSec = kDriveEncoderRotationsToMeters / 60;
         public static final double kTurningMotorGearRatio = 1 / 21.4285714;
@@ -104,27 +105,27 @@ public final class Constants {
     }
 
     public static final class ShooterConstants {
-        public static final int UPPER_SHOOTER_MOTOR_ID = 31;
-        public static final int LOWER_SHOOTER_MOTOR_ID = 32;
+        public static final int UPPER_SHOOTER_MOTOR_ID = 41;
+        public static final int LOWER_SHOOTER_MOTOR_ID = 42;
 
         public static final int SHOOTER_CURRENT_LIMIT = 70;
 
-        public static final int SHOOTER_BEAMBREAK_CHANNEL = 0;
+        public static final int SHOOTER_BEAMBREAK_CHANNEL = 0; //TODO: find value
 
-        public static final Gains UPPER_GAINS = new Gains(new Gains(0, 0,0), new Gains(0, 0, 0, 0));
-        public static final Gains LOWER_GAINS = new Gains(new Gains(0, 0,0), new Gains(0, 0, 0, 0));
+        public static final Gains UPPER_GAINS = new Gains(new Gains(0, 0, 0), new Gains(0, 0, 0, 0)); //TODO: find value
+        public static final Gains LOWER_GAINS = new Gains(new Gains(0, 0, 0), new Gains(0, 0, 0, 0)); //TODO: find value
 
-        public static final double AMP_LOWER_SHOOTER_RPM = 0;
-        public static final double AMP_UPPER_SHOOTER_RPM = 0;
-        public static final double WOOFER_RPM = 0;
+        public static final double AMP_LOWER_SHOOTER_RPM = 0; //TODO: find value
+        public static final double AMP_UPPER_SHOOTER_RPM = 0; //TODO: find value
+        public static final double WOOFER_RPM = 0; //TODO: find value
 
         public static final double SHOOTER_PID_TOLERANCE = 100;
 
-        public static final double SPEAKER_PREP_DC = 0;
-        public static final double SPEAKER_PREP_RADIUS = 0;
+        public static final double SPEAKER_PREP_DC = 0; //TODO: find value
+        public static final double SPEAKER_PREP_RADIUS = 0;//TODO: find value
 
-        public static final double ROT_TO_DEGREES = 0;
-        public static final double RPM_TO_DEG_PER_SEC = 0;
+        public static final double ROT_TO_DEGREES = 0; //TODO: find value
+        public static final double RPM_TO_DEG_PER_SEC = 0;//TODO: find value
 
         // sysid
         private static final double RAMP_RATE = 3;
@@ -135,25 +136,26 @@ public final class Constants {
     }
 
     public static final class IntakeConstants {
-        public static final Gains PID_GAINS = new Gains(0, 0, 0);
-        public static final Gains FF_ANGLE_GAINS = new Gains(0, 0, 0);
+        public static final int INTAKE_MOTOR_ID = 0; //TODO: find value
+        public static final int ANGLE_MOTOR_ID = 0;//TODO: find value
 
-        public static final int INTAKE_MOTOR_ID = 0;
-        public static final int ANGLE_MOTOR_ID = 0;
+        public static final int ENCODER_PORT = 0; //TODO: find value
+        public static final int BEAMBREAK_PORT = 0;//TODO: find value
 
-        public static final int ENCODER_PORT = 0;
-        public static final int BEAMBREAK_PORT = 0;
+        public static final Gains PID_GAINS = new Gains(0, 0, 0);//TODO: find value
+        public static final Gains FF_ANGLE_GAINS = new Gains(0, 0, 0);//TODO: find value
 
-        public static final double INTAKE_MOTOR_POSITION_CONVERSION_FACTOR = 0;
-        public static final double INTAKE_MOTOR_VELOCITY_CONVERSION_FACTOR = 0;
+        public static final double INTAKE_MOTOR_POSITION_CONVERSION_FACTOR = 0;//TODO: find value
+        public static final double INTAKE_MOTOR_VELOCITY_CONVERSION_FACTOR = 0;//TODO: find value
 
-        public static final double INTAKE_ENCODER_OFFSET_POSITION = 0;
-        public static final int ANGLE_THRESHOLD = 2;
-        public static final int MINIMAL_INTAKE_ANGLE = 2;
+        public static final double INTAKE_ENCODER_OFFSET_POSITION = 0;//TODO: find value
+        public static final int ANGLE_THRESHOLD = 2;//TODO: find value
+        public static final int MINIMAL_INTAKE_ANGLE = 2;//TODO: find value
 
-        public static final double AMP_SHOOTER_SPEED = -0.5;
+        public static final double AMP_SHOOTER_SPEED = -0.5;//TODO: find value
         public static final double STALL_DC = 0.1;
 
+        //sysid
         private static final double RAMP_RATE = 3;
         private static final double STEP_VOLTAGE = 0.5;
         private static final double TIMEOUT = 10;
@@ -191,7 +193,7 @@ public final class Constants {
     }
 
     public static class LedsConstants {
-        public static final int LEDS_PORT = 0; // pwm
-        public static final int LENGTH = 0;
+        public static final int LEDS_PORT = 0; // pwm //TODO: find value
+        public static final int LENGTH = 0; //TODO: find value
     }
 }
