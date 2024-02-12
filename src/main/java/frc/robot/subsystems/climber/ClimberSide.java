@@ -10,7 +10,7 @@ import frc.lib.Gains;
 import frc.lib.Neo;
 
 import static frc.robot.Constants.ClimberConstants.*;
-import static frc.robot.Constants.ClimberConstants.kMaxLinearAcceleration;
+import static frc.robot.Constants.ClimberConstants.MAX_LINEAR_ACCELERATION;
 
 public class ClimberSide {
     private final Neo motor;
@@ -18,12 +18,12 @@ public class ClimberSide {
 
     public ClimberSide(Gains motorGains, int motorID) {
         motor = new Neo(motorID, motorGains);
-        motor.setConversionFactors(kRotToMeter, kRotToMeterPerSec);
+        motor.setConversionFactors(ROT_TO_METR, ROT_TO_METER_PER_SEC);
     }
 
     public Command setLengthCommand(double length) {
         final TrapezoidProfile trapezoidProfile =
-                new TrapezoidProfile(new TrapezoidProfile.Constraints(kMaxLinearVelocity, kMaxLinearAcceleration));
+                new TrapezoidProfile(new TrapezoidProfile.Constraints(MAX_LINEAR_VELOCITY, MAX_LINEAR_ACCELERATION));
         ElevatorFeedforward feedforwardController =
                 new ElevatorFeedforward(motor.getGains().ks,motor.getGains().kg,motor.getGains().kv);
         final Timer timer = new Timer();

@@ -13,9 +13,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import frc.robot.subsystems.LEDs;
+import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.swerve.Swerve;
 import monologue.Logged;
 import monologue.Monologue;
+
+import java.util.PrimitiveIterator;
 
 import static edu.wpi.first.math.MathUtil.applyDeadband;
 import static frc.lib.Color.Colors.WHITE;
@@ -31,6 +34,8 @@ import static frc.robot.subsystems.LEDs.LEDPattern.SOLID;
 public class Robot extends TimedRobot implements Logged {
   // subsystems
   private final Swerve swerve = new Swerve();
+
+  private final Climber climber = new Climber();
   private final LEDs leds = LEDs.getInstance();
 
   // controllers
@@ -70,7 +75,7 @@ public class Robot extends TimedRobot implements Logged {
     controller.circle().whileTrue(swerve.pathFindToLocation(HM_RIGHT));
 
     //Clim bear
-    //Climber.climber.setDefaultCommand(Climber.climber.manualCommand(()-> operator.getLeftY(), ()-> operator.getRightY()));
+    //climber.setDefaultCommand(climber.manualCommand(()-> operator.getLeftY(), ()-> operator.getRightY()));
   }
 
   // methods

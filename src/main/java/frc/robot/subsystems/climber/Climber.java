@@ -2,8 +2,7 @@ package frc.robot.subsystems.climber;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.*;
-import frc.robot.Constants;
-import org.opencv.core.Mat;
+
 
 import java.util.function.DoubleSupplier;
 
@@ -11,8 +10,14 @@ import static frc.robot.Constants.ClimberConstants.*;
 import static frc.robot.Constants.SwerveConstants.TRACK_WIDTH;
 
 public class Climber extends SubsystemBase {
-    private final ClimberSide leftSide = new ClimberSide(LEFT_GAINS, leftID);
-    private final ClimberSide rightSide = new ClimberSide(RIGHT_GAINS, rightID);
+    private final ClimberSide leftSide;
+    private final ClimberSide rightSide;
+
+
+    public Climber() {
+        leftSide = new ClimberSide(LEFT_GAINS, LEFT_ID);
+        rightSide = new ClimberSide(RIGHT_GAINS, RIGHT_ID);
+    }
 
     public Command setClimbHeightsCommand(double leftLength, double rightLength) {
         return new ParallelCommandGroup(
@@ -35,37 +40,27 @@ public class Climber extends SubsystemBase {
         //returns a command that lifts the robot of the ground
         //while making sure it is balanced with regard of the forces applied to each arm separately
         return new RunCommand(() -> setLiftForces(rollSupplier.getAsDouble()))
-                .alongWith(
-                        setClimbHeightsCommand(
-                                leftSide.getHeight() - getDesiredHeight(),
-                                rightSide.getHeight() - getDesiredHeight()));
+                .alongWith(setClimbHeightsCommand(
+                        getErrorHeight(leftSide),
+                        getErrorHeight(rightSide)));
     }
 
     //Resnick did some physics stuff for us
     private void setLiftForces(double chainRollRad) {
         if (chainRollRad > 0) {
-            leftSide.setLiftingForce(
-                    -kG * (TRACK_WIDTH / 2 * Math.cos(chainRollRad) - rightSide.getHeight() * Math.sin(chainRollRad)) /
-                            ((rightSide.getHeight() + leftSide.getHeight()) * Math.sin(chainRollRad))
-            );
+            leftSide.setLiftingForce(liftForcesFormula(-1, rightSide, chainRollRad));
 
-            rightSide.setLiftingForce(
-                    kG +
-                            kG * (TRACK_WIDTH / 2 * Math.cos(chainRollRad) - rightSide.getHeight() * Math.sin(chainRollRad)) /
-                                    ((rightSide.getHeight() + leftSide.getHeight()) * Math.sin(chainRollRad))
-            );
+            rightSide.setLiftingForce(kG + liftForcesFormula(1, rightSide, chainRollRad));
         } else {
-            leftSide.setLiftingForce(
-                    kG +
-                            kG * (TRACK_WIDTH / 2 * Math.cos(-chainRollRad) - leftSide.getHeight() * Math.sin(-chainRollRad)) /
-                                    ((rightSide.getHeight() + leftSide.getHeight()) * Math.sin(-chainRollRad))
-            );
+            leftSide.setLiftingForce(kG + liftForcesFormula(1, leftSide, -chainRollRad));
 
-            rightSide.setLiftingForce(
-                    -kG * (TRACK_WIDTH / 2 * Math.cos(-chainRollRad) - leftSide.getHeight() * Math.sin(-chainRollRad)) /
-                            ((rightSide.getHeight() + leftSide.getHeight()) * Math.sin(-chainRollRad))
-            );
+            rightSide.setLiftingForce(liftForcesFormula(-1, leftSide, -chainRollRad));
         }
+    }
+
+    public double liftForcesFormula(int toggleKG, ClimberSide climberSide, double chainRollRad) {
+        return (kG * toggleKG) * ((TRACK_WIDTH / 2) * Math.cos(chainRollRad) - climberSide.getHeight() * Math.sin(chainRollRad)) /
+                ((rightSide.getHeight() + leftSide.getHeight()) * Math.sin(chainRollRad));
     }
 
     private double getChainHeight(Translation2d robotTranslation, double armLoc) {
@@ -80,8 +75,8 @@ public class Climber extends SubsystemBase {
     }
 
 
-    private double getDesiredHeight() {
+    private double getErrorHeight(ClimberSide climberSide) {
         //return the height the robot will climb above the ground
-        return Math.min(leftSide.getHeight(), rightSide.getHeight()) - MINIMAL_HEIGHT;
+        return climberSide.getHeight() - Math.min(leftSide.getHeight(), rightSide.getHeight()) - MINIMAL_HEIGHT;
     }
 }

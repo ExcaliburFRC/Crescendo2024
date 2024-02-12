@@ -106,36 +106,37 @@ public final class Constants {
 
     public static final class ClimberConstants {
         //gains
-        public static final Gains LEFT_GAINS = new Gains(0, 0, 0);
-        public static final Gains RIGHT_GAINS = new Gains(0, 0, 0);
+        public static final Gains LEFT_GAINS = new Gains(0, 0, 0); //TODO
+        public static final Gains RIGHT_GAINS = new Gains(0, 0, 0);//TODO
 
         //movement limitation
-        public static final double kMaxLinearVelocity = 0;
-        public static final double kMaxLinearAcceleration = 0;
+        public static final double MAX_LINEAR_VELOCITY = 0;//TODO
+        public static final double MAX_LINEAR_ACCELERATION = 0;//TODO
 
-        public static final double kGearing = 0;
-        public static final double kWinchRadius = 0;
+        public static final double GEARING = 0;//TODO
+        public static final double DRIVE_WHEEL_RADIUS = 0;//TODO
 
-        public static final double kRotToMeter = 2 * PI * kWinchRadius * kGearing;
-        public static final double kRotToMeterPerSec = kRotToMeter / 60;
-        public static final int leftID = 0;
-        public static final int rightID = 0;
-        public static final double kG = 0; //the weight of the robot
+        public static final double ROT_TO_METR = 2 * PI * DRIVE_WHEEL_RADIUS * GEARING;//TODO
+        public static final double ROT_TO_METER_PER_SEC = ROT_TO_METR / 60;//TODO
+        public static final int LEFT_ID = 0;//TODO
+        public static final int RIGHT_ID = 0;//TODO
+
+        public static final double kG = 0;//TODO
         //representing the location of the arms on an axis
         // that is parallel to the middle of the robot (the 0 point is the middle of the robot)
-        public static final double LEFT_ARM_LOCATION = 0;
-        public static final double RIGHT_ARM_LOCATION = 0;
+        public static final double LEFT_ARM_LOCATION = 0;//TODO
+        public static final double RIGHT_ARM_LOCATION = 0;//TODO
 
-        public static final double MINIMAL_HEIGHT = 0;
-        public static final double EXTRA_SAFETY_DISTANCE = 0.1;
+        public static final double MINIMAL_HEIGHT = 0;//TODO
+        public static final double EXTRA_SAFETY_DISTANCE = 0.1;//TODO
 
         public enum Chain {
-            CHAIN_0(new Translation2d(0, 0), new Translation2d(0, 0), new Translation2d(0, 0)),
-            CHAIN_120(new Translation2d(0, 0), new Translation2d(0, 0), new Translation2d(0, 0)),
-            CHAIN_240(new Translation2d(0, 0), new Translation2d(0, 0), new Translation2d(0, 0)),
-            CHAIN_60(new Translation2d(0, 0), new Translation2d(0, 0), new Translation2d(0, 0)),
-            CHAIN_180(new Translation2d(0, 0), new Translation2d(0, 0), new Translation2d(0, 0)),
-            CHAIN_300(new Translation2d(0, 0), new Translation2d(0, 0), new Translation2d(0, 0));
+            CHAIN_0(new Translation2d(0, 0), new Translation2d(0, 0), new Translation2d(0, 0)),//TODO
+            CHAIN_120(new Translation2d(0, 0), new Translation2d(0, 0), new Translation2d(0, 0)),//TODO
+            CHAIN_240(new Translation2d(0, 0), new Translation2d(0, 0), new Translation2d(0, 0)),//TODO
+            CHAIN_60(new Translation2d(0, 0), new Translation2d(0, 0), new Translation2d(0, 0)),//TODO
+            CHAIN_180(new Translation2d(0, 0), new Translation2d(0, 0), new Translation2d(0, 0)),//TODO
+            CHAIN_300(new Translation2d(0, 0), new Translation2d(0, 0), new Translation2d(0, 0));//TODO
 
             public final Translation2d negEdge;
             public final Translation2d posEdge;
@@ -176,6 +177,7 @@ public final class Constants {
                 else if (Chain.CHAIN_180.inRange(robotTranslation)) return Chain.CHAIN_180;
                 return Chain.CHAIN_300;
             }
+
             //this function returns the projection point of the robot's translation on the
             //line that connects negEdge and posEdge
             public Translation2d getProjection(Translation2d robotTranslation) {
@@ -186,7 +188,7 @@ public final class Constants {
                 double b1 = this.negEdge.getY() - m1 * this.negEdge.getX();
                 //calculate m and b for the y = mx + b expression that represents the
                 //linear function that is on both robotTranslation and the projection point
-                double m2 = -1/m1;
+                double m2 = -1 / m1;
                 double b2 = robotTranslation.getY() - m2 * robotTranslation.getX();
 
                 //calculate the x and y values of the point the two lines cross aka the projection point
