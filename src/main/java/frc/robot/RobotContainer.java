@@ -77,7 +77,7 @@ public class RobotContainer {
          intake.setDefaultCommand(intake.manualCommand(testController::getLeftY, () -> testController.cross().getAsBoolean(), () -> testController.triangle().getAsBoolean()));
          climber.setDefaultCommand(climber.manualCommand(testController.L1(), testController.R1(), testController.L2(), testController.R2()));
 
-        driver.touchpad().whileTrue(toggleMotorsIdleMode().alongWith(leds.applyPatternCommand(SOLID, WHITE.color)));
+        driver.touchpad().or(testController.touchpad()).whileTrue(toggleMotorsIdleMode().alongWith(leds.applyPatternCommand(SOLID, WHITE.color)));
         driver.PS().onTrue(swerve.resetOdometryAngleCommand());
 
         // if R1 is pressed and the robot is stationary, shoot to speaker

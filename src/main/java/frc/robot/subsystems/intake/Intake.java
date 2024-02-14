@@ -32,9 +32,6 @@ public class Intake extends SubsystemBase {
 
     private final DutyCycleEncoder intakeEncoder = new DutyCycleEncoder(ENCODER_PORT);
 
-    private ShuffleboardTab intakeTab = Shuffleboard.getTab("IntakeTab");
-    private final GenericEntry intakeSpeed = intakeTab.add("intakeSpeed", 0).getEntry();
-
     private intakeAngle setpoint = intakeAngle.SHOOTER;
     private final DigitalInput beamBreak = new DigitalInput(BEAMBREAK_PORT);
     public final Trigger hasNoteTrigger = new Trigger(beamBreak::get).debounce(0.2);
@@ -121,7 +118,7 @@ public class Intake extends SubsystemBase {
         return this.runEnd(
                 () -> {
                     if (intake.getAsBoolean()) intakeMotor.set(0.3);
-                    else if (outake.getAsBoolean()) intakeMotor.set(-0.3);
+                    else if (outake.getAsBoolean()) intakeMotor.set(-0.35);
                     else intakeMotor.stopMotor();
                     angleMotor.set(angle.getAsDouble() / 3);
                 },
@@ -135,7 +132,7 @@ public class Intake extends SubsystemBase {
     public Command toggleIdleModeCommand() {
         return new StartEndCommand(
                 () -> angleMotor.setIdleMode(IdleMode.kCoast),
-                () -> angleMotor.setIdleMode(IdleMode.kBrake));
+                () -> angleMotor.setIdleMode(IdleMode.kBrake)).ignoringDisable(true);
     }
 
     // SysId stuff

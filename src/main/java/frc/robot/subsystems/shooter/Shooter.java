@@ -38,7 +38,9 @@ public class Shooter extends SubsystemBase {
             new BooleanEvent(CommandScheduler.getInstance().getDefaultButtonLoop(), beamBreak::get).falling().debounce(0.2);
 
     private ShuffleboardTab shooterTab = Shuffleboard.getTab("ShooterTab");
-    private final GenericEntry shooterSpeed = shooterTab.add("shootSpeedPercent", 0).getEntry();
+    private final GenericEntry upperShooterVel = shooterTab.add("upperShooter", 0).getEntry();
+    private final GenericEntry lowerShooterVel = shooterTab.add("lowerShooter", 0).getEntry();
+    private final GenericEntry bothShootersVel = shooterTab.add("bothShooters", 0).getEntry();
 
     private static InterpolatingDoubleTreeMap metersToRPM = new InterpolatingDoubleTreeMap();
 
@@ -52,7 +54,6 @@ public class Shooter extends SubsystemBase {
         upperShooter.setIdleMode(kCoast);
         upperShooter.setSmartCurrentLimit(SHOOTER_CURRENT_LIMIT);
 
-        lowerShooter.follow(upperShooter, false);
         lowerShooter.setIdleMode(kCoast);
         lowerShooter.setSmartCurrentLimit(SHOOTER_CURRENT_LIMIT);
 
@@ -108,8 +109,13 @@ public class Shooter extends SubsystemBase {
     public Command manualShooterCommand() {
         return new StartEndCommand(
                 () -> {
-                    upperShooter.set(shooterSpeed.getDouble(0) / 100);
-                    lowerShooter.set(shooterSpeed.getDouble(0) / 100);
+                    if (bothShootersVel.getDouble(0) == 0) {
+                        upperShooter.set(upperShooterVel.getDouble(0) / 100);
+                        lowerShooter.set(lowerShooterVel.getDouble(0) / 100);
+                    } else {
+                        upperShooter.set(bothShootersVel.getDouble(0));
+                        lowerShooter.set(bothShootersVel.getDouble(0));
+                    }
                 },
                 () -> {
                     upperShooter.stopMotor();
@@ -122,7 +128,7 @@ public class Shooter extends SubsystemBase {
         return new StartEndCommand(
                 () -> upperShooter.setIdleMode(kCoast),
                 () -> upperShooter.setIdleMode(kBrake)
-        );
+        ).ignoringDisable(true);
     }
 
     // sysid stuff
