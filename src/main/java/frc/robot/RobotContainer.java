@@ -30,6 +30,7 @@ public class RobotContainer {
 
     // controllers
     private final CommandPS5Controller driver = new CommandPS5Controller(0);
+    private final CommandPS5Controller testController = new CommandPS5Controller(2);
     private final XboxController driverVibration = new XboxController(4);
 
     public ShuffleboardTab matchTab = Shuffleboard.getTab("match");
@@ -59,17 +60,20 @@ public class RobotContainer {
 
     // bindings
     private void configureBindings() {
-        swerve.setDefaultCommand(
-                swerve.driveSwerveCommand(
-                        () -> applyDeadband(-driver.getLeftY(), 0.07),
-                        () -> applyDeadband(-driver.getLeftX(), 0.07),
-                        () -> applyDeadband(-driver.getRightX(), 0.07),
-                        () -> robotRelativeDrive,
-                        driver::getL2Axis, // decelerator
-                        () -> driver.R1().getAsBoolean() ? SPEAKER.pose.get() : emptyPose) // if R1 pressed, turn swerve to Speaker
-        );
+//        swerve.setDefaultCommand(
+//                swerve.driveSwerveCommand(
+//                        () -> applyDeadband(-driver.getLeftY(), 0.07),
+//                        () -> applyDeadband(-driver.getLeftX(), 0.07),
+//                        () -> applyDeadband(-driver.getRightX(), 0.07),
+//                        () -> robotRelativeDrive,
+//                        driver::getL2Axis, // decelerator
+//                        () -> driver.R1().getAsBoolean() ? SPEAKER.pose.get() : emptyPose) // if R1 pressed, turn swerve to Speaker
+//        );
 
-        shooter.setDefaultCommand(shooter.prepShooterCommand(isAtSpeakerRadius, intake));
+//        shooter.setDefaultCommand(shooter.prepShooterCommand(isAtSpeakerRadius, intake));
+         testController.square().toggleOnTrue(shooter.manualShooterCommand());
+         intake.setDefaultCommand(intake.manualCommand(testController::getLeftY, () -> testController.cross().getAsBoolean(), () -> testController.triangle().getAsBoolean()));
+
         driver.touchpad().whileTrue(toggleMotorsIdleMode().alongWith(leds.applyPatternCommand(SOLID, WHITE.color)));
         driver.PS().onTrue(swerve.resetOdometryAngleCommand());
 

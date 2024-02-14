@@ -106,7 +106,16 @@ public class Shooter extends SubsystemBase {
     }
 
     public Command manualShooterCommand() {
-        return new RunCommand(() -> upperShooter.set(shooterSpeed.getDouble(0)), this);
+        return new StartEndCommand(
+                () -> {
+                    upperShooter.set(shooterSpeed.getDouble(0) / 100);
+                    lowerShooter.set(shooterSpeed.getDouble(0) / 100);
+                },
+                () -> {
+                    upperShooter.stopMotor();
+                    lowerShooter.stopMotor();
+                },
+                this);
     }
 
     public Command toggleIdleModeCommand() {

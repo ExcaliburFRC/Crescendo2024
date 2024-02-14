@@ -3,10 +3,13 @@ package frc.robot.subsystems.intake;
 import com.revrobotics.CANSparkBase.IdleMode;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.units.*;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -14,6 +17,7 @@ import frc.lib.Neo;
 import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.intake.IntakeState.intakeAngle;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 import static edu.wpi.first.units.MutableMeasure.mutable;
@@ -28,6 +32,9 @@ public class Intake extends SubsystemBase {
 
     private final DutyCycleEncoder intakeEncoder = new DutyCycleEncoder(ENCODER_PORT);
 
+    private ShuffleboardTab intakeTab = Shuffleboard.getTab("IntakeTab");
+    private final GenericEntry intakeSpeed = intakeTab.add("intakeSpeed", 0).getEntry();
+
     private intakeAngle setpoint = intakeAngle.SHOOTER;
     private final DigitalInput beamBreak = new DigitalInput(BEAMBREAK_PORT);
     public final Trigger hasNoteTrigger = new Trigger(beamBreak::get).debounce(0.2);
@@ -38,7 +45,10 @@ public class Intake extends SubsystemBase {
     public final Trigger atSetpointTrigger = new Trigger(() -> Math.abs(getAngle() - setpoint.angle) < ANGLE_THRESHOLD).debounce(0.2);
     public final Trigger atShooterTrigger = atSetpointTrigger.and(()-> setpoint == intakeAngle.SHOOTER);
 
-    public final Trigger intakingTrigger = new Trigger(()-> getCurrentCommand().equals("intakeCommand"));
+    public final Trigger intakingTrigger = new Trigger(()-> {
+        if (getCurrentCommand()!= null && getCurrentCommand().equals("intakeCommand")) return true;
+        return false;
+    });
 
     private final LEDs leds = LEDs.getInstance();
 
@@ -48,7 +58,7 @@ public class Intake extends SubsystemBase {
         intakeEncoder.setDistancePerRotation(360);
         intakeEncoder.setPositionOffset(INTAKE_ENCODER_OFFSET_POSITION);
 
-        setDefaultCommand(intakeIdleCommand());
+//        setDefaultCommand(intakeIdleCommand());
     }
 
     private double getAngle() {
@@ -107,11 +117,13 @@ public class Intake extends SubsystemBase {
         return setIntakeCommand(new IntakeState(STALL_DC, intakeAngle.SHOOTER, false));
     }
 
-    public Command manualCommand(DoubleSupplier speed, DoubleSupplier angle) {
+    public Command manualCommand(DoubleSupplier angle, BooleanSupplier intake, BooleanSupplier outake) {
         return this.runEnd(
                 () -> {
-                    intakeMotor.set(speed.getAsDouble());
-                    angleMotor.set(angle.getAsDouble());
+                    if (intake.getAsBoolean()) intakeMotor.set(0.3);
+                    else if (outake.getAsBoolean()) intakeMotor.set(-0.3);
+                    else intakeMotor.stopMotor();
+                    angleMotor.set(angle.getAsDouble() / 3);
                 },
                 () -> {
                     intakeMotor.stopMotor();

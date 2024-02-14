@@ -132,21 +132,21 @@ public final class Constants {
     }
 
     public static final class IntakeConstants {
-        public static final int INTAKE_MOTOR_ID = 21; //TODO: find value
-        public static final int ANGLE_MOTOR_ID = 22;//TODO: find value
+        public static final int INTAKE_MOTOR_ID = 21;
+        public static final int ANGLE_MOTOR_ID = 22;
 
-        public static final int ENCODER_PORT = 1; //TODO: find value
-        public static final int BEAMBREAK_PORT = 0;//TODO: find value
+        public static final int ENCODER_PORT = 1;
+        public static final int BEAMBREAK_PORT = 0;
 
         public static final Gains PID_GAINS = new Gains(0, 0, 0);//TODO: find value
         public static final Gains FF_ANGLE_GAINS = new Gains(0, 0, 0);//TODO: find value
 
-        public static final double INTAKE_MOTOR_POSITION_CONVERSION_FACTOR = 0;//TODO: find value
-        public static final double INTAKE_MOTOR_VELOCITY_CONVERSION_FACTOR = 0;//TODO: find value
+        public static final double INTAKE_MOTOR_POSITION_CONVERSION_FACTOR = 0;
+        public static final double INTAKE_MOTOR_VELOCITY_CONVERSION_FACTOR = 0;
 
         public static final double INTAKE_ENCODER_OFFSET_POSITION = 0;//TODO: find value
         public static final int ANGLE_THRESHOLD = 2;//TODO: find value
-        public static final int MINIMAL_INTAKE_ANGLE = 2;//TODO: find value
+        public static final int MINIMAL_INTAKE_ANGLE = -3000;//TODO: find value
 
         public static final double AMP_SHOOTER_SPEED = -0.5;//TODO: find value
         public static final double STALL_DC = 0.1;
