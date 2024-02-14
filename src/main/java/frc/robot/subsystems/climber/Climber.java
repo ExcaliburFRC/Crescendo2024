@@ -4,6 +4,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.*;
 
 
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 import static frc.robot.Constants.ClimberConstants.*;
@@ -78,5 +79,12 @@ public class Climber extends SubsystemBase {
     private double getErrorHeight(ClimberSide climberSide) {
         //return the height the robot will climb above the ground
         return climberSide.getHeight() - Math.min(leftSide.getHeight(), rightSide.getHeight()) - MINIMAL_HEIGHT;
+    }
+
+    public Command manualCommand(BooleanSupplier leftRise, BooleanSupplier rightRise, BooleanSupplier leftLower, BooleanSupplier rightLower){
+        return new ParallelCommandGroup(
+                leftSide.manualCommand(leftRise, leftLower),
+                rightSide.manualCommand(rightRise, rightLower),
+                new RunCommand(()-> {}, this));
     }
 }

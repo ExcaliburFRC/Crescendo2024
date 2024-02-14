@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.FieldConstants.FieldLocations;
+import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.shooter.Shooter;
@@ -27,6 +28,7 @@ public class RobotContainer {
     private final LEDs leds = LEDs.getInstance();
     private final Shooter shooter = new Shooter();
     private final Intake intake = new Intake();
+    private final Climber climber = new Climber();
 
     // controllers
     private final CommandPS5Controller driver = new CommandPS5Controller(0);
@@ -73,6 +75,7 @@ public class RobotContainer {
 //        shooter.setDefaultCommand(shooter.prepShooterCommand(isAtSpeakerRadius, intake));
          testController.square().toggleOnTrue(shooter.manualShooterCommand());
          intake.setDefaultCommand(intake.manualCommand(testController::getLeftY, () -> testController.cross().getAsBoolean(), () -> testController.triangle().getAsBoolean()));
+         climber.setDefaultCommand(climber.manualCommand(testController.L1(), testController.R1(), testController.L2(), testController.R2()));
 
         driver.touchpad().whileTrue(toggleMotorsIdleMode().alongWith(leds.applyPatternCommand(SOLID, WHITE.color)));
         driver.PS().onTrue(swerve.resetOdometryAngleCommand());

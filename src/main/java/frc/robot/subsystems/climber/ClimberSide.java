@@ -6,8 +6,11 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
+import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import frc.lib.Gains;
 import frc.lib.Neo;
+
+import java.util.function.BooleanSupplier;
 
 import static frc.robot.Constants.ClimberConstants.*;
 import static frc.robot.Constants.ClimberConstants.MAX_LINEAR_ACCELERATION;
@@ -54,5 +57,16 @@ public class ClimberSide {
     }
     public double getHeight() {
         return motor.getPosition();
+    }
+
+    public Command manualCommand(BooleanSupplier rise, BooleanSupplier lower){
+        return new StartEndCommand(
+                ()-> {
+                    if (rise.getAsBoolean()) motor.set(0.5);
+                    else if (lower.getAsBoolean()) motor.set(-0.5);
+                    else motor.stopMotor();
+                },
+                motor::stopMotor
+        );
     }
 }
