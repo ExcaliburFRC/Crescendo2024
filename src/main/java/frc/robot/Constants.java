@@ -28,9 +28,9 @@ public final class Constants {
         public enum Modules {
             // drive ID, spin ID, abs encoder channel, offset angle, drive reversed, angle reversed
             FL(18, 17, 5, 0.842, true, true),
-            FR(12, 11, 9, 0.122, true, true),
+            FR(12, 11, 3, 0.122, true, true),
             BL(16, 15, 4, 0.55, true, true),
-            BR(14, 13, 8, 0.3339, true, true);
+            BR(14, 13, 2, 0.3339, true, true);
 
 
             public int DRIVE_MOTOR_ID, SPIN_MOTOR_ID, ABS_ENCODER_CHANNEL;
@@ -101,7 +101,6 @@ public final class Constants {
 
         public static final int DRIVE_CURRENT_LIMIT = 65;
         public static final int ANGLE_CURRENT_LIMIT = 25;
-
     }
 
     public static final class ShooterConstants {
@@ -110,7 +109,7 @@ public final class Constants {
 
         public static final int SHOOTER_CURRENT_LIMIT = 70;
 
-        public static final int SHOOTER_BEAMBREAK_CHANNEL = 0; //TODO: find value
+        public static final int SHOOTER_BEAMBREAK_CHANNEL = 6;
 
         public static final Gains UPPER_GAINS = new Gains(new Gains(0, 0, 0), new Gains(0, 0, 0, 0)); //TODO: find value
         public static final Gains LOWER_GAINS = new Gains(new Gains(0, 0, 0), new Gains(0, 0, 0, 0)); //TODO: find value
@@ -133,10 +132,10 @@ public final class Constants {
     }
 
     public static final class IntakeConstants {
-        public static final int INTAKE_MOTOR_ID = 0; //TODO: find value
-        public static final int ANGLE_MOTOR_ID = 0;//TODO: find value
+        public static final int INTAKE_MOTOR_ID = 21; //TODO: find value
+        public static final int ANGLE_MOTOR_ID = 22;//TODO: find value
 
-        public static final int ENCODER_PORT = 0; //TODO: find value
+        public static final int ENCODER_PORT = 1; //TODO: find value
         public static final int BEAMBREAK_PORT = 0;//TODO: find value
 
         public static final Gains PID_GAINS = new Gains(0, 0, 0);//TODO: find value
