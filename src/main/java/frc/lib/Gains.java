@@ -26,6 +26,14 @@ public class Gains {
         this(PIDgains.kp, PIDgains.ki, PIDgains.kd, FFgains.ks, FFgains.kg, FFgains.kv, FFgains.ka);
     }
 
+    public Gains(){
+        this(0, 0, 0, 0, 0, 0, 0);
+    }
+
+    public Gains(Gains gains){
+        this(gains.kp, gains.ki, gains.kd, gains.ks, gains.kg, gains.kv, gains.ka);
+    }
+
     public void setPIDgains(double kp, double ki, double kd) {
         this.kp = kp;
         this.ki = ki;
