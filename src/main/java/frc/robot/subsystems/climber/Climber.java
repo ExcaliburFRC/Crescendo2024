@@ -15,8 +15,8 @@ public class Climber extends SubsystemBase {
 
 
     public Climber() {
-        leftSide = new ClimberSide(LEFT_GAINS, LEFT_ID);
-        rightSide = new ClimberSide(RIGHT_GAINS, RIGHT_ID);
+        leftSide = new ClimberSide(LEFT_GAINS, LEFT_MOTOR_ID);
+        rightSide = new ClimberSide(RIGHT_GAINS, RIGHT_MOTOR_ID);
     }
 
     public Command setClimbHeightsCommand(double leftLength, double rightLength) {

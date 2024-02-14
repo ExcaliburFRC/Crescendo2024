@@ -8,12 +8,13 @@ public class Neo extends CANSparkBase {
     private final RelativeEncoder encoder;
     private final Gains gains;
 
-/**
- * constructor for the Neo class
- * @param motorID id of the motor
- * @param gains the gains of the motor
- */
-    public Neo(int motorID, Gains gains){
+    /**
+     * constructor for the Neo class
+     *
+     * @param motorID id of the motor
+     * @param gains   the gains of the motor
+     */
+    public Neo(int motorID, Gains gains) {
         super(motorID, MotorType.kBrushless);
         this.encoder = this.getEncoder();
         this.pidController = this.getPIDController();
@@ -23,7 +24,7 @@ public class Neo extends CANSparkBase {
         initPIDcontroller(gains);
     }
 
-    public Neo(int motorID){
+    public Neo(int motorID) {
         this(motorID, new Gains());
     }
 
@@ -32,34 +33,34 @@ public class Neo extends CANSparkBase {
         this.encoder.setVelocityConversionFactor(velocityFactor);
     }
 
-    public void setBrake(boolean isBrake){
+    public void setBrake(boolean isBrake) {
         if (isBrake) this.setIdleMode(IdleMode.kBrake);
         else this.setIdleMode(IdleMode.kCoast);
     }
 
-    public void initPIDcontroller(Gains gains){
+    public void initPIDcontroller(Gains gains) {
         pidController.setP(gains.kp);
         pidController.setI(gains.ki);
         pidController.setD(gains.kd);
     }
 
-    public double getPosition(){
+    public double getPosition() {
         return encoder.getPosition();
     }
 
-    public void setPosition(double position){
+    public void setPosition(double position) {
         encoder.setPosition(position);
     }
 
-    public void setReference(double value, CANSparkBase.ControlType ctrl, int pidSlot, double arbFeedforward){
+    public void setReference(double value, CANSparkBase.ControlType ctrl, int pidSlot, double arbFeedforward) {
         pidController.setReference(value, ctrl, pidSlot, arbFeedforward);
     }
 
-    public double getVelocity(){
+    public double getVelocity() {
         return encoder.getVelocity();
     }
 
-    public Gains getGains(){
+    public Gains getGains() {
         return new Gains(gains);
     }
     }

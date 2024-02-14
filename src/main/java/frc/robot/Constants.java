@@ -161,6 +161,9 @@ public final class Constants {
     }
 
     public static final class ClimberConstants {
+        public static final int LEFT_MOTOR_ID = 32;
+        public static final int RIGHT_MOTOR_ID = 31;
+
         //gains
         public static final Gains LEFT_GAINS = new Gains(0, 0, 0); //TODO
         public static final Gains RIGHT_GAINS = new Gains(0, 0, 0);//TODO
@@ -174,8 +177,6 @@ public final class Constants {
 
         public static final double ROT_TO_METR = 2 * PI * DRIVE_WHEEL_RADIUS * GEARING;//TODO
         public static final double ROT_TO_METER_PER_SEC = ROT_TO_METR / 60;//TODO
-        public static final int LEFT_ID = 0;//TODO
-        public static final int RIGHT_ID = 0;//TODO
 
         public static final double kG = 0;//TODO
         //representing the location of the arms on an axis
