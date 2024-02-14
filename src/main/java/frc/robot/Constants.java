@@ -124,9 +124,6 @@ public final class Constants {
         public static final double SPEAKER_PREP_DC = 0; //TODO: find value
         public static final double SPEAKER_PREP_RADIUS = 0;//TODO: find value
 
-        public static final double ROT_TO_DEGREES = 0; //TODO: find value
-        public static final double RPM_TO_DEG_PER_SEC = 0;//TODO: find value
-
         // sysid
         private static final double RAMP_RATE = 3;
         private static final double STEP_VOLTAGE = 0.5;

@@ -50,7 +50,6 @@ public class Shooter extends SubsystemBase {
 
     public Shooter() {
         upperShooter.setIdleMode(kCoast);
-        upperShooter.setConversionFactors(ROT_TO_DEGREES, RPM_TO_DEG_PER_SEC);
         upperShooter.setSmartCurrentLimit(SHOOTER_CURRENT_LIMIT);
 
         lowerShooter.follow(upperShooter, false);
