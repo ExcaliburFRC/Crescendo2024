@@ -33,14 +33,14 @@ public class Shooter extends SubsystemBase implements Logged {
     private final Neo upperShooter = new Neo(UPPER_SHOOTER_MOTOR_ID);
     private final Neo lowerShooter = new Neo(LOWER_SHOOTER_MOTOR_ID);
 
-    private ShooterState currentState;
+    private ShooterState currentState = new ShooterState(0);
 
     @Log.NT
-    private final DigitalInput beamBreak = new DigitalInput(SHOOTER_BEAMBREAK_CHANNEL);
+    private final DigitalInput shooterBeambreak = new DigitalInput(SHOOTER_BEAMBREAK_CHANNEL);
 
     @Log.NT
-    public final BooleanEvent noteShotTrigger =
-            new BooleanEvent(CommandScheduler.getInstance().getDefaultButtonLoop(), () -> !beamBreak.get()).falling().debounce(0.2);
+    public final Trigger noteShotTrigger = new Trigger(()-> false);
+//            new BooleanEvent(CommandScheduler.getInstance().getDefaultButtonLoop(), () -> !shooterBeambreak.get()).falling().debounce(0.2);
 
     private ShuffleboardTab shooterTab = Shuffleboard.getTab("ShooterTab");
     private final GenericEntry upperShooterVel = shooterTab.add("upperShooter", 0).getEntry();
@@ -72,7 +72,7 @@ public class Shooter extends SubsystemBase implements Logged {
     }
 
     public ShooterState getCurrentState() {
-        return currentState;
+        return this.currentState;
     }
 
     private Command setShootercommand(ShooterState state) {
@@ -104,7 +104,7 @@ public class Shooter extends SubsystemBase implements Logged {
     }
 
     public Command intakeFromShooterCommand() {
-        return this.runEnd(() -> upperShooter.set(-0.5), upperShooter::stopMotor).until(beamBreak::get);
+        return this.runEnd(() -> upperShooter.set(-0.5), upperShooter::stopMotor).until(shooterBeambreak::get);
     }
 
     public Command prepShooterCommand(Trigger isAtSpeakerRadius, Intake intake) {
@@ -140,6 +140,7 @@ public class Shooter extends SubsystemBase implements Logged {
     public Command shootToAmpManualCommand() {
         return this.runEnd(
                 ()-> {
+                    this.currentState = new ShooterState(AMP_UPPER_SHOOTER_RPM, AMP_LOWER_SHOOTER_RPM);
                     upperShooter.set(-0.35);
                     lowerShooter.set(-0.50);
                 },
@@ -150,11 +151,12 @@ public class Shooter extends SubsystemBase implements Logged {
     public Command shootToSpeakerManualCommand() {
         return this.runEnd(
                 ()-> {
+                    this.currentState = new ShooterState(WOOFER_RPM);
                     upperShooter.set(-0.8);
                     lowerShooter.set(-0.8);
                 },
-                this::stopMotors
-        );
+                this::stopMotors)
+                .until(noteShotTrigger);
     }
 
     public Command toggleIdleModeCommand() {

@@ -40,4 +40,9 @@ public class ShooterState {
     public static boolean atSetpoint(){
         return upperPIDcontroller.atSetpoint() && lowerPIDcontroller.atSetpoint();
     }
+
+    @Override
+    public String toString() {
+        return "upper: " + upperRPM + ", lower: " + lowerRPM;
+    }
 }

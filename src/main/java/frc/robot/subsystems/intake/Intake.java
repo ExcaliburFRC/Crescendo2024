@@ -21,12 +21,14 @@ import monologue.Logged;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 import static edu.wpi.first.units.MutableMeasure.mutable;
 import static edu.wpi.first.units.Units.*;
 import static frc.lib.Color.Colors.ORANGE;
 import static frc.robot.Constants.IntakeConstants.*;
 import static frc.robot.subsystems.LEDs.LEDPattern.BLINKING;
+import static java.lang.Math.PI;
 
 public class Intake extends SubsystemBase implements Logged {
     private final Neo intakeMotor = new Neo(INTAKE_MOTOR_ID);
@@ -34,9 +36,9 @@ public class Intake extends SubsystemBase implements Logged {
 
     private final DutyCycleEncoder intakeEncoder = new DutyCycleEncoder(ENCODER_PORT);
 
-    private final DigitalInput beamBreak = new DigitalInput(BEAMBREAK_PORT);
     @Log.NT
-    public final Trigger hasNoteTrigger = new Trigger(() -> !beamBreak.get()).debounce(0.2);
+    private final DigitalInput intakeBeambreak = new DigitalInput(BEAMBREAK_PORT);
+    public final Trigger hasNoteTrigger = new Trigger(() -> !intakeBeambreak.get()).debounce(0.2);
 
     private final PIDController anglePIDcontroller = new PIDController(INTAKE_GAINS.kp, INTAKE_GAINS.ki, INTAKE_GAINS.kd);
     private final ArmFeedforward angleFFcontroller = new ArmFeedforward(INTAKE_GAINS.ks, INTAKE_GAINS.kg, INTAKE_GAINS.kv, INTAKE_GAINS.ka);
@@ -54,11 +56,13 @@ public class Intake extends SubsystemBase implements Logged {
 
     public Intake() {
         intakeMotor.setConversionFactors(INTAKE_MOTOR_CONVERSION_FACTOR);
+        intakeMotor.setIdleMode(IdleMode.kCoast);
 
         angleMotor.setIdleMode(IdleMode.kBrake);
-        angleMotor.setSmartCurrentLimit(60);
+        angleMotor.setSmartCurrentLimit(40);
         angleMotor.setInverted(true);
-        angleMotor.setOpenLoopRampRate(0);
+        angleMotor.setIdleMode(IdleMode.kBrake);
+        angleMotor.setOpenLoopRampRate(0.35);
 
         angleMotor.enableSoftLimit(CANSparkBase.SoftLimitDirection.kForward, false);
         angleMotor.enableSoftLimit(CANSparkBase.SoftLimitDirection.kReverse, false);
@@ -66,15 +70,15 @@ public class Intake extends SubsystemBase implements Logged {
         intakeEncoder.setDistancePerRotation(360);
         intakeEncoder.setPositionOffset(INTAKE_ENCODER_OFFSET_POSITION);
 
-        anglePIDcontroller.enableContinuousInput(0, 360);
         anglePIDcontroller.setTolerance(INTAKE_TOLERANCE);
-//        setDefaultCommand(intakeIdleCommand());
 
+        setDefaultCommand(intakeIdleCommand());
     }
 
     @Log.NT (key = "intakeAngle")
-    private double getAngle() {
-        return MathUtil.inputModulus(180 - intakeEncoder.getDistance(), 0, 360);
+    public double getAngle() {
+        double angle = -intakeEncoder.getDistance();
+        return angle > -100? angle : angle + 360;
     }
 
     @Log.NT (key = "intakeVelocity")
@@ -89,7 +93,7 @@ public class Intake extends SubsystemBase implements Logged {
     private void setIntakeAngle(IntakeAngle angle) {
         setpoint = angle;
 
-        double pid = anglePIDcontroller.calculate(getAngle(), angle.angle);
+        double pid = anglePIDcontroller.calculate(getAngle() + INTAKE_READING_OFFSET, angle.angle);
         double ff = angleFFcontroller.calculate(Math.toRadians(angle.angle), 0) / 60.0;
 
         angleMotor.setVoltage(pid + ff);
@@ -114,7 +118,7 @@ public class Intake extends SubsystemBase implements Logged {
     }
 
     public Command intakeFromAngleCommand(IntakeAngle angle) {
-        return setIntakeCommand(new IntakeState(0.5, angle, true)).until(hasNoteTrigger).withName("intakeCommand");
+        return setIntakeCommand(new IntakeState(0.35, angle, true)).until(hasNoteTrigger).withName("intakeCommand");
     }
 
     public Command intakeFromAngleCommand(IntakeAngle angle, Command vibrateCommand) {
@@ -125,12 +129,13 @@ public class Intake extends SubsystemBase implements Logged {
         return setIntakeCommand(new IntakeState(AMP_SHOOTER_SPEED, IntakeAngle.AMP, true)).until(hasNoteTrigger.negate());
     }
 
-    public Command transportToShooterCommand(ShooterState state) {
-        return setIntakeCommand(new IntakeState(state.isSameVel()? -0.75 : -0.35, IntakeAngle.SHOOTER, true)).until(hasNoteTrigger.negate());
+    public Command transportToShooterCommand(Supplier<ShooterState> state) {
+        return setIntakeCommand(new IntakeState(state.get().isSameVel()? -0.75 : -0.25, IntakeAngle.SHOOTER, true))
+                .until(hasNoteTrigger.negate().debounce(0.75));
     }
 
     public Command intakeIdleCommand() {
-        return setIntakeCommand(new IntakeState(STALL_DC, IntakeAngle.SHOOTER, false));
+        return setIntakeCommand(new IntakeState(0, IntakeAngle.SHOOTER, false));
     }
 
     public Command manualCommand(DoubleSupplier angle, BooleanSupplier intake, BooleanSupplier outake) {

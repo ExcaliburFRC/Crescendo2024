@@ -115,8 +115,8 @@ public final class Constants {
         public static final Gains UPPER_GAINS = new Gains(new Gains(0, 0, 0), new Gains(0, 0, 0, 0)); //TODO: find value
         public static final Gains LOWER_GAINS = new Gains(new Gains(0, 0, 0), new Gains(0, 0, 0, 0)); //TODO: find value
 
-        public static final double AMP_LOWER_SHOOTER_RPM = 0; //TODO: find value
-        public static final double AMP_UPPER_SHOOTER_RPM = 0; //TODO: find value
+        public static final double AMP_LOWER_SHOOTER_RPM = 2; //TODO: find value
+        public static final double AMP_UPPER_SHOOTER_RPM = 1; //TODO: find value
         public static final double WOOFER_RPM = 0; //TODO: find value
 
         public static final double SHOOTER_PID_TOLERANCE = 100;
@@ -144,7 +144,8 @@ public final class Constants {
 
         public static final double INTAKE_MOTOR_CONVERSION_FACTOR = 1 / 10.0 * 1 / 3.0 * 16 / 40;
 
-        public static final double INTAKE_ENCODER_OFFSET_POSITION = 0.6708;
+        public static final double INTAKE_ENCODER_OFFSET_POSITION = 0.166;
+        public static final int INTAKE_READING_OFFSET = 50; // deg
         public static final int MINIMAL_INTAKE_ANGLE = -15;
 
         public static final double AMP_SHOOTER_SPEED = -0.5;//TODO: find value

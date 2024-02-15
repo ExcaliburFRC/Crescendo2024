@@ -8,16 +8,16 @@ public class IntakeState {
     public boolean waitForAngle;
 
     public enum IntakeAngle {
-        GROUND(343),
+        GROUND(-15),
         AMP(104),
         HUMAN_PLAYER(104),
-        SHOOTER(130);
+        SHOOTER(168);
 
         public final int angle;
 
         IntakeAngle(int angle) {
-            if (angle < MINIMAL_INTAKE_ANGLE) throw new IllegalArgumentException("intake angle lower then mechanical stop");
-            this.angle = angle;
+//            if (angle < MINIMAL_INTAKE_ANGLE) throw new IllegalArgumentException("intake angle lower then mechanical stop");
+            this.angle = angle + INTAKE_READING_OFFSET;
         }
     }
 
