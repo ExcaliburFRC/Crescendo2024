@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.Neo;
 import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.intake.IntakeState.IntakeAngle;
+import frc.robot.subsystems.shooter.ShooterState;
 import monologue.Annotations.Log;
 import monologue.Logged;
 
@@ -124,8 +125,8 @@ public class Intake extends SubsystemBase implements Logged {
         return setIntakeCommand(new IntakeState(AMP_SHOOTER_SPEED, IntakeAngle.AMP, true)).until(hasNoteTrigger.negate());
     }
 
-    public Command transportToShooterCommand() {
-        return setIntakeCommand(new IntakeState(-0.5, IntakeAngle.SHOOTER, true)).until(hasNoteTrigger.negate());
+    public Command transportToShooterCommand(ShooterState state) {
+        return setIntakeCommand(new IntakeState(state.isSameVel()? -0.75 : -0.35, IntakeAngle.SHOOTER, true)).until(hasNoteTrigger.negate());
     }
 
     public Command intakeIdleCommand() {

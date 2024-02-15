@@ -33,9 +33,7 @@ public class Robot extends TimedRobot implements Logged {
   public void robotInit() {
     robotContainer = new RobotContainer();
 
-    boolean fileOnly = false;
-    boolean lazyLogging = false;
-    Monologue.setupMonologue(robotContainer, "Robot", fileOnly, lazyLogging);
+    Monologue.setupMonologue(robotContainer, "Robot", false, false);
   }
 
   /**

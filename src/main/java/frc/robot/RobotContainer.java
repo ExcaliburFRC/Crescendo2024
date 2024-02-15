@@ -75,14 +75,15 @@ public class RobotContainer implements Logged {
 //        );
 
 //        shooter.setDefaultCommand(shooter.prepShooterCommand(isAtSpeakerRadius, intake));
-         testController.square().toggleOnTrue(shooter.manualShooterCommand());
+         testController.square().toggleOnTrue(shooter.shootToAmpManualCommand());
+         testController.circle().toggleOnTrue(shooter.shootToSpeakerManualCommand());
          intake.setDefaultCommand(intake.manualCommand(testController::getLeftY, () -> testController.cross().getAsBoolean(), () -> testController.triangle().getAsBoolean()));
-         climber.setDefaultCommand(climber.manualCommand(testController.L1(), testController.R1(), testController.L2(), testController.R2()));
-
-        driver.touchpad().or(testController.touchpad()).whileTrue(toggleMotorsIdleMode().alongWith(leds.applyPatternCommand(SOLID, WHITE.color)));
-        driver.PS().onTrue(swerve.resetOdometryAngleCommand());
-
-        // if R1 is pressed and the robot is stationary, shoot to speaker
+//         climber.setDefaultCommand(climber.manualCommand(testController.L1(), testController.R1(), testController.L2(), testController.R2()));
+//
+//        driver.touchpad().or(testController.touchpad()).whileTrue(toggleMotorsIdleMode().alongWith(leds.applyPatternCommand(SOLID, WHITE.color)));
+//        driver.PS().onTrue(swerve.resetOdometryAngleCommand());
+//
+//         if R1 is pressed and the robot is stationary, shoot to speaker
         driver.R1().and(() -> Math.max(swerve.getRobotRelativeSpeeds().vxMetersPerSecond, swerve.getRobotRelativeSpeeds().vyMetersPerSecond) < 0.2)
                 .whileTrue(scoreNoteCommand(shooter.shootFromWooferCommand()));
 
@@ -100,7 +101,8 @@ public class RobotContainer implements Logged {
 
         // manual actions
         // if the shooter doesn't work, we shoot the note from the intake
-        driver.square().toggleOnTrue(new ConditionalCommand(
+        driver.square().toggleOnTrue(
+                new ConditionalCommand(
                 scoreNoteCommand(shooter.shootToAmpCommand()),
                 intake.shootToAmpCommand(),
                 () -> shooterWorks)
@@ -116,14 +118,14 @@ public class RobotContainer implements Logged {
 
         // TODO: add auto intake from ground
 //        driver.povDown().onTrue(swerve.intakeNoteCommand().alongWith(intake.intakeFromAngleCommand(GROUND)).until(terminateAutoTrigger));
-        driver.povRight().onTrue(swerve.shootInMotionCommand().until(terminateAutoTrigger));
-        driver.povUp().onTrue(swerve.pathFindToLocation(HP_Station).alongWith(intake.intakeFromAngleCommand(HUMAN_PLAYER)).until(terminateAutoTrigger));
-        driver.povLeft().onTrue(scoreNoteCommand(swerve.pathFindToLocation(shooter_Location), shooter.shootToLocationCommand(shooter_Location)).until(terminateAutoTrigger));
+//        driver.povRight().onTrue(swerve.shootInMotionCommand().until(terminateAutoTrigger));
+//        driver.povUp().onTrue(swerve.pathFindToLocation(HP_Station).alongWith(intake.intakeFromAngleCommand(HUMAN_PLAYER)).until(terminateAutoTrigger));
+//        driver.povLeft().onTrue(scoreNoteCommand(swerve.pathFindToLocation(shooter_Location), shooter.shootToLocationCommand(shooter_Location)).until(terminateAutoTrigger));
 
-        testController.povUp().whileTrue(intake.sysidQuasistatic(SysIdRoutine.Direction.kForward));
-        testController.povDown().whileTrue(intake.sysidQuasistatic(SysIdRoutine.Direction.kReverse));
-        testController.povLeft().whileTrue(intake.sysidDynamic(SysIdRoutine.Direction.kForward));
-        testController.povRight().whileTrue(intake.sysidDynamic(SysIdRoutine.Direction.kReverse));
+//        testController.povUp().whileTrue(intake.sysidQuasistatic(SysIdRoutine.Direction.kForward));
+//        testController.povDown().whileTrue(intake.sysidQuasistatic(SysIdRoutine.Direction.kReverse));
+//        testController.povLeft().whileTrue(intake.sysidDynamic(SysIdRoutine.Direction.kForward));
+//        testController.povRight().whileTrue(intake.sysidDynamic(SysIdRoutine.Direction.kReverse));
     }
 
     // methods
@@ -140,7 +142,7 @@ public class RobotContainer implements Logged {
                 shooterCommand,
                 new WaitUntilCommand(shooter.shooterReadyTrigger).andThen(
                         new ParallelDeadlineGroup(
-                        intake.transportToShooterCommand(),
+                        intake.transportToShooterCommand(shooter.getCurrentState()),
                         leds.applyPatternCommand(SOLID, RED.color)))
         );
     }

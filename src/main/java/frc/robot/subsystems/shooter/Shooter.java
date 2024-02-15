@@ -11,17 +11,13 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.subsystems.intake.IntakeState;
 import frc.robot.util.ContinuouslyConditionalCommand;
 import frc.lib.Neo;
 import frc.robot.Constants.FieldConstants.FieldLocations;
 import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.intake.Intake;
-import monologue.Annotations;
 import monologue.Annotations.Log;
 import monologue.Logged;
-
-import java.util.function.DoubleSupplier;
 
 import static com.revrobotics.CANSparkBase.IdleMode.kBrake;
 import static com.revrobotics.CANSparkBase.IdleMode.kCoast;
@@ -36,6 +32,8 @@ import static frc.robot.subsystems.LEDs.LEDPattern.SOLID;
 public class Shooter extends SubsystemBase implements Logged {
     private final Neo upperShooter = new Neo(UPPER_SHOOTER_MOTOR_ID);
     private final Neo lowerShooter = new Neo(LOWER_SHOOTER_MOTOR_ID);
+
+    private ShooterState currentState;
 
     @Log.NT
     private final DigitalInput beamBreak = new DigitalInput(SHOOTER_BEAMBREAK_CHANNEL);
@@ -73,26 +71,29 @@ public class Shooter extends SubsystemBase implements Logged {
         lowerShooter.stopMotor();
     }
 
-    public ShooterState getShooterVel(){
-        return new ShooterState(upperShooter.getVelocity(), lowerShooter.getVelocity());
+    public ShooterState getCurrentState() {
+        return currentState;
     }
 
-    private Command setShooterRPMcommand(ShooterState state) {
-        return this.runEnd(
-                () -> {
+    private Command setShootercommand(ShooterState state) {
+        return new FunctionalCommand(
+                ()-> currentState = state,
+                ()-> {
                     state.setVelocities(upperShooter.getVelocity(), lowerShooter.getVelocity());
 
                     upperShooter.setVoltage(state.upperVoltage);
                     upperShooter.setVoltage(state.lowerVoltage);
-                }, this::stopMotors).until(noteShotTrigger);
+                },
+                (__)-> stopMotors(),
+                noteShotTrigger);
     }
 
     public Command shootToAmpCommand() {
-        return setShooterRPMcommand(new ShooterState(AMP_UPPER_SHOOTER_RPM, AMP_LOWER_SHOOTER_RPM));
+        return setShootercommand(new ShooterState(AMP_UPPER_SHOOTER_RPM, AMP_LOWER_SHOOTER_RPM));
     }
 
     public Command shootFromWooferCommand() {
-        return setShooterRPMcommand(new ShooterState(WOOFER_RPM));
+        return setShootercommand(new ShooterState(WOOFER_RPM));
     }
 
     public Command shootToLocationCommand(FieldLocations locations) {
@@ -134,6 +135,26 @@ public class Shooter extends SubsystemBase implements Logged {
                     lowerShooter.stopMotor();
                 },
                 this);
+    }
+
+    public Command shootToAmpManualCommand() {
+        return this.runEnd(
+                ()-> {
+                    upperShooter.set(-0.35);
+                    lowerShooter.set(-0.50);
+                },
+                this::stopMotors
+        );
+    }
+
+    public Command shootToSpeakerManualCommand() {
+        return this.runEnd(
+                ()-> {
+                    upperShooter.set(-0.8);
+                    lowerShooter.set(-0.8);
+                },
+                this::stopMotors
+        );
     }
 
     public Command toggleIdleModeCommand() {
