@@ -11,11 +11,15 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.subsystems.intake.IntakeState;
 import frc.robot.util.ContinuouslyConditionalCommand;
 import frc.lib.Neo;
 import frc.robot.Constants.FieldConstants.FieldLocations;
 import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.intake.Intake;
+import monologue.Annotations;
+import monologue.Annotations.Log;
+import monologue.Logged;
 
 import java.util.function.DoubleSupplier;
 
@@ -29,13 +33,16 @@ import static frc.robot.Constants.ShooterConstants.*;
 import static frc.robot.subsystems.LEDs.LEDPattern.BLINKING;
 import static frc.robot.subsystems.LEDs.LEDPattern.SOLID;
 
-public class Shooter extends SubsystemBase {
+public class Shooter extends SubsystemBase implements Logged {
     private final Neo upperShooter = new Neo(UPPER_SHOOTER_MOTOR_ID);
     private final Neo lowerShooter = new Neo(LOWER_SHOOTER_MOTOR_ID);
 
+    @Log.NT
     private final DigitalInput beamBreak = new DigitalInput(SHOOTER_BEAMBREAK_CHANNEL);
+
+    @Log.NT
     public final BooleanEvent noteShotTrigger =
-            new BooleanEvent(CommandScheduler.getInstance().getDefaultButtonLoop(), beamBreak::get).falling().debounce(0.2);
+            new BooleanEvent(CommandScheduler.getInstance().getDefaultButtonLoop(), () -> !beamBreak.get()).falling().debounce(0.2);
 
     private ShuffleboardTab shooterTab = Shuffleboard.getTab("ShooterTab");
     private final GenericEntry upperShooterVel = shooterTab.add("upperShooter", 0).getEntry();
@@ -46,6 +53,7 @@ public class Shooter extends SubsystemBase {
 
     private final LEDs leds = LEDs.getInstance();
 
+    @Log.NT
     public Trigger shooterReadyTrigger = new Trigger(ShooterState::atSetpoint)
             .onTrue(leds.applyPatternCommand(SOLID, GREEN.color))
             .onFalse(leds.restoreLEDs());
@@ -63,6 +71,10 @@ public class Shooter extends SubsystemBase {
     private void stopMotors(){
         upperShooter.stopMotor();
         lowerShooter.stopMotor();
+    }
+
+    public ShooterState getShooterVel(){
+        return new ShooterState(upperShooter.getVelocity(), lowerShooter.getVelocity());
     }
 
     private Command setShooterRPMcommand(ShooterState state) {
@@ -129,6 +141,16 @@ public class Shooter extends SubsystemBase {
                 () -> upperShooter.setIdleMode(kCoast),
                 () -> upperShooter.setIdleMode(kBrake)
         ).ignoringDisable(true);
+    }
+
+    @Log.NT
+    private double getUpperRPM(){
+        return upperShooter.getVelocity();
+    }
+
+    @Log.NT
+    private double getLowerRPM(){
+        return lowerShooter.getVelocity();
     }
 
     // sysid stuff

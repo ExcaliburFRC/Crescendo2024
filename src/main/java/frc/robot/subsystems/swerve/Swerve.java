@@ -34,6 +34,9 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.Constants.FieldConstants.*;
 import frc.robot.util.AllianceUtils;
+import monologue.Annotations;
+import monologue.Annotations.Log;
+import monologue.Logged;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
@@ -43,7 +46,7 @@ import java.util.function.Supplier;
 import static frc.robot.Constants.SwerveConstants.*;
 import static frc.robot.Constants.SwerveConstants.Modules.*;
 
-public class Swerve extends SubsystemBase {
+public class Swerve extends SubsystemBase implements Logged {
     private final SwerveModule[] swerveModules = {
             new SwerveModule(
                     Modules.FL.DRIVE_MOTOR_ID,
@@ -137,6 +140,7 @@ public class Swerve extends SubsystemBase {
         return getPose2d().getTranslation().getDistance(pose.getTranslation());
     }
 
+    @Log.NT (key = "robotPose")
     public Pose2d getPose2d() {
         return odometry.getEstimatedPosition();
     }
@@ -266,6 +270,7 @@ public class Swerve extends SubsystemBase {
         swerveModules[BACK_RIGHT].setDesiredState(states[BACK_RIGHT]);
     }
 
+    @Log.NT
     public SwerveModulePosition[] getModulesPositions() {
         return new SwerveModulePosition[]{
                 swerveModules[0].getPosition(),
@@ -275,6 +280,7 @@ public class Swerve extends SubsystemBase {
         };
     }
 
+    @Log.NT
     public SwerveModuleState[] getModulesStates() {
         return new SwerveModuleState[]{
                 swerveModules[0].getState(),

@@ -4,10 +4,10 @@ import static frc.robot.Constants.IntakeConstants.*;
 
 public class IntakeState {
     public double intakeDC;
-    public intakeAngle angle;
+    public IntakeAngle angle;
     public boolean waitForAngle;
 
-    public enum intakeAngle {
+    public enum IntakeAngle {
         GROUND(343),
         AMP(104),
         HUMAN_PLAYER(104),
@@ -15,13 +15,13 @@ public class IntakeState {
 
         public final int angle;
 
-        intakeAngle(int angle) {
+        IntakeAngle(int angle) {
             if (angle < MINIMAL_INTAKE_ANGLE) throw new IllegalArgumentException("intake angle lower then mechanical stop");
             this.angle = angle;
         }
     }
 
-    public IntakeState(double dc, intakeAngle angle, boolean waitForAngle) {
+    public IntakeState(double dc, IntakeAngle angle, boolean waitForAngle) {
         this.intakeDC = dc;
         this.angle = angle;
         this.waitForAngle = waitForAngle;

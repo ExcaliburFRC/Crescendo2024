@@ -286,7 +286,7 @@ public final class Constants {
     }
 
     public static class LedsConstants {
-        public static final int LEDS_PORT = 0; // pwm //TODO: find value
-        public static final int LENGTH = 0; //TODO: find value
+        public static final int LEDS_PORT = 0; // pwm
+        public static final int LENGTH = 50;
     }
 }

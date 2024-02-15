@@ -9,13 +9,12 @@ import edu.wpi.first.units.*;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.Neo;
 import frc.robot.subsystems.LEDs;
-import frc.robot.subsystems.intake.IntakeState.intakeAngle;
+import frc.robot.subsystems.intake.IntakeState.IntakeAngle;
 import monologue.Annotations.Log;
 import monologue.Logged;
 
@@ -35,19 +34,20 @@ public class Intake extends SubsystemBase implements Logged {
     private final DutyCycleEncoder intakeEncoder = new DutyCycleEncoder(ENCODER_PORT);
 
     private final DigitalInput beamBreak = new DigitalInput(BEAMBREAK_PORT);
+    @Log.NT
     public final Trigger hasNoteTrigger = new Trigger(() -> !beamBreak.get()).debounce(0.2);
 
     private final PIDController anglePIDcontroller = new PIDController(INTAKE_GAINS.kp, INTAKE_GAINS.ki, INTAKE_GAINS.kd);
     private final ArmFeedforward angleFFcontroller = new ArmFeedforward(INTAKE_GAINS.ks, INTAKE_GAINS.kg, INTAKE_GAINS.kv, INTAKE_GAINS.ka);
 
-    public final Trigger atSetpointTrigger = new Trigger(anglePIDcontroller::atSetpoint).debounce(0.2);
-    public final Trigger atShooterTrigger =
-            new Trigger(()-> MathUtil.isNear(intakeAngle.SHOOTER.angle, getAngle(), INTAKE_TOLERANCE));
+    @Log.NT
+    public IntakeAngle setpoint;
 
-    public final Trigger intakingTrigger = new Trigger(()-> {
-        if (getCurrentCommand()!= null && getCurrentCommand().equals("intakeCommand")) return true;
-        return false;
-    });
+    @Log.NT
+    public final Trigger atSetpointTrigger = new Trigger(anglePIDcontroller::atSetpoint).debounce(0.2);
+    public final Trigger atShooterTrigger = atSetpointTrigger.and(()-> setpoint.equals(IntakeAngle.SHOOTER));
+
+    public final Trigger intakingTrigger = new Trigger(()-> getCurrentCommand() != null && getCurrentCommand().equals("intakeCommand"));
 
     private final LEDs leds = LEDs.getInstance();
 
@@ -76,15 +76,20 @@ public class Intake extends SubsystemBase implements Logged {
         return MathUtil.inputModulus(180 - intakeEncoder.getDistance(), 0, 360);
     }
 
+    @Log.NT (key = "intakeVelocity")
+    private double getIntakeVel(){
+        return intakeMotor.getVelocity();
+    }
+
     private void setIntakeSpeed(double speed) {
         intakeMotor.set(speed);
     }
 
-    private void setIntakeAngle(intakeAngle angle) {
+    private void setIntakeAngle(IntakeAngle angle) {
+        setpoint = angle;
+
         double pid = anglePIDcontroller.calculate(getAngle(), angle.angle);
         double ff = angleFFcontroller.calculate(Math.toRadians(angle.angle), 0) / 60.0;
-
-        System.out.println(anglePIDcontroller.getPositionError());
 
         angleMotor.setVoltage(pid + ff);
     }
@@ -94,41 +99,37 @@ public class Intake extends SubsystemBase implements Logged {
         angleMotor.stopMotor();
     }
 
-
     private Command setIntakeCommand(IntakeState intakeState) {
         return this.runEnd(()-> {
-//            leds.applyPatternCommand(BLINKING, ORANGE.color);
+            leds.applyPatternCommand(BLINKING, ORANGE.color);
 
             setIntakeAngle(intakeState.angle);
 
             if (!intakeState.waitForAngle) setIntakeSpeed(intakeState.intakeDC);
             else if (atSetpointTrigger.getAsBoolean()) setIntakeSpeed(intakeState.intakeDC);
-            else {
-                setIntakeSpeed(0);
-                System.out.println("not at setpoint");
-            }
+            else setIntakeSpeed(0);
 
         }, this::stopMotors);
     }
 
-    public Command intakeFromAngleCommand(intakeAngle angle) {
+    public Command intakeFromAngleCommand(IntakeAngle angle) {
         return setIntakeCommand(new IntakeState(0.5, angle, true)).until(hasNoteTrigger).withName("intakeCommand");
     }
 
-    public Command intakeFromAngleCommand(intakeAngle angle, Command vibrateCommand) {
+    public Command intakeFromAngleCommand(IntakeAngle angle, Command vibrateCommand) {
         return intakeFromAngleCommand(angle).andThen(vibrateCommand::schedule); // schedule it instead of composing it to free up the intake requirement immediately
     }
 
     public Command shootToAmpCommand() {
-        return setIntakeCommand(new IntakeState(AMP_SHOOTER_SPEED, intakeAngle.AMP, true)).until(hasNoteTrigger.negate());
+        return setIntakeCommand(new IntakeState(AMP_SHOOTER_SPEED, IntakeAngle.AMP, true)).until(hasNoteTrigger.negate());
     }
 
     public Command transportToShooterCommand() {
-        return setIntakeCommand(new IntakeState(-0.5, intakeAngle.SHOOTER, true)).until(hasNoteTrigger.negate());
+        return setIntakeCommand(new IntakeState(-0.5, IntakeAngle.SHOOTER, true)).until(hasNoteTrigger.negate());
     }
 
     public Command intakeIdleCommand() {
-        return setIntakeCommand(new IntakeState(STALL_DC, intakeAngle.SHOOTER, false));
+        return setIntakeCommand(new IntakeState(STALL_DC, IntakeAngle.SHOOTER, false));
     }
 
     public Command manualCommand(DoubleSupplier angle, BooleanSupplier intake, BooleanSupplier outake) {
@@ -175,10 +176,5 @@ public class Intake extends SubsystemBase implements Logged {
 
     public Command sysidDynamic(SysIdRoutine.Direction direction) {
         return angleSysid.dynamic(direction);
-    }
-
-    @Override
-    public void periodic() {
-        angleMotor.setPosition(getAngle());
     }
 }

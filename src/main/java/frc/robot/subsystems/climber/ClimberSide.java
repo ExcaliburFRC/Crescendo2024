@@ -9,14 +9,18 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import frc.lib.Gains;
 import frc.lib.Neo;
+import monologue.Annotations;
+import monologue.Annotations.Log;
+import monologue.Logged;
 
 import java.util.function.BooleanSupplier;
 
 import static frc.robot.Constants.ClimberConstants.*;
 import static frc.robot.Constants.ClimberConstants.MAX_LINEAR_ACCELERATION;
 
-public class ClimberSide {
+public class ClimberSide implements Logged {
     private final Neo motor;
+    @Log.NT
     private double liftingForce = 0;
 
     public ClimberSide(Gains motorGains, int motorID) {
@@ -55,6 +59,8 @@ public class ClimberSide {
         //sets the T force required to lift the robot at the time in this arm
         this.liftingForce = liftingForce;
     }
+
+    @Log.NT (key = "climberHeight")
     public double getHeight() {
         return motor.getPosition();
     }

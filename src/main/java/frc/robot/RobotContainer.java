@@ -22,7 +22,7 @@ import static frc.lib.Color.Colors.*;
 import static frc.robot.Constants.FieldConstants.FieldLocations.*;
 import static frc.robot.Constants.ShooterConstants.SPEAKER_PREP_RADIUS;
 import static frc.robot.subsystems.LEDs.LEDPattern.*;
-import static frc.robot.subsystems.intake.IntakeState.intakeAngle.*;
+import static frc.robot.subsystems.intake.IntakeState.IntakeAngle.*;
 
 public class RobotContainer implements Logged {
     // subsystems
@@ -119,8 +119,6 @@ public class RobotContainer implements Logged {
         driver.povRight().onTrue(swerve.shootInMotionCommand().until(terminateAutoTrigger));
         driver.povUp().onTrue(swerve.pathFindToLocation(HP_Station).alongWith(intake.intakeFromAngleCommand(HUMAN_PLAYER)).until(terminateAutoTrigger));
         driver.povLeft().onTrue(scoreNoteCommand(swerve.pathFindToLocation(shooter_Location), shooter.shootToLocationCommand(shooter_Location)).until(terminateAutoTrigger));
-
-        leds.setDefaultCommand(leds.applyPatternCommand(TRAIN, TEAM_GOLD.color, TEAM_BLUE.color));
 
         testController.povUp().whileTrue(intake.sysidQuasistatic(SysIdRoutine.Direction.kForward));
         testController.povDown().whileTrue(intake.sysidQuasistatic(SysIdRoutine.Direction.kReverse));
