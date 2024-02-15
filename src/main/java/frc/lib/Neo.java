@@ -21,6 +21,7 @@ public class Neo extends CANSparkBase {
         this.gains = gains;
 
         this.setIdleMode(IdleMode.kBrake); // motors default to brake mode
+        this.
         initPIDcontroller(gains);
     }
 
@@ -33,9 +34,9 @@ public class Neo extends CANSparkBase {
         this.encoder.setVelocityConversionFactor(velocityFactor);
     }
 
-    public void setBrake(boolean isBrake) {
-        if (isBrake) this.setIdleMode(IdleMode.kBrake);
-        else this.setIdleMode(IdleMode.kCoast);
+    public void setConversionFactors(double conversionFactor) {
+        this.encoder.setPositionConversionFactor(conversionFactor);
+        this.encoder.setVelocityConversionFactor(conversionFactor);
     }
 
     public void initPIDcontroller(Gains gains) {

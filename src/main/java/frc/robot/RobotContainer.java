@@ -7,12 +7,14 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.FieldConstants.FieldLocations;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.swerve.Swerve;
+import monologue.Logged;
 
 import static edu.wpi.first.math.MathUtil.applyDeadband;
 import static edu.wpi.first.wpilibj.GenericHID.RumbleType.kBothRumble;
@@ -22,7 +24,7 @@ import static frc.robot.Constants.ShooterConstants.SPEAKER_PREP_RADIUS;
 import static frc.robot.subsystems.LEDs.LEDPattern.*;
 import static frc.robot.subsystems.intake.IntakeState.intakeAngle.*;
 
-public class RobotContainer {
+public class RobotContainer implements Logged {
     // subsystems
     private final Swerve swerve = new Swerve();
     private final LEDs leds = LEDs.getInstance();
@@ -105,10 +107,11 @@ public class RobotContainer {
         );
         // if the intake doesn't work, we intake the note from the shooter
         driver.cross().toggleOnTrue(new ConditionalCommand(
-                intake.intakeFromAngleCommand(HUMAN_PLAYER, vibrateControllerCommand(50, 0.5)),
+                intake.intakeFromAngleCommand(GROUND, vibrateControllerCommand(50, 0.5)),
                 shooter.intakeFromShooterCommand(),
                 () -> intakeWorks));
-        driver.triangle().toggleOnTrue(shooter.shootFromWooferCommand());
+//        driver.triangle().toggleOnTrue(shooter.shootFromWooferCommand());
+        driver.triangle().toggleOnTrue(intake.intakeFromAngleCommand(SHOOTER));
         driver.circle().toggleOnTrue(intake.intakeFromAngleCommand(GROUND, vibrateControllerCommand(50, 0.5)));
 
         // TODO: add auto intake from ground
@@ -118,6 +121,11 @@ public class RobotContainer {
         driver.povLeft().onTrue(scoreNoteCommand(swerve.pathFindToLocation(shooter_Location), shooter.shootToLocationCommand(shooter_Location)).until(terminateAutoTrigger));
 
         leds.setDefaultCommand(leds.applyPatternCommand(TRAIN, TEAM_GOLD.color, TEAM_BLUE.color));
+
+        testController.povUp().whileTrue(intake.sysidQuasistatic(SysIdRoutine.Direction.kForward));
+        testController.povDown().whileTrue(intake.sysidQuasistatic(SysIdRoutine.Direction.kReverse));
+        testController.povLeft().whileTrue(intake.sysidDynamic(SysIdRoutine.Direction.kForward));
+        testController.povRight().whileTrue(intake.sysidDynamic(SysIdRoutine.Direction.kReverse));
     }
 
     // methods

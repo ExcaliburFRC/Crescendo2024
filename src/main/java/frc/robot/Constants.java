@@ -139,25 +139,19 @@ public final class Constants {
         public static final int ENCODER_PORT = 1;
         public static final int BEAMBREAK_PORT = 0;
 
-        public static final Gains PID_GAINS = new Gains(0, 0, 0);//TODO: find value
-        public static final Gains FF_ANGLE_GAINS = new Gains(0, 0, 0);//TODO: find value
+        public static final Gains INTAKE_GAINS = new Gains(0.058037 * 2 , 0.0, 0.011109 / 4,0.038684, 0.12578, 0.022038, 54.356);
+        public static final double INTAKE_TOLERANCE = 10;
 
-        public static final double INTAKE_MOTOR_POSITION_CONVERSION_FACTOR = 0;
-        public static final double INTAKE_MOTOR_VELOCITY_CONVERSION_FACTOR = 0;
+        public static final double INTAKE_MOTOR_CONVERSION_FACTOR = 1 / 10.0 * 1 / 3.0 * 16 / 40;
 
-        public static final double INTAKE_ENCODER_OFFSET_POSITION = 0;//TODO: find value
-        public static final int ANGLE_THRESHOLD = 2;//TODO: find value
-        public static final int MINIMAL_INTAKE_ANGLE = -3000;//TODO: find value
+        public static final double INTAKE_ENCODER_OFFSET_POSITION = 0.6708;
+        public static final int MINIMAL_INTAKE_ANGLE = -15;
 
         public static final double AMP_SHOOTER_SPEED = -0.5;//TODO: find value
         public static final double STALL_DC = 0.1;
 
         //sysid
-        private static final double RAMP_RATE = 3;
-        private static final double STEP_VOLTAGE = 0.5;
-        private static final double TIMEOUT = 10;
-
-        public static final SysIdRoutine.Config sysidConfig = new SysIdConfig(RAMP_RATE, STEP_VOLTAGE, TIMEOUT);
+        public static final SysIdRoutine.Config sysidConfig = new SysIdConfig(0.5, 3, 10);
     }
 
     public static final class ClimberConstants {

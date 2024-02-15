@@ -22,7 +22,6 @@ import monologue.Monologue;
  * project.
  */
 public class Robot extends TimedRobot implements Logged {
-
   private RobotContainer robotContainer;
   private Command autonomousCommand = Commands.none();
 
@@ -36,7 +35,7 @@ public class Robot extends TimedRobot implements Logged {
 
     boolean fileOnly = false;
     boolean lazyLogging = false;
-    Monologue.setupMonologue(this, "Robot", fileOnly, lazyLogging);
+    Monologue.setupMonologue(robotContainer, "Robot", fileOnly, lazyLogging);
   }
 
   /**
