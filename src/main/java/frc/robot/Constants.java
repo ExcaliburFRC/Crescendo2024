@@ -125,8 +125,8 @@ public final class Constants {
         public static final double SPEAKER_PREP_RADIUS = 0;//TODO: find value
 
         // sysid
-        private static final double RAMP_RATE = 3;
-        private static final double STEP_VOLTAGE = 0.5;
+        private static final double RAMP_RATE = 0.5;
+        private static final double STEP_VOLTAGE = 6;
         private static final double TIMEOUT = 10;
 
         public static final SysIdRoutine.Config sysidConfig = new SysIdConfig(RAMP_RATE, STEP_VOLTAGE, TIMEOUT);

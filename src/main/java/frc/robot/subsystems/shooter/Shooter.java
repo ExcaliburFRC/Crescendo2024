@@ -188,7 +188,7 @@ public class Shooter extends SubsystemBase implements Logged {
                     (Measure<Voltage> volts) -> upperShooter.setVoltage(volts.in(Volts)),
                     log -> log.motor("shooterMotor")
                             .voltage(appliedVoltage.mut_replace(
-                                    upperShooter.get() * RobotController.getBatteryVoltage(), Volts))
+                                    upperShooter.getAppliedOutput() * RobotController.getBatteryVoltage(), Volts))
                             .angularPosition(degrees.mut_replace(upperShooter.getPosition(), Degrees))
                             .angularVelocity(velocity.mut_replace(upperShooter.getVelocity(), RPM)),
 

@@ -33,9 +33,11 @@ public class RobotContainer implements Logged {
     private final LEDs leds = LEDs.getInstance();
     private final Shooter shooter = new Shooter();
     private final Intake intake = new Intake();
+    private final Climber climber = new Climber();
 
     // controllers
     private final CommandPS5Controller driver = new CommandPS5Controller(0);
+    private final CommandPS5Controller sysid = new CommandPS5Controller(1);
     private final XboxController driverVibration = new XboxController(5);
 
     public ShuffleboardTab matchTab = Shuffleboard.getTab("match");
@@ -72,7 +74,8 @@ public class RobotContainer implements Logged {
                         () -> applyDeadband(-driver.getRightX(), 0.07),
                         () -> robotRelativeDrive,
                         driver::getL2Axis, // decelerator
-                        () -> driver.L1().getAsBoolean() ? SPEAKER.pose.get() : emptyPose) // if R1 pressed, turn swerve to Speaker
+                        () -> emptyPose) // if R1 pressed, turn swerve to Speaker
+//                        () -> driver.L1().getAsBoolean() ? SPEAKER.pose.get() : emptyPose) // if R1 pressed, turn swerve to Speaker
         );
 
         driver.touchpad().whileTrue(toggleMotorsIdleMode().alongWith(leds.applyPatternCommand(SOLID, WHITE.color)));
@@ -98,6 +101,13 @@ public class RobotContainer implements Logged {
 
         driver.triangle().toggleOnTrue(scoreNoteCommand(shooter.shootToSpeakerManualCommand(), () -> driver.R1().getAsBoolean()));
         driver.circle().toggleOnTrue(intake.intakeFromAngleCommand(GROUND, vibrateControllerCommand(50, 0.5)));
+
+        climber.setDefaultCommand(climber.manualCommand(driver.L1(), driver.R1(), driver.L2(), driver.R2()));
+
+        sysid.circle().toggleOnTrue(shooter.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+        sysid.square().toggleOnTrue(shooter.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+        sysid.triangle().toggleOnTrue(shooter.sysIdDynamic(SysIdRoutine.Direction.kForward));
+        sysid.cross().toggleOnTrue(shooter.sysIdDynamic(SysIdRoutine.Direction.kReverse));
     }
 
     // triangle - shoot to speaker

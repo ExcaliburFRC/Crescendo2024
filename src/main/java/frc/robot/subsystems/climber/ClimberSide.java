@@ -5,6 +5,7 @@ import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import frc.lib.Gains;
@@ -18,7 +19,7 @@ import java.util.function.BooleanSupplier;
 import static frc.robot.Constants.ClimberConstants.*;
 import static frc.robot.Constants.ClimberConstants.MAX_LINEAR_ACCELERATION;
 
-public class ClimberSide implements Logged {
+class ClimberSide implements Logged {
     private final Neo motor;
     @Log.NT
     private double liftingForce = 0;
@@ -66,7 +67,7 @@ public class ClimberSide implements Logged {
     }
 
     public Command manualCommand(BooleanSupplier rise, BooleanSupplier lower){
-        return new StartEndCommand(
+        return Commands.runEnd(
                 ()-> {
                     if (rise.getAsBoolean()) motor.set(0.5);
                     else if (lower.getAsBoolean()) motor.set(-0.5);
