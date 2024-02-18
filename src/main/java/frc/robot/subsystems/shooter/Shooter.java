@@ -81,7 +81,7 @@ public class Shooter extends SubsystemBase implements Logged {
                     state.setVelocities(upperShooter.getVelocity(), lowerShooter.getVelocity());
 
                     upperShooter.setVoltage(state.upperVoltage);
-                    upperShooter.setVoltage(state.lowerVoltage);
+                    lowerShooter.setVoltage(state.lowerVoltage);
                 },
                 (__)-> stopMotors(),
                 noteShotTrigger);
