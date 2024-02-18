@@ -118,8 +118,7 @@ public class RobotContainer implements Logged {
                         new WaitUntilCommand(release),
                         new ParallelDeadlineGroup(
                                 intake.transportToShooterCommand(shooter::getCurrentState),
-                                leds.setPattern(SOLID, RED.color))))
-                .withInterruptBehavior(kCancelSelf);
+                                leds.setPattern(SOLID, RED.color))));
     }
 
     public Command matchPrepCommand() {

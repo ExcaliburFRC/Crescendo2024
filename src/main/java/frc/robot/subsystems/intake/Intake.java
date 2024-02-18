@@ -132,7 +132,7 @@ public class Intake extends SubsystemBase implements Logged {
     public Command intakeIdleCommand() {
         return new SequentialCommandGroup(
                 setIntakeCommand(new IntakeState(0, IntakeAngle.SHOOTER, false)).until(atShooterTrigger),
-                new ConditionalCommand(pumpNoteCommand().withInterruptBehavior(kCancelIncoming), new InstantCommand(() -> {}), hasNoteTrigger),
+                new ConditionalCommand(pumpNoteCommand(), new InstantCommand(() -> {}), hasNoteTrigger),
                 Commands.idle());
     }
 
@@ -140,8 +140,9 @@ public class Intake extends SubsystemBase implements Logged {
         return new SequentialCommandGroup(
                 this.runEnd(() -> intakeMotor.set(-0.2), intakeMotor::stopMotor).withTimeout(0.1),
                 new WaitCommand(0.25),
-                this.runEnd(() -> intakeMotor.set(0.2), intakeMotor::stopMotor).withTimeout(0.25))
-                .withInterruptBehavior(kCancelIncoming);
+                this.runEnd(() -> intakeMotor.set(0.2), intakeMotor::stopMotor)
+                        .withInterruptBehavior(kCancelIncoming)
+                        .withTimeout(0.25));
     }
 
     public Command toggleIdleModeCommand() {

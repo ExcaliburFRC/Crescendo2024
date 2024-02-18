@@ -38,7 +38,6 @@ public class Shooter extends SubsystemBase implements Logged {
     @Log.NT
     private final DigitalInput shooterBeambreak = new DigitalInput(SHOOTER_BEAMBREAK_CHANNEL);
 
-    @Log.NT
     public final BooleanEvent noteShotTrigger = new BooleanEvent(CommandScheduler.getInstance().getDefaultButtonLoop(), () -> !shooterBeambreak.get()).falling();
 
     private ShuffleboardTab shooterTab = Shuffleboard.getTab("ShooterTab");
@@ -149,8 +148,8 @@ public class Shooter extends SubsystemBase implements Logged {
                     upperShooter.set(-0.25);
                     lowerShooter.set(-0.4);
                 },
-                this::stopMotors
-        );
+                this::stopMotors)
+                .until(noteShotTrigger);
     }
 
     public Command shootToSpeakerManualCommand() {
@@ -168,6 +167,11 @@ public class Shooter extends SubsystemBase implements Logged {
                 () -> upperShooter.setIdleMode(kCoast),
                 () -> upperShooter.setIdleMode(kBrake)
         ).ignoringDisable(true);
+    }
+
+    @Log.NT
+    private boolean noteShotTrigger(){
+        return noteShotTrigger.getAsBoolean();
     }
 
     @Log.NT
