@@ -36,7 +36,7 @@ public class RobotContainer implements Logged {
 
     // controllers
     private final CommandPS5Controller driver = new CommandPS5Controller(0);
-    private final CommandPS5Controller sysid = new CommandPS5Controller(1);
+    //    private final CommandPS5Controller sysid = new CommandPS5Controller(1);
     private final XboxController driverVibration = new XboxController(5);
 
     public ShuffleboardTab matchTab = Shuffleboard.getTab("match");
@@ -95,14 +95,14 @@ public class RobotContainer implements Logged {
                 () -> CommandScheduler.getInstance().setActiveButtonLoop(CommandScheduler.getInstance().getDefaultButtonLoop())));
 
         // shooter
-        driver.square().toggleOnTrue(scoreNoteCommand(shooter.shootToAmpManualCommand(), driver.L3()));
-        driver.triangle().toggleOnTrue(scoreNoteCommand(shooter.shootToSpeakerManualCommand(), driver.L3()));
+        driver.square().toggleOnTrue(scoreNoteCommand(shooter.shootToAmpManualCommand(), driver.R1()));
+        driver.triangle().toggleOnTrue(scoreNoteCommand(shooter.shootToSpeakerManualCommand(), driver.R1()));
 
-        // susid
-        sysid.circle().toggleOnTrue(shooter.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-        sysid.square().toggleOnTrue(shooter.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-        sysid.triangle().toggleOnTrue(shooter.sysIdDynamic(SysIdRoutine.Direction.kForward));
-        sysid.cross().toggleOnTrue(shooter.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+//        // susid
+//        sysid.circle().toggleOnTrue(shooter.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+//        sysid.square().toggleOnTrue(shooter.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+//        sysid.triangle().toggleOnTrue(shooter.sysIdDynamic(SysIdRoutine.Direction.kForward));
+//        sysid.cross().toggleOnTrue(shooter.sysIdDynamic(SysIdRoutine.Direction.kReverse));
     }
 
     // triangle - shoot to speaker
@@ -112,20 +112,21 @@ public class RobotContainer implements Logged {
 
     // methods
     private Command scoreNoteCommand(Command shooterCommand, Trigger release) {
-        return new ParallelCommandGroup(
-                shooterCommand,
-                new SequentialCommandGroup(
-                        new WaitUntilCommand(release),
-                        new ParallelDeadlineGroup(
-                                intake.transportToShooterCommand(shooter::getCurrentState),
-                                leds.setPattern(SOLID, RED.color))));
+        return new WaitUntilCommand(()-> intake.pumpingTrigger.negate().getAsBoolean()).andThen(
+                new ParallelCommandGroup(shooterCommand,
+                      new SequentialCommandGroup(
+                      new WaitUntilCommand(release),
+                                 new ParallelDeadlineGroup(
+                                     intake.transportToShooterCommand(shooter::getCurrentState),
+                                     leds.setPattern(SOLID, RED.color)))
+                ));
     }
 
     public Command matchPrepCommand() {
         return new SequentialCommandGroup(
                 swerve.straightenModulesCommand(),
                 intake.intakeIdleCommand(),
-                climber.manualCommand(()-> false, ()-> false, ()-> true, ()-> true)
+                climber.manualCommand(() -> false, () -> false, () -> true, () -> true)
         );
     }
 

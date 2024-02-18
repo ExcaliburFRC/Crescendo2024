@@ -49,7 +49,8 @@ public class Intake extends SubsystemBase implements Logged {
     public final Trigger atSetpointTrigger = new Trigger(anglePIDcontroller::atSetpoint).debounce(0.2);
     public final Trigger atShooterTrigger = atSetpointTrigger.and(() -> setpoint.equals(IntakeAngle.SHOOTER));
 
-    public final Trigger intakingTrigger = new Trigger(() -> getCurrentCommand() != null && getCurrentCommand().equals("intakeCommand"));
+    public final Trigger intakingTrigger = new Trigger(() -> getCurrentCommand() != null && getCurrentCommand().getName().equals("intakeCommand"));
+    public final Trigger pumpingTrigger = new Trigger(() -> getCurrentCommand() != null && getCurrentCommand().getName().equals("pumping"));
 
     private final LEDs leds = LEDs.getInstance();
 
@@ -140,15 +141,19 @@ public class Intake extends SubsystemBase implements Logged {
         return new SequentialCommandGroup(
                 this.runEnd(() -> intakeMotor.set(-0.2), intakeMotor::stopMotor).withTimeout(0.1),
                 new WaitCommand(0.25),
-                this.runEnd(() -> intakeMotor.set(0.2), intakeMotor::stopMotor)
-                        .withInterruptBehavior(kCancelIncoming)
-                        .withTimeout(0.25));
+                this.runEnd(() -> intakeMotor.set(0.2), intakeMotor::stopMotor).withTimeout(0.25))
+                .withName("pumping");
     }
 
     public Command toggleIdleModeCommand() {
         return new StartEndCommand(
                 () -> angleMotor.setIdleMode(IdleMode.kCoast),
                 () -> angleMotor.setIdleMode(IdleMode.kBrake)).ignoringDisable(true);
+    }
+
+    @Log.NT
+    public String currentCommandName(){
+        return getCurrentCommand() != null? getCurrentCommand().getName() : "null";
     }
 
     // SysId stuff
@@ -175,5 +180,11 @@ public class Intake extends SubsystemBase implements Logged {
 
     public Command sysidDynamic(SysIdRoutine.Direction direction) {
         return angleSysid.dynamic(direction);
+    }
+
+    @Override
+    public void periodic() {
+//        System.out.println(getCurrentCommand() != null? getCurrentCommand().getName() : "null");
+        System.out.println(pumpingTrigger.getAsBoolean());
     }
 }
