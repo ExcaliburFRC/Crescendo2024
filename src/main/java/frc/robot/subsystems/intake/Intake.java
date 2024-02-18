@@ -2,7 +2,6 @@ package frc.robot.subsystems.intake;
 
 import com.revrobotics.CANSparkBase;
 import com.revrobotics.CANSparkBase.IdleMode;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.units.*;
@@ -25,10 +24,10 @@ import java.util.function.Supplier;
 
 import static edu.wpi.first.units.MutableMeasure.mutable;
 import static edu.wpi.first.units.Units.*;
+import static edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior.kCancelIncoming;
 import static frc.lib.Color.Colors.ORANGE;
 import static frc.robot.Constants.IntakeConstants.*;
 import static frc.robot.subsystems.LEDs.LEDPattern.BLINKING;
-import static java.lang.Math.PI;
 
 public class Intake extends SubsystemBase implements Logged {
     private final Neo intakeMotor = new Neo(INTAKE_MOTOR_ID);
@@ -48,9 +47,9 @@ public class Intake extends SubsystemBase implements Logged {
 
     @Log.NT
     public final Trigger atSetpointTrigger = new Trigger(anglePIDcontroller::atSetpoint).debounce(0.2);
-    public final Trigger atShooterTrigger = atSetpointTrigger.and(()-> setpoint.equals(IntakeAngle.SHOOTER));
+    public final Trigger atShooterTrigger = atSetpointTrigger.and(() -> setpoint.equals(IntakeAngle.SHOOTER));
 
-    public final Trigger intakingTrigger = new Trigger(()-> getCurrentCommand() != null && getCurrentCommand().equals("intakeCommand"));
+    public final Trigger intakingTrigger = new Trigger(() -> getCurrentCommand() != null && getCurrentCommand().equals("intakeCommand"));
 
     private final LEDs leds = LEDs.getInstance();
 
@@ -72,17 +71,18 @@ public class Intake extends SubsystemBase implements Logged {
 
         anglePIDcontroller.setTolerance(INTAKE_TOLERANCE);
 
-//        setDefaultCommand(intakeIdleCommand());
+        setDefaultCommand(intakeIdleCommand());
     }
 
-    @Log.NT (key = "intakeAngle")
+    @Log.NT(key = "intakeAngle")
     public double getAngle() {
         double angle = -intakeEncoder.getDistance();
-        return angle > -100? angle : angle + 360;
+        while (angle < -100) angle += 360;
+        return angle;
     }
 
-    @Log.NT (key = "intakeVelocity")
-    private double getIntakeVel(){
+    @Log.NT(key = "intakeVelocity")
+    private double getIntakeVel() {
         return intakeMotor.getVelocity();
     }
 
@@ -99,13 +99,13 @@ public class Intake extends SubsystemBase implements Logged {
         angleMotor.setVoltage(pid + ff);
     }
 
-    private void stopMotors(){
+    private void stopMotors() {
         intakeMotor.stopMotor();
         angleMotor.stopMotor();
     }
 
     private Command setIntakeCommand(IntakeState intakeState) {
-        return this.runEnd(()-> {
+        return this.runEnd(() -> {
             leds.applyPatternCommand(BLINKING, ORANGE.color);
 
             setIntakeAngle(intakeState.angle);
@@ -117,12 +117,8 @@ public class Intake extends SubsystemBase implements Logged {
         }, this::stopMotors);
     }
 
-    public Command intakeFromAngleCommand(IntakeAngle angle) {
-        return setIntakeCommand(new IntakeState(0.35, angle, true)).until(hasNoteTrigger).withName("intakeCommand");
-    }
-
     public Command intakeFromAngleCommand(IntakeAngle angle, Command vibrateCommand) {
-        return intakeFromAngleCommand(angle).andThen(vibrateCommand::schedule); // schedule it instead of composing it to free up the intake requirement immediately
+        return setIntakeCommand(new IntakeState(0.35, angle, true)).until(hasNoteTrigger.debounce(0.15)).andThen(vibrateCommand::schedule); // schedule it instead of composing it to free up the intake requirement immediately
     }
 
     public Command shootToAmpCommand() {
@@ -130,12 +126,15 @@ public class Intake extends SubsystemBase implements Logged {
     }
 
     public Command transportToShooterCommand(Supplier<ShooterState> state) {
-        return setIntakeCommand(new IntakeState(state.get().isSameVel()? -0.75 : -0.25, IntakeAngle.SHOOTER, true))
+        return setIntakeCommand(new IntakeState(state.get().isSameVel() ? -0.75 : -0.35, IntakeAngle.SHOOTER, true))
                 .until(hasNoteTrigger.negate().debounce(0.75));
     }
 
     public Command intakeIdleCommand() {
-        return setIntakeCommand(new IntakeState(0, IntakeAngle.SHOOTER, false));
+        return new SequentialCommandGroup(
+                setIntakeCommand(new IntakeState(0, IntakeAngle.SHOOTER, false)).until(atShooterTrigger),
+                new ConditionalCommand(pumpNoteCommand().withInterruptBehavior(kCancelIncoming), new InstantCommand(() -> {}), hasNoteTrigger),
+                new RunCommand(() -> {}));
     }
 
     public Command manualCommand(DoubleSupplier angle, BooleanSupplier intake, BooleanSupplier outake) {
@@ -159,9 +158,22 @@ public class Intake extends SubsystemBase implements Logged {
                 () -> angleMotor.setIdleMode(IdleMode.kBrake)).ignoringDisable(true);
     }
 
+    public Command pumpNoteOnce() {
+        return new SequentialCommandGroup(
+                this.runEnd(() -> intakeMotor.set(-0.2), intakeMotor::stopMotor).withTimeout(0.1),
+                new WaitCommand(0.25),
+                this.runEnd(() -> intakeMotor.set(0.2), intakeMotor::stopMotor).withTimeout(0.25))
+                .withInterruptBehavior(kCancelIncoming);
+    }
+
+    public Command pumpNoteCommand() {
+        return pumpNoteOnce().andThen(pumpNoteOnce());
+    }
+
     // SysId stuff
     private final MutableMeasure<Voltage> appliedVoltage = mutable(Volts.of(0));
     private final MutableMeasure<Angle> degrees = mutable(Degrees.of(0));
+
     private final MutableMeasure<Velocity<Angle>> velocity = mutable(DegreesPerSecond.of(0));
 
     private final SysIdRoutine angleSysid = new SysIdRoutine(

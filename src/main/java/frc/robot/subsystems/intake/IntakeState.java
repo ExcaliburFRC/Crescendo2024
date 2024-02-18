@@ -8,9 +8,10 @@ public class IntakeState {
     public boolean waitForAngle;
 
     public enum IntakeAngle {
-        GROUND(-15),
+        GROUND(-19),
         AMP(104),
-        HUMAN_PLAYER(104),
+        HUMAN_PLAYER_FORWARD(150),
+        HUMAN_PLAYER_BACWARDS(104),
         SHOOTER(168);
 
         public final int angle;

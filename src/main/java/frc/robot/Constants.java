@@ -29,9 +29,9 @@ public final class Constants {
         public enum Modules {
             // drive ID, spin ID, abs encoder channel, offset angle, drive reversed, angle reversed
             FL(18, 17, 5, 0.842, true, true),
-            FR(12, 11, 3, 0.122, true, true),
-            BL(16, 15, 4, 0.55, true, true),
-            BR(14, 13, 2, 0.3339, true, true);
+            FR(12, 11, 3, 0.099, true, true),
+            BL(16, 15, 4, 0.621, true, true),
+            BR(14, 13, 2, 0.298, true, true);
 
 
             public int DRIVE_MOTOR_ID, SPIN_MOTOR_ID, ABS_ENCODER_CHANNEL;
@@ -90,7 +90,7 @@ public final class Constants {
 
     public static final class ModuleConstants {
         public static final double kWheelDiameterMeters = Units.inchesToMeters(4);
-        public static final double kDriveMotorGearRatio = 1 / 6.12;
+        public static final double kDriveMotorGearRatio = 1 / 8.14; // 6.12
         public static final double kDriveEncoderRotationsToMeters = kDriveMotorGearRatio * PI * kWheelDiameterMeters;
         public static final double kDriveEncoderRPMToMeterPerSec = kDriveEncoderRotationsToMeters / 60;
         public static final double kTurningMotorGearRatio = 1 / 21.4285714;

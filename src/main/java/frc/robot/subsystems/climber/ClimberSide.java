@@ -76,4 +76,11 @@ class ClimberSide implements Logged {
                 motor::stopMotor
         );
     }
+
+    public Command toggleCoastCommand(){
+        return new StartEndCommand(
+                ()-> motor.setIdleMode(CANSparkBase.IdleMode.kCoast),
+                ()-> motor.setIdleMode(CANSparkBase.IdleMode.kBrake)
+                ).ignoringDisable(true);
+    }
 }

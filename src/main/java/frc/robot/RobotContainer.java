@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.*;
+import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -13,7 +14,6 @@ import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.shooter.Shooter;
-import frc.robot.subsystems.shooter.ShooterState;
 import frc.robot.subsystems.swerve.Swerve;
 import monologue.Logged;
 
@@ -36,7 +36,7 @@ public class RobotContainer implements Logged {
     private final Climber climber = new Climber();
 
     // controllers
-    private final CommandPS5Controller driver = new CommandPS5Controller(0);
+    private final CommandPS4Controller driver = new CommandPS4Controller(0);
     private final CommandPS5Controller sysid = new CommandPS5Controller(1);
     private final XboxController driverVibration = new XboxController(5);
 
@@ -72,7 +72,7 @@ public class RobotContainer implements Logged {
                         () -> applyDeadband(-driver.getLeftY(), 0.07),
                         () -> applyDeadband(-driver.getLeftX(), 0.07),
                         () -> applyDeadband(-driver.getRightX(), 0.07),
-                        () -> robotRelativeDrive,
+                        () -> !robotRelativeDrive,
                         driver::getL2Axis, // decelerator
                         () -> emptyPose) // if R1 pressed, turn swerve to Speaker
 //                        () -> driver.L1().getAsBoolean() ? SPEAKER.pose.get() : emptyPose) // if R1 pressed, turn swerve to Speaker
@@ -89,18 +89,19 @@ public class RobotContainer implements Logged {
         // if the shooter doesn't work, we shoot the note from the intake
         driver.square().toggleOnTrue(
                 new ConditionalCommand(
-                        scoreNoteCommand(shooter.shootToAmpManualCommand(), () -> driver.R1().getAsBoolean()),
+                        scoreNoteCommand(shooter.shootToAmpManualCommand(), () -> driver.options().getAsBoolean()),
                         intake.shootToAmpCommand(),
                         () -> shooterWorks)
         );
         // if the intake doesn't work, we intake the note from the shooter
-        driver.cross().toggleOnTrue(new ConditionalCommand(
-                intake.intakeFromAngleCommand(HUMAN_PLAYER, vibrateControllerCommand(50, 0.5)),
-                shooter.intakeFromShooterCommand(),
-                () -> intakeWorks));
+        driver.cross().toggleOnTrue(
+                intake.intakeFromAngleCommand(HUMAN_PLAYER_FORWARD, vibrateControllerCommand(50, 0.5)) );
+//                        .alongWith(shooter.intakeFromShooterCommand()));
 
-        driver.triangle().toggleOnTrue(scoreNoteCommand(shooter.shootToSpeakerManualCommand(), () -> driver.R1().getAsBoolean()));
+        driver.triangle().toggleOnTrue(scoreNoteCommand(shooter.shootToSpeakerManualCommand(), () -> driver.options().getAsBoolean()));
         driver.circle().toggleOnTrue(intake.intakeFromAngleCommand(GROUND, vibrateControllerCommand(50, 0.5)));
+
+        driver.share().whileTrue(intake.pumpNoteCommand());
 
         climber.setDefaultCommand(climber.manualCommand(driver.L1(), driver.R1(), driver.L2(), driver.R2()));
 
@@ -155,7 +156,8 @@ public class RobotContainer implements Logged {
         return new ParallelCommandGroup(
                 swerve.toggleIdleModeCommand(),
                 shooter.toggleIdleModeCommand(),
-                intake.toggleIdleModeCommand()
+                intake.toggleIdleModeCommand(),
+                climber.toggleCoastCommand()
         );
     }
 

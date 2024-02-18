@@ -10,7 +10,6 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -34,7 +33,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.Constants.FieldConstants.*;
 import frc.robot.util.AllianceUtils;
-import monologue.Annotations;
 import monologue.Annotations.Log;
 import monologue.Logged;
 
@@ -123,8 +121,13 @@ public class Swerve extends SubsystemBase implements Logged {
         pigeon.reset();
     }
 
-    private double getGyroDegrees() {
+    private double getNavxDegrees() {
         return Math.IEEEremainder(navx.getAngle(), 360);
+    }
+
+    @Log.NT
+    private double getPigeonDegrees() {
+        return pigeon.getAngle();
     }
 
     public double getRobotPitch() {
@@ -140,13 +143,14 @@ public class Swerve extends SubsystemBase implements Logged {
         return getPose2d().getTranslation().getDistance(pose.getTranslation());
     }
 
-    @Log.NT (key = "robotPose")
+    @Log.NT(key = "robotPose")
     public Pose2d getPose2d() {
         return odometry.getEstimatedPosition();
     }
 
+    @Log.NT
     public Rotation2d getGyroRotation2d() {
-        return Rotation2d.fromDegrees(getGyroDegrees()).times(-1);
+        return pigeon.getRotation2d();
     }
 
     public Rotation2d getOdometryRotation2d() {
@@ -167,11 +171,9 @@ public class Swerve extends SubsystemBase implements Logged {
 
     public Command setOdometryAngleCommand(double angle) {
         return new ProxyCommand(() ->
-                setOdometryPositionCommand(
-                        new Pose2d(
-                                odometry.getEstimatedPosition().getTranslation(),
-                                Rotation2d.fromDegrees(angle)))
-                        .ignoringDisable(true));
+                setOdometryPositionCommand(new Pose2d(
+                odometry.getEstimatedPosition().getTranslation(),
+                Rotation2d.fromDegrees(angle))).ignoringDisable(true));
     }
 
     public Command resetOdometryAngleCommand() {
@@ -195,7 +197,8 @@ public class Swerve extends SubsystemBase implements Logged {
                     double spinningSpeed = spinningSpeedSupplier.getAsDouble() * MAX_VELOCITY_METER_PER_SECOND / 100 * maxSpeed.getDouble(DRIVE_SPEED_PERCENTAGE) * interpolate.get(decelerator.getAsDouble());
 
                     // if a pose was supplied, replace the driver input with a pid calculated value for turning to the given pose
-                    if (!turnToPose.get().equals(new Pose2d())) spinningSpeed = anglePIDcontroller.calculate(getPose2d().minus(turnToPose.get()).getRotation().getDegrees());
+                    if (!turnToPose.get().equals(new Pose2d()))
+                        spinningSpeed = anglePIDcontroller.calculate(getPose2d().minus(turnToPose.get()).getRotation().getDegrees());
 
                     // create a CassisSpeeds object and apply it the speeds
                     ChassisSpeeds chassisSpeeds = fieldOriented.getAsBoolean() ?
@@ -217,12 +220,13 @@ public class Swerve extends SubsystemBase implements Logged {
             DoubleSupplier spinningSpeedSupplier,
             BooleanSupplier fieldOriented) {
         Pose2d emptyPose = new Pose2d();
-        return driveSwerveCommand(xSpeedSupplier, ySpeedSupplier, spinningSpeedSupplier, fieldOriented, () -> 1, ()-> emptyPose);
+        return driveSwerveCommand(xSpeedSupplier, ySpeedSupplier, spinningSpeedSupplier, fieldOriented, () -> 1, () -> emptyPose);
     }
 
     public Command straightenModulesCommand() {
         return new FunctionalCommand(
-                () -> {},
+                () -> {
+                },
                 () -> {
                     swerveModules[FRONT_LEFT].spinTo(0);
                     swerveModules[FRONT_RIGHT].spinTo(0);
@@ -371,14 +375,14 @@ public class Swerve extends SubsystemBase implements Logged {
         return pathFindToPose(pose, PATH_CONSTRAINTS, 0);
     }
 
-    public Command shootInMotionCommand(){
+    public Command shootInMotionCommand() {
         PathPlannerPath topPath = PathPlannerPath.fromPathFile("ShootInMotionTop");
         PathPlannerPath bottomPath = PathPlannerPath.fromPathFile("ShootInMotionBottom");
 
         return new ConditionalCommand(
                 AutoBuilder.pathfindThenFollowPath(topPath, PATH_CONSTRAINTS),
                 AutoBuilder.pathfindThenFollowPath(bottomPath, PATH_CONSTRAINTS),
-                ()-> getDistanceFromPose(topPath.getStartingDifferentialPose()) < getDistanceFromPose(bottomPath.getStartingDifferentialPose())
+                () -> getDistanceFromPose(topPath.getStartingDifferentialPose()) < getDistanceFromPose(bottomPath.getStartingDifferentialPose())
         );
     }
     // ----------

@@ -87,4 +87,8 @@ public class Climber extends SubsystemBase {
                 rightSide.manualCommand(rightRise, rightLower),
                 new RunCommand(()-> {}, this));
     }
+
+    public Command toggleCoastCommand(){
+        return leftSide.toggleCoastCommand().alongWith(rightSide.toggleCoastCommand());
+    }
 }

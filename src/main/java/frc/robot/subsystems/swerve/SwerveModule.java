@@ -102,6 +102,11 @@ public class SwerveModule implements Sendable, Logged {
     return new SwerveModulePosition(_driveMotor.getPosition(), Rotation2d.fromRadians(_angleMotor.getPosition()));
   }
 
+  @Log.NT
+  public double getAbsPosition(){
+    return _absEncoder.getAbsolutePosition();
+  }
+
   public void setDesiredState(SwerveModuleState state) {
     if (Math.abs(state.speedMetersPerSecond) < 0.01) {
       stopModule();
