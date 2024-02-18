@@ -88,7 +88,7 @@ public class Climber extends SubsystemBase {
                 new RunCommand(()-> {}, this));
     }
 
-    public Command toggleCoastCommand(){
+    public Command toggleIdleModeCommand(){
         return leftSide.toggleCoastCommand().alongWith(rightSide.toggleCoastCommand());
     }
 }

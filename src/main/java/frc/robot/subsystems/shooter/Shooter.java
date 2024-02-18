@@ -52,7 +52,7 @@ public class Shooter extends SubsystemBase implements Logged {
 
     @Log.NT
     public Trigger shooterReadyTrigger = new Trigger(ShooterState::atSetpoint)
-            .onTrue(leds.applyPatternCommand(SOLID, GREEN.color))
+            .onTrue(leds.setPattern(SOLID, GREEN.color))
             .onFalse(leds.restoreLEDs());
 
     public Shooter() {
@@ -114,7 +114,7 @@ public class Shooter extends SubsystemBase implements Logged {
 
     public Command prepShooterCommand(Trigger isAtSpeakerRadius, Intake intake) {
         return new ContinuouslyConditionalCommand(
-                prepShooterCommand().alongWith(leds.applyPatternCommand(BLINKING, GREEN.color)),
+                prepShooterCommand().alongWith(leds.setPattern(BLINKING, GREEN.color)),
                 new RunCommand(upperShooter::stopMotor, this),
                 isAtSpeakerRadius.and(intake.atShooterTrigger).and(intake.hasNoteTrigger)
         );

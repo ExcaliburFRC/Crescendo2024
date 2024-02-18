@@ -10,14 +10,13 @@ public class IntakeState {
     public enum IntakeAngle {
         GROUND(-19),
         AMP(104),
-        HUMAN_PLAYER_FORWARD(150),
-        HUMAN_PLAYER_BACWARDS(104),
+        HUMAN_PLAYER_BACKWARD(150),
+        HUMAN_PLAYER_FORWARD(104), // needs to intake from shooter as well
         SHOOTER(168);
 
         public final int angle;
 
         IntakeAngle(int angle) {
-//            if (angle < MINIMAL_INTAKE_ANGLE) throw new IllegalArgumentException("intake angle lower then mechanical stop");
             this.angle = angle + INTAKE_READING_OFFSET;
         }
     }

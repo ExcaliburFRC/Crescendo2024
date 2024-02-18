@@ -36,7 +36,7 @@ public class LEDs extends SubsystemBase {
         LedStrip.setLength(LENGTH);
         LedStrip.start();
 
-        setDefaultCommand(applyPatternCommand(LEDPattern.TRAIN_CIRCLE, BLUE.color, TEAM_GOLD.color));
+        setDefaultCommand(setPattern(LEDPattern.TRAIN_CIRCLE, BLUE.color, TEAM_GOLD.color));
     }
 
     public static LEDs getInstance() {
@@ -46,7 +46,7 @@ public class LEDs extends SubsystemBase {
         return instance;
     }
 
-    public Command applyPatternCommand(LEDPattern pattern, Color mainColor, Color accentColor) {
+    public Command setPattern(LEDPattern pattern, Color mainColor, Color accentColor) {
         Command command = new InstantCommand();
         Color[] colors = new Color[LENGTH];
         int trainLength = (int) (LENGTH * 0.5);
@@ -161,8 +161,8 @@ public class LEDs extends SubsystemBase {
         return command.ignoringDisable(true);
     }
 
-    public Command applyPatternCommand(LEDPattern pattern, Color color) {
-        return applyPatternCommand(pattern, color, OFF.color);
+    public Command setPattern(LEDPattern pattern, Color color) {
+        return setPattern(pattern, color, OFF.color);
     }
 
 

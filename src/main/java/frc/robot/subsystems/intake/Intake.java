@@ -54,7 +54,6 @@ public class Intake extends SubsystemBase implements Logged {
     private final LEDs leds = LEDs.getInstance();
 
     public Intake() {
-        intakeMotor.setConversionFactors(INTAKE_MOTOR_CONVERSION_FACTOR);
         intakeMotor.setIdleMode(IdleMode.kCoast);
 
         angleMotor.setIdleMode(IdleMode.kBrake);
@@ -106,7 +105,7 @@ public class Intake extends SubsystemBase implements Logged {
 
     private Command setIntakeCommand(IntakeState intakeState) {
         return this.runEnd(() -> {
-            leds.applyPatternCommand(BLINKING, ORANGE.color);
+            leds.setPattern(BLINKING, ORANGE.color);
 
             setIntakeAngle(intakeState.angle);
 
@@ -134,31 +133,10 @@ public class Intake extends SubsystemBase implements Logged {
         return new SequentialCommandGroup(
                 setIntakeCommand(new IntakeState(0, IntakeAngle.SHOOTER, false)).until(atShooterTrigger),
                 new ConditionalCommand(pumpNoteCommand().withInterruptBehavior(kCancelIncoming), new InstantCommand(() -> {}), hasNoteTrigger),
-                new RunCommand(() -> {}));
+                Commands.idle());
     }
 
-    public Command manualCommand(DoubleSupplier angle, BooleanSupplier intake, BooleanSupplier outake) {
-        return this.runEnd(
-                () -> {
-                    if (intake.getAsBoolean()) intakeMotor.set(0.5);
-                    else if (outake.getAsBoolean()) intakeMotor.set(-0.35);
-                    else intakeMotor.stopMotor();
-                    angleMotor.set(angle.getAsDouble() / 3);
-                },
-                () -> {
-                    intakeMotor.stopMotor();
-                    angleMotor.stopMotor();
-                }
-        );
-    }
-
-    public Command toggleIdleModeCommand() {
-        return new StartEndCommand(
-                () -> angleMotor.setIdleMode(IdleMode.kCoast),
-                () -> angleMotor.setIdleMode(IdleMode.kBrake)).ignoringDisable(true);
-    }
-
-    public Command pumpNoteOnce() {
+    public Command pumpNoteCommand() {
         return new SequentialCommandGroup(
                 this.runEnd(() -> intakeMotor.set(-0.2), intakeMotor::stopMotor).withTimeout(0.1),
                 new WaitCommand(0.25),
@@ -166,8 +144,10 @@ public class Intake extends SubsystemBase implements Logged {
                 .withInterruptBehavior(kCancelIncoming);
     }
 
-    public Command pumpNoteCommand() {
-        return pumpNoteOnce().andThen(pumpNoteOnce());
+    public Command toggleIdleModeCommand() {
+        return new StartEndCommand(
+                () -> angleMotor.setIdleMode(IdleMode.kCoast),
+                () -> angleMotor.setIdleMode(IdleMode.kBrake)).ignoringDisable(true);
     }
 
     // SysId stuff
