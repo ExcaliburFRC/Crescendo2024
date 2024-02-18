@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 0.8352460341284319,
-      "y": 6.57676588080449
+      "x": 1.315722631445263,
+      "y": 5.451697570061806
     },
-    "rotation": 60.0
+    "rotation": 0
   },
   "command": {
     "type": "sequential",
@@ -14,7 +14,7 @@
         {
           "type": "named",
           "data": {
-            "name": "shootFromWoofer"
+            "name": "shootFromWooferCommand"
           }
         },
         {
@@ -24,13 +24,32 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "intakeTopNote"
+                  "pathName": "Pose2ToNote1"
                 }
               },
               {
                 "type": "named",
                 "data": {
                   "name": "intakeFromGround"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Note1ToPose2"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "prepShooterCommand"
                 }
               }
             ]
@@ -39,7 +58,7 @@
         {
           "type": "named",
           "data": {
-            "name": "shootFromRobotPose"
+            "name": "shootFromWooferCommand"
           }
         },
         {
@@ -49,13 +68,32 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "intakeMiddleNoteFromHigh"
+                  "pathName": "Pose2ToNote2"
                 }
               },
               {
                 "type": "named",
                 "data": {
                   "name": "intakeFromGround"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Note2ToPose2"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "prepShooterCommand"
                 }
               }
             ]
@@ -64,7 +102,7 @@
         {
           "type": "named",
           "data": {
-            "name": "shootFromRobotPose"
+            "name": "shootFromWooferCommand"
           }
         },
         {
@@ -74,13 +112,32 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "intakeButtomNoteFromMiddle"
+                  "pathName": "Pose2ToNote3"
                 }
               },
               {
                 "type": "named",
                 "data": {
                   "name": "intakeFromGround"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Note3ToPose2"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "prepShooterCommand"
                 }
               }
             ]
@@ -89,26 +146,13 @@
         {
           "type": "named",
           "data": {
-            "name": "shootFromRobotPose"
+            "name": "shootFromWooferCommand"
           }
         },
         {
-          "type": "parallel",
+          "type": "path",
           "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "intake4thCenterLine"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "intakeFromGround"
-                }
-              }
-            ]
+            "pathName": "Pose2ToNote4"
           }
         }
       ]

@@ -1,0 +1,43 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 1.315722631445263,
+      "y": 5.451697570061806
+    },
+    "rotation": 0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Pose2ToNote3"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Note3ToPose2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Pose2ToNote2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Note2ToPose2"
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": false
+}

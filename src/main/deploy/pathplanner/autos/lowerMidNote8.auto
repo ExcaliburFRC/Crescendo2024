@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.2457108550580738,
-      "y": 5.541275082550166
+      "x": 0.9084751502836338,
+      "y": 4.595433635311715
     },
-    "rotation": 0
+    "rotation": -62.35402463626131
   },
   "command": {
     "type": "sequential",
@@ -14,45 +14,7 @@
         {
           "type": "named",
           "data": {
-            "name": "shootFromWoofer"
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "intakeFromGround"
-                }
-              },
-              {
-                "type": "sequential",
-                "data": {
-                  "commands": [
-                    {
-                      "type": "wait",
-                      "data": {
-                        "waitTime": 1.0
-                      }
-                    },
-                    {
-                      "type": "path",
-                      "data": {
-                        "pathName": "intakeMiddleNote"
-                      }
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "shootFromRobotPose"
+            "name": "shootFromWooferCommand"
           }
         },
         {
@@ -62,7 +24,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "intake3rdCenterLineFromAbove"
+                  "pathName": "Pose3ToNote8"
                 }
               },
               {
@@ -72,6 +34,31 @@
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Note8ToPose3"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "prepShooterCommand"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shootFromWooferCommand"
           }
         }
       ]
