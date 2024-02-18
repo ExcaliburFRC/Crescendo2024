@@ -39,6 +39,7 @@ public class Shooter extends SubsystemBase implements Logged {
     private final DigitalInput shooterBeambreak = new DigitalInput(SHOOTER_BEAMBREAK_CHANNEL);
 
     public final BooleanEvent noteShotTrigger = new BooleanEvent(CommandScheduler.getInstance().getDefaultButtonLoop(), () -> !shooterBeambreak.get()).falling();
+    public final Trigger hasNoteTrigger = new Trigger(() -> !shooterBeambreak.get()).debounce(0.05);
 
     private ShuffleboardTab shooterTab = Shuffleboard.getTab("ShooterTab");
     private final GenericEntry upperShooterVel = shooterTab.add("upperShooter", 0).getEntry();
@@ -103,12 +104,22 @@ public class Shooter extends SubsystemBase implements Logged {
 
     public Command intakeFromShooterCommand() {
         return this.runEnd(() -> {
-            upperShooter.set(0.5);
-            lowerShooter.set(0.5);
+            upperShooter.set(0.15);
+            lowerShooter.set(0.15);
         }, ()-> {
             upperShooter.stopMotor();
             lowerShooter.stopMotor();
-        }).until(noteShotTrigger);
+        }).until(hasNoteTrigger);
+    }
+
+    public Command transportToIntakeCommand(){
+        return this.runEnd(() -> {
+            upperShooter.set(1);
+            lowerShooter.set(1);
+        }, ()-> {
+            upperShooter.stopMotor();
+            lowerShooter.stopMotor();
+        }).until(hasNoteTrigger.negate());
     }
 
     public Command prepShooterCommand(Trigger isAtSpeakerRadius, Intake intake) {

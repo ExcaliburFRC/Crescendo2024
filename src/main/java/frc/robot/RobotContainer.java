@@ -61,6 +61,8 @@ public class RobotContainer implements Logged {
     // intake
     boolean intakeWorks = true;
 
+    Command intakeVibrate = vibrateControllerCommand(50, 0.25);
+
     public RobotContainer() {
         init();
         configureBindings();
@@ -86,7 +88,19 @@ public class RobotContainer implements Logged {
         climber.setDefaultCommand(climber.manualCommand(driver.L1(climberLoop), driver.R1(climberLoop), driver.L2(climberLoop), driver.R2(climberLoop)));
 
         // intake
-        driver.circle().toggleOnTrue(intake.intakeFromAngleCommand(HUMAN_PLAYER_BACKWARD, vibrateControllerCommand(50, 0.25)));
+        driver.circle().toggleOnTrue(
+                new ParallelDeadlineGroup(
+                        new WaitUntilCommand(intake.hasNoteTrigger.or(shooter.hasNoteTrigger)),
+                        intake.intakeFromAngleCommand(HUMAN_PLAYER_BACKWARD, vibrateControllerCommand(50, 0.25)),
+                        shooter.intakeFromShooterCommand()).andThen(
+                        new ConditionalCommand(
+                                new ParallelCommandGroup(
+                                        intake.intakeFromAngleCommand(SHOOTER, intakeVibrate),
+                                        new WaitCommand(0.75).andThen(shooter.transportToIntakeCommand()).until(intake.hasNoteTrigger)
+                                ),
+                                Commands.none(),
+                                shooter.hasNoteTrigger))
+        );
         driver.cross().toggleOnTrue(intake.intakeFromAngleCommand(GROUND, vibrateControllerCommand(50, 0.25)));
 
         driver.options().onTrue(intake.pumpNoteCommand());
@@ -112,20 +126,18 @@ public class RobotContainer implements Logged {
 
     // methods
     private Command scoreNoteCommand(Command shooterCommand, Trigger release) {
-        return new WaitUntilCommand(()-> intake.pumpingTrigger.negate().getAsBoolean()).andThen(
-                new ParallelCommandGroup(shooterCommand,
-                      new SequentialCommandGroup(
-                      new WaitUntilCommand(release),
-                                 new ParallelDeadlineGroup(
-                                     intake.transportToShooterCommand(shooter::getCurrentState),
-                                     leds.setPattern(SOLID, RED.color)))
-                ));
+        return new ParallelCommandGroup(shooterCommand,
+                new SequentialCommandGroup(
+                        new WaitUntilCommand(release),
+                        new ParallelDeadlineGroup(
+                                intake.transportToShooterCommand(shooter::getCurrentState),
+                                leds.setPattern(SOLID, RED.color)))
+        );
     }
 
     public Command matchPrepCommand() {
         return new SequentialCommandGroup(
                 swerve.straightenModulesCommand(),
-                intake.intakeIdleCommand(),
                 climber.manualCommand(() -> false, () -> false, () -> true, () -> true)
         );
     }

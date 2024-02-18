@@ -8,7 +8,7 @@ public class IntakeState {
     public boolean waitForAngle;
 
     public enum IntakeAngle {
-        GROUND(-19),
+        GROUND(-16),
         AMP(104),
         HUMAN_PLAYER_BACKWARD(150),
         HUMAN_PLAYER_FORWARD(104), // needs to intake from shooter as well

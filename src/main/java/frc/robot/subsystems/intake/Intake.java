@@ -71,7 +71,7 @@ public class Intake extends SubsystemBase implements Logged {
 
         anglePIDcontroller.setTolerance(INTAKE_TOLERANCE);
 
-        setDefaultCommand(intakeIdleCommand());
+        setDefaultCommand(setIntakeCommand(new IntakeState(0, IntakeAngle.SHOOTER, false)));
     }
 
     @Log.NT(key = "intakeAngle")
@@ -118,7 +118,11 @@ public class Intake extends SubsystemBase implements Logged {
     }
 
     public Command intakeFromAngleCommand(IntakeAngle angle, Command vibrateCommand) {
-        return setIntakeCommand(new IntakeState(0.35, angle, true)).until(hasNoteTrigger.debounce(0.15)).andThen(vibrateCommand::schedule); // schedule it instead of composing it to free up the intake requirement immediately
+        return new SequentialCommandGroup(
+                setIntakeCommand(new IntakeState(0.35, angle, true)).until(hasNoteTrigger.debounce(0.15)),
+                new InstantCommand(vibrateCommand::schedule),
+                setIntakeCommand(new IntakeState(0, IntakeAngle.SHOOTER, false)).until(atShooterTrigger),
+                pumpNoteCommand());
     }
 
     public Command shootToAmpCommand() {
@@ -130,19 +134,12 @@ public class Intake extends SubsystemBase implements Logged {
                 .until(hasNoteTrigger.negate().debounce(0.75));
     }
 
-    public Command intakeIdleCommand() {
-        return new SequentialCommandGroup(
-                setIntakeCommand(new IntakeState(0, IntakeAngle.SHOOTER, false)).until(atShooterTrigger),
-                new ConditionalCommand(pumpNoteCommand(), new InstantCommand(() -> {}), hasNoteTrigger),
-                Commands.idle());
-    }
-
     public Command pumpNoteCommand() {
         return new SequentialCommandGroup(
                 this.runEnd(() -> intakeMotor.set(-0.2), intakeMotor::stopMotor).withTimeout(0.1),
                 new WaitCommand(0.25),
                 this.runEnd(() -> intakeMotor.set(0.2), intakeMotor::stopMotor).withTimeout(0.25))
-                .withName("pumping");
+                .withInterruptBehavior(kCancelIncoming);
     }
 
     public Command toggleIdleModeCommand() {
@@ -152,8 +149,8 @@ public class Intake extends SubsystemBase implements Logged {
     }
 
     @Log.NT
-    public String currentCommandName(){
-        return getCurrentCommand() != null? getCurrentCommand().getName() : "null";
+    public String currentCommandName() {
+        return getCurrentCommand() != null ? getCurrentCommand().getName() : "null";
     }
 
     // SysId stuff
