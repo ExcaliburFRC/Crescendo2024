@@ -14,6 +14,7 @@ import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.ShooterState;
 import frc.robot.subsystems.swerve.Swerve;
 import monologue.Logged;
 
@@ -36,7 +37,7 @@ public class RobotContainer implements Logged {
 
     // controllers
     private final CommandPS5Controller driver = new CommandPS5Controller(0);
-    //    private final CommandPS5Controller sysid = new CommandPS5Controller(1);
+        private final CommandPS5Controller sysid = new CommandPS5Controller(1);
     private final XboxController driverVibration = new XboxController(5);
 
     public ShuffleboardTab matchTab = Shuffleboard.getTab("match");
@@ -88,35 +89,25 @@ public class RobotContainer implements Logged {
         climber.setDefaultCommand(climber.manualCommand(driver.L1(climberLoop), driver.R1(climberLoop), driver.L2(climberLoop), driver.R2(climberLoop)));
 
         // intake
-        driver.circle().toggleOnTrue(
-                new ParallelDeadlineGroup(
-                        new WaitUntilCommand(intake.hasNoteTrigger.or(shooter.hasNoteTrigger)),
-                        intake.intakeFromAngleCommand(HUMAN_PLAYER_BACKWARD, vibrateControllerCommand(50, 0.25)),
-                        shooter.intakeFromShooterCommand()).andThen(
-                        new ConditionalCommand(
-                                new ParallelCommandGroup(
-                                        intake.intakeFromAngleCommand(SHOOTER, intakeVibrate),
-                                        new WaitCommand(0.75).andThen(shooter.transportToIntakeCommand()).until(intake.hasNoteTrigger)
-                                ),
-                                Commands.none(),
-                                shooter.hasNoteTrigger))
-        );
+        driver.circle().toggleOnTrue(dynamicIntakeCommand());
         driver.cross().toggleOnTrue(intake.intakeFromAngleCommand(GROUND, vibrateControllerCommand(50, 0.25)));
 
         driver.options().onTrue(intake.pumpNoteCommand());
-        driver.create().toggleOnTrue(new StartEndCommand(
-                () -> CommandScheduler.getInstance().setActiveButtonLoop(climberLoop),
-                () -> CommandScheduler.getInstance().setActiveButtonLoop(CommandScheduler.getInstance().getDefaultButtonLoop())));
+
+        driver.create().onTrue(new InstantCommand(()-> CommandScheduler.getInstance().setActiveButtonLoop(climberLoop)));
+        climberLoop.bind(()-> driver.create().onTrue(new InstantCommand(()-> CommandScheduler.getInstance().setActiveButtonLoop(CommandScheduler.getInstance().getDefaultButtonLoop()))));
 
         // shooter
         driver.square().toggleOnTrue(scoreNoteCommand(shooter.shootToAmpManualCommand(), driver.R1()));
         driver.triangle().toggleOnTrue(scoreNoteCommand(shooter.shootToSpeakerManualCommand(), driver.R1()));
 
+        sysid.L1().toggleOnTrue(shooter.setShootercommand(new ShooterState(2500)));
+
 //        // susid
-//        sysid.circle().toggleOnTrue(shooter.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-//        sysid.square().toggleOnTrue(shooter.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-//        sysid.triangle().toggleOnTrue(shooter.sysIdDynamic(SysIdRoutine.Direction.kForward));
-//        sysid.cross().toggleOnTrue(shooter.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+        sysid.circle().toggleOnTrue(shooter.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+        sysid.square().toggleOnTrue(shooter.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+        sysid.triangle().toggleOnTrue(shooter.sysIdDynamic(SysIdRoutine.Direction.kForward));
+        sysid.cross().toggleOnTrue(shooter.sysIdDynamic(SysIdRoutine.Direction.kReverse));
     }
 
     // triangle - shoot to speaker
@@ -126,13 +117,14 @@ public class RobotContainer implements Logged {
 
     // methods
     private Command scoreNoteCommand(Command shooterCommand, Trigger release) {
-        return new ParallelCommandGroup(shooterCommand,
+        return new WaitUntilCommand(intake.intakingTrigger.negate()).andThen(
+                new ParallelCommandGroup(shooterCommand,
                 new SequentialCommandGroup(
                         new WaitUntilCommand(release),
                         new ParallelDeadlineGroup(
                                 intake.transportToShooterCommand(shooter::getCurrentState),
                                 leds.setPattern(SOLID, RED.color)))
-        );
+        ));
     }
 
     public Command matchPrepCommand() {
@@ -156,6 +148,20 @@ public class RobotContainer implements Logged {
                         () -> driverVibration.setRumble(kBothRumble, intensity / 100.0),
                         () -> driverVibration.setRumble(kBothRumble, 0))
                 .withTimeout(seconds).ignoringDisable(true);
+    }
+
+    public Command dynamicIntakeCommand(){
+        return new ParallelDeadlineGroup(
+                new WaitUntilCommand(intake.hasNoteTrigger.or(shooter.hasNoteTrigger)),
+                intake.intakeFromAngleCommand(HUMAN_PLAYER_BACKWARD, vibrateControllerCommand(50, 0.25)),
+                shooter.intakeFromShooterCommand()).andThen(
+                new ConditionalCommand(
+                        new ParallelCommandGroup(
+                                intake.intakeFromAngleCommand(SHOOTER, intakeVibrate),
+                                new WaitCommand(0.75).andThen(shooter.transportToIntakeCommand()).until(intake.hasNoteTrigger)
+                        ),
+                        Commands.none(),
+                        shooter.hasNoteTrigger));
     }
 
     public Command toggleMotorsIdleMode() {
@@ -188,3 +194,4 @@ public class RobotContainer implements Logged {
         return Commands.none();
     }
 }
+//this is line 200

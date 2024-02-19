@@ -23,7 +23,7 @@ public class Gains {
     }
 
     public Gains(Gains PIDgains, Gains FFgains){
-        this(PIDgains.kp, PIDgains.ki, PIDgains.kd, FFgains.ks, FFgains.kg, FFgains.kv, FFgains.ka);
+        this(PIDgains.kp, PIDgains.ki, PIDgains.kd, FFgains.ks, FFgains.kv, FFgains.ka, FFgains.kg);
     }
 
     public Gains(){

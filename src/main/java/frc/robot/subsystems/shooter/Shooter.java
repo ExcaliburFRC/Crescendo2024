@@ -1,5 +1,6 @@
 package frc.robot.subsystems.shooter;
 
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.units.*;
@@ -58,9 +59,13 @@ public class Shooter extends SubsystemBase implements Logged {
     public Shooter() {
         upperShooter.setIdleMode(kCoast);
         upperShooter.setSmartCurrentLimit(SHOOTER_CURRENT_LIMIT);
+        upperShooter.setInverted(true);
+        upperShooter.setPosition(0);
 
         lowerShooter.setIdleMode(kCoast);
         lowerShooter.setSmartCurrentLimit(SHOOTER_CURRENT_LIMIT);
+        lowerShooter.setInverted(true);
+        lowerShooter.setPosition(0);
 
         metersToRPM.put(0.0, 0.0);
     }
@@ -74,7 +79,7 @@ public class Shooter extends SubsystemBase implements Logged {
         return this.currentState;
     }
 
-    private Command setShootercommand(ShooterState state) {
+    public Command setShootercommand(ShooterState state) {
         return new FunctionalCommand(
                 ()-> currentState = state,
                 ()-> {
@@ -83,8 +88,11 @@ public class Shooter extends SubsystemBase implements Logged {
                     upperShooter.setVoltage(state.upperVoltage);
                     lowerShooter.setVoltage(state.lowerVoltage);
                 },
-                (__)-> stopMotors(),
-                noteShotTrigger);
+                (__)-> {
+                    stopMotors();
+                    currentState = new ShooterState(0);
+                },
+                noteShotTrigger, this);
     }
 
     public Command shootToAmpCommand() {
@@ -104,8 +112,8 @@ public class Shooter extends SubsystemBase implements Logged {
 
     public Command intakeFromShooterCommand() {
         return this.runEnd(() -> {
-            upperShooter.set(0.15);
-            lowerShooter.set(0.15);
+            upperShooter.set(-0.15);
+            lowerShooter.set(-0.15);
         }, ()-> {
             upperShooter.stopMotor();
             lowerShooter.stopMotor();
@@ -114,8 +122,8 @@ public class Shooter extends SubsystemBase implements Logged {
 
     public Command transportToIntakeCommand(){
         return this.runEnd(() -> {
-            upperShooter.set(1);
-            lowerShooter.set(1);
+            upperShooter.set(-1);
+            lowerShooter.set(-1);
         }, ()-> {
             upperShooter.stopMotor();
             lowerShooter.stopMotor();
@@ -156,8 +164,8 @@ public class Shooter extends SubsystemBase implements Logged {
         return this.runEnd(
                 ()-> {
                     this.currentState = new ShooterState(AMP_UPPER_SHOOTER_RPM, AMP_LOWER_SHOOTER_RPM);
-                    upperShooter.set(-0.25);
-                    lowerShooter.set(-0.4);
+                    upperShooter.set(0.25);
+                    lowerShooter.set(0.4);
                 },
                 this::stopMotors)
                 .until(noteShotTrigger);
@@ -167,8 +175,8 @@ public class Shooter extends SubsystemBase implements Logged {
         return this.runEnd(
                 ()-> {
                     this.currentState = new ShooterState(WOOFER_RPM);
-                    upperShooter.set(-0.8);
-                    lowerShooter.set(-0.8);
+                    upperShooter.set(0.8);
+                    lowerShooter.set(0.8);
                 },
                 this::stopMotors).until(noteShotTrigger);
     }
@@ -195,22 +203,35 @@ public class Shooter extends SubsystemBase implements Logged {
         return lowerShooter.getVelocity();
     }
 
+    @Log.NT
+    private double getUpperSetpoint(){
+        return this.currentState.upperRPMsetpoint;
+    }
+
+    @Log.NT
+    private double getShooterPos(){
+        return lowerShooter.getPosition();
+    }
+
+    @Log.NT
+    private double getLowerSetpoint(){
+        return this.currentState.lowerRPMsetpoint;
+    }
+
     // sysid stuff
     private final MutableMeasure<Voltage> appliedVoltage = mutable(Volts.of(0));
-    private final MutableMeasure<Velocity<Angle>> velocity = mutable(DegreesPerSecond.of(0));
-
-    private final MutableMeasure<Angle> degrees = mutable(Degrees.of(0));
+    private final MutableMeasure<Velocity<Angle>> velocity = mutable(RotationsPerSecond.of(0));
+    private final MutableMeasure<Angle> degrees = mutable(Rotations.of(0));
 
     private final SysIdRoutine shooterSysid = new SysIdRoutine(
             sysidConfig,
             new SysIdRoutine.Mechanism(
-                    (Measure<Voltage> volts) -> upperShooter.setVoltage(volts.in(Volts)),
+                    (Measure<Voltage> volts) -> lowerShooter.setVoltage(volts.in(Volts)),
                     log -> log.motor("shooterMotor")
                             .voltage(appliedVoltage.mut_replace(
-                                    upperShooter.getAppliedOutput() * RobotController.getBatteryVoltage(), Volts))
-                            .angularPosition(degrees.mut_replace(upperShooter.getPosition(), Degrees))
-                            .angularVelocity(velocity.mut_replace(upperShooter.getVelocity(), RPM)),
-
+                                    lowerShooter.getAppliedOutput() * RobotController.getBatteryVoltage(), Volts))
+                            .angularPosition(degrees.mut_replace(lowerShooter.getPosition(), Rotations))
+                            .angularVelocity(velocity.mut_replace(lowerShooter.getVelocity(), RPM)),
                     this
             ));
 

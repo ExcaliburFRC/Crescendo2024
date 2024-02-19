@@ -6,7 +6,7 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import static frc.robot.Constants.ShooterConstants.*;
 
 public class ShooterState {
-    private double upperRPM, lowerRPM;
+    public double upperRPMsetpoint, lowerRPMsetpoint;
     public double upperVoltage, lowerVoltage;
 
     private static final PIDController upperPIDcontroller = new PIDController(UPPER_GAINS.kp, UPPER_GAINS.ki, UPPER_GAINS.kd);
@@ -16,25 +16,25 @@ public class ShooterState {
     private static final SimpleMotorFeedforward lowerFFcontroller = new SimpleMotorFeedforward(LOWER_GAINS.ks, LOWER_GAINS.kv, LOWER_GAINS.ka);
 
 
-    public ShooterState(double upperRPM, double lowerRPM) {
-        this.upperRPM = upperRPM;
-        this.lowerRPM = lowerRPM;
+    public ShooterState(double uppersetpoint, double lowersetpoint) {
+        this.upperRPMsetpoint = uppersetpoint;
+        this.lowerRPMsetpoint = lowersetpoint;
 
         upperPIDcontroller.setTolerance(SHOOTER_PID_TOLERANCE);
         lowerPIDcontroller.setTolerance(SHOOTER_PID_TOLERANCE);
     }
 
-    public ShooterState(double RPM) {
-        this(RPM, RPM);
+    public ShooterState(double setpoint) {
+        this(setpoint, setpoint);
     }
 
     public void setVelocities(double upperMeasurement, double lowerMeasurement){
-        upperVoltage = upperPIDcontroller.calculate(upperMeasurement, upperRPM) + upperFFcontroller.calculate(upperRPM);
-        lowerVoltage = lowerPIDcontroller.calculate(lowerMeasurement, lowerRPM) + lowerFFcontroller.calculate(lowerRPM);
+        upperVoltage = upperFFcontroller.calculate(upperRPMsetpoint) / 60 + upperPIDcontroller.calculate(upperMeasurement, upperRPMsetpoint);
+        lowerVoltage = lowerFFcontroller.calculate(lowerRPMsetpoint) / 60 + lowerPIDcontroller.calculate(lowerMeasurement, lowerRPMsetpoint);
     }
 
     public boolean isSameVel(){
-        return upperRPM == lowerRPM;
+        return upperRPMsetpoint == lowerRPMsetpoint;
     }
 
     public static boolean atSetpoint(){
@@ -43,6 +43,6 @@ public class ShooterState {
 
     @Override
     public String toString() {
-        return "upper: " + upperRPM + ", lower: " + lowerRPM;
+        return "upper: " + upperRPMsetpoint + ", lower: " + lowerRPMsetpoint;
     }
 }

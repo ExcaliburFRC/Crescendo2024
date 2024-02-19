@@ -50,7 +50,6 @@ public class Intake extends SubsystemBase implements Logged {
     public final Trigger atShooterTrigger = atSetpointTrigger.and(() -> setpoint.equals(IntakeAngle.SHOOTER));
 
     public final Trigger intakingTrigger = new Trigger(() -> getCurrentCommand() != null && getCurrentCommand().getName().equals("intakeCommand"));
-    public final Trigger pumpingTrigger = new Trigger(() -> getCurrentCommand() != null && getCurrentCommand().getName().equals("pumping"));
 
     private final LEDs leds = LEDs.getInstance();
 
@@ -122,7 +121,7 @@ public class Intake extends SubsystemBase implements Logged {
                 setIntakeCommand(new IntakeState(0.35, angle, true)).until(hasNoteTrigger.debounce(0.15)),
                 new InstantCommand(vibrateCommand::schedule),
                 setIntakeCommand(new IntakeState(0, IntakeAngle.SHOOTER, false)).until(atShooterTrigger),
-                pumpNoteCommand());
+                pumpNoteCommand()).withName("intakeCommand");
     }
 
     public Command shootToAmpCommand() {
@@ -146,11 +145,6 @@ public class Intake extends SubsystemBase implements Logged {
         return new StartEndCommand(
                 () -> angleMotor.setIdleMode(IdleMode.kCoast),
                 () -> angleMotor.setIdleMode(IdleMode.kBrake)).ignoringDisable(true);
-    }
-
-    @Log.NT
-    public String currentCommandName() {
-        return getCurrentCommand() != null ? getCurrentCommand().getName() : "null";
     }
 
     // SysId stuff
@@ -177,11 +171,5 @@ public class Intake extends SubsystemBase implements Logged {
 
     public Command sysidDynamic(SysIdRoutine.Direction direction) {
         return angleSysid.dynamic(direction);
-    }
-
-    @Override
-    public void periodic() {
-//        System.out.println(getCurrentCommand() != null? getCurrentCommand().getName() : "null");
-        System.out.println(pumpingTrigger.getAsBoolean());
     }
 }

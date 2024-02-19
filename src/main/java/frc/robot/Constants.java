@@ -28,10 +28,10 @@ public final class Constants {
     public static final class SwerveConstants {
         public enum Modules {
             // drive ID, spin ID, abs encoder channel, offset angle, drive reversed, angle reversed
-            FL(18, 17, 5, 0.842, true, true),
-            FR(12, 11, 3, 0.099, true, true),
-            BL(16, 15, 4, 0.621, true, true),
-            BR(14, 13, 2, 0.298, true, true);
+            FL(18, 17, 7, 0.872, true, true),
+            FR(12, 11, 3, 0.071, true, true),
+            BL(16, 15, 4, 0.595, true, true),
+            BR(14, 13, 2, 0.296, true, true);
 
 
             public int DRIVE_MOTOR_ID, SPIN_MOTOR_ID, ABS_ENCODER_CHANNEL;
@@ -112,10 +112,10 @@ public final class Constants {
 
         public static final int SHOOTER_BEAMBREAK_CHANNEL = 6;
 
-        public static final Gains UPPER_GAINS = new Gains(new Gains(0, 0, 0), new Gains(0, 0, 0, 0)); //TODO: find value
-        public static final Gains LOWER_GAINS = new Gains(new Gains(0, 0, 0), new Gains(0, 0, 0, 0)); //TODO: find value
+        public static final Gains UPPER_GAINS = new Gains(new Gains(1.96155E-4, 0, 0), new Gains(0.30647001, 0, 0.11433157, 0.011852)); //TODO: find value
+        public static final Gains LOWER_GAINS = new Gains(new Gains(1.96155E-4, 0, 0), new Gains(0.30647001, 0, 0.11433157, 0.011852)); //TODO: find value
 
-        public static final double AMP_LOWER_SHOOTER_RPM = 2; //TODO: find value
+        public static final double AMP_LOWER_SHOOTER_RPM = 2300; //TODO: find value
         public static final double AMP_UPPER_SHOOTER_RPM = 1; //TODO: find value
         public static final double WOOFER_RPM = 0; //TODO: find value
 
@@ -125,11 +125,7 @@ public final class Constants {
         public static final double SPEAKER_PREP_RADIUS = 0;//TODO: find value
 
         // sysid
-        private static final double RAMP_RATE = 0.5;
-        private static final double STEP_VOLTAGE = 6;
-        private static final double TIMEOUT = 10;
-
-        public static final SysIdRoutine.Config sysidConfig = new SysIdConfig(RAMP_RATE, STEP_VOLTAGE, TIMEOUT);
+        public static final SysIdRoutine.Config sysidConfig = new SysIdConfig(0.5, 6, 30);
     }
 
     public static final class IntakeConstants {
@@ -144,7 +140,7 @@ public final class Constants {
 
         public static final double INTAKE_MOTOR_CONVERSION_FACTOR = 1 / 10.0 * 1 / 3.0 * 16 / 40;
 
-        public static final double INTAKE_ENCODER_OFFSET_POSITION = 0.166;
+        public static final double INTAKE_ENCODER_OFFSET_POSITION = 0.2293;
         public static final int INTAKE_READING_OFFSET = 50; // deg
         public static final int MINIMAL_INTAKE_ANGLE = -15;
 
