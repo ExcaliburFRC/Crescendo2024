@@ -6,7 +6,7 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import static frc.robot.Constants.ShooterConstants.*;
 
 public class ShooterState {
-    public double upperRPMsetpoint, lowerRPMsetpoint;
+    private double upperRPMsetpoint, lowerRPMsetpoint;
     public double upperVoltage, lowerVoltage;
 
     private static final PIDController upperPIDcontroller = new PIDController(UPPER_GAINS.kp, UPPER_GAINS.ki, UPPER_GAINS.kd);

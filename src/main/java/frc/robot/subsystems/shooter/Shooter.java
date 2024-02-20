@@ -40,6 +40,7 @@ public class Shooter extends SubsystemBase implements Logged {
     private final DigitalInput shooterBeambreak = new DigitalInput(SHOOTER_BEAMBREAK_CHANNEL);
 
     public final BooleanEvent noteShotTrigger = new BooleanEvent(CommandScheduler.getInstance().getDefaultButtonLoop(), () -> !shooterBeambreak.get()).falling();
+    public final Trigger beambreakTrigger = new Trigger(() -> !shooterBeambreak.get());
     public final Trigger hasNoteTrigger = new Trigger(() -> !shooterBeambreak.get()).debounce(0.05);
 
     private ShuffleboardTab shooterTab = Shuffleboard.getTab("ShooterTab");
@@ -68,6 +69,8 @@ public class Shooter extends SubsystemBase implements Logged {
         lowerShooter.setPosition(0);
 
         metersToRPM.put(0.0, 0.0);
+
+        shooterTab.add("beambreak", beambreakTrigger.getAsBoolean());
     }
 
     private void stopMotors(){
@@ -83,12 +86,16 @@ public class Shooter extends SubsystemBase implements Logged {
         return new FunctionalCommand(
                 ()-> currentState = state,
                 ()-> {
+//                    upperShooter.set(0.5);
+//                    lowerShooter.set(0.5);
+//                },
                     state.setVelocities(upperShooter.getVelocity(), lowerShooter.getVelocity());
 
                     upperShooter.setVoltage(state.upperVoltage);
                     lowerShooter.setVoltage(state.lowerVoltage);
                 },
                 (__)-> {
+                    System.out.println(__);
                     stopMotors();
                     currentState = new ShooterState(0);
                 },
@@ -160,17 +167,6 @@ public class Shooter extends SubsystemBase implements Logged {
                 this);
     }
 
-    public Command shootToAmpManualCommand() {
-        return this.runEnd(
-                ()-> {
-                    this.currentState = new ShooterState(AMP_UPPER_SHOOTER_RPM, AMP_LOWER_SHOOTER_RPM);
-                    upperShooter.set(0.25);
-                    lowerShooter.set(0.4);
-                },
-                this::stopMotors)
-                .until(noteShotTrigger);
-    }
-
     public Command shootToSpeakerManualCommand() {
         return this.runEnd(
                 ()-> {
@@ -203,20 +199,6 @@ public class Shooter extends SubsystemBase implements Logged {
         return lowerShooter.getVelocity();
     }
 
-    @Log.NT
-    private double getUpperSetpoint(){
-        return this.currentState.upperRPMsetpoint;
-    }
-
-    @Log.NT
-    private double getShooterPos(){
-        return lowerShooter.getPosition();
-    }
-
-    @Log.NT
-    private double getLowerSetpoint(){
-        return this.currentState.lowerRPMsetpoint;
-    }
 
     // sysid stuff
     private final MutableMeasure<Voltage> appliedVoltage = mutable(Volts.of(0));

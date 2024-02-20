@@ -110,13 +110,13 @@ public final class Constants {
 
         public static final int SHOOTER_CURRENT_LIMIT = 70;
 
-        public static final int SHOOTER_BEAMBREAK_CHANNEL = 6;
+        public static final int SHOOTER_BEAMBREAK_CHANNEL = 8;
 
         public static final Gains UPPER_GAINS = new Gains(new Gains(1.96155E-4, 0, 0), new Gains(0.30647001, 0, 0.11433157, 0.011852)); //TODO: find value
         public static final Gains LOWER_GAINS = new Gains(new Gains(1.96155E-4, 0, 0), new Gains(0.30647001, 0, 0.11433157, 0.011852)); //TODO: find value
 
-        public static final double AMP_LOWER_SHOOTER_RPM = 2300; //TODO: find value
-        public static final double AMP_UPPER_SHOOTER_RPM = 1; //TODO: find value
+        public static final double AMP_UPPER_SHOOTER_RPM = 1300;
+        public static final double AMP_LOWER_SHOOTER_RPM = 1700;
         public static final double WOOFER_RPM = 0; //TODO: find value
 
         public static final double SHOOTER_PID_TOLERANCE = 100;

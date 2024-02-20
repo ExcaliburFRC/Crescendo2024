@@ -98,16 +98,16 @@ public class RobotContainer implements Logged {
         climberLoop.bind(()-> driver.create().onTrue(new InstantCommand(()-> CommandScheduler.getInstance().setActiveButtonLoop(CommandScheduler.getInstance().getDefaultButtonLoop()))));
 
         // shooter
-        driver.square().toggleOnTrue(scoreNoteCommand(shooter.shootToAmpManualCommand(), driver.R1()));
-        driver.triangle().toggleOnTrue(scoreNoteCommand(shooter.shootToSpeakerManualCommand(), driver.R1()));
+        driver.square().toggleOnTrue(scoreNoteCommand(shooter.shootToAmpCommand(), driver.R1(), true));
+        driver.triangle().toggleOnTrue(scoreNoteCommand(shooter.shootToSpeakerManualCommand(), driver.R1(), false));
 
         sysid.L1().toggleOnTrue(shooter.setShootercommand(new ShooterState(2500)));
 
 //        // susid
-        sysid.circle().toggleOnTrue(shooter.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-        sysid.square().toggleOnTrue(shooter.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-        sysid.triangle().toggleOnTrue(shooter.sysIdDynamic(SysIdRoutine.Direction.kForward));
-        sysid.cross().toggleOnTrue(shooter.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+//        sysid.circle().toggleOnTrue(shooter.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+//        sysid.square().toggleOnTrue(shooter.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+//        sysid.triangle().toggleOnTrue(shooter.sysIdDynamic(SysIdRoutine.Direction.kForward));
+//        sysid.cross().toggleOnTrue(shooter.sysIdDynamic(SysIdRoutine.Direction.kReverse));
     }
 
     // triangle - shoot to speaker
@@ -116,15 +116,10 @@ public class RobotContainer implements Logged {
     // cross - intake from HP
 
     // methods
-    private Command scoreNoteCommand(Command shooterCommand, Trigger release) {
-        return new WaitUntilCommand(intake.intakingTrigger.negate()).andThen(
-                new ParallelCommandGroup(shooterCommand,
-                new SequentialCommandGroup(
-                        new WaitUntilCommand(release),
-                        new ParallelDeadlineGroup(
-                                intake.transportToShooterCommand(shooter::getCurrentState),
-                                leds.setPattern(SOLID, RED.color)))
-        ));
+    private Command scoreNoteCommand(Command shooterCommand, Trigger release, boolean toAmp) {
+        return shooterCommand.alongWith(
+                new WaitUntilCommand(release).andThen(intake.transportToShooterCommand(()-> toAmp))
+        );
     }
 
     public Command matchPrepCommand() {
@@ -154,13 +149,14 @@ public class RobotContainer implements Logged {
         return new ParallelDeadlineGroup(
                 new WaitUntilCommand(intake.hasNoteTrigger.or(shooter.hasNoteTrigger)),
                 intake.intakeFromAngleCommand(HUMAN_PLAYER_BACKWARD, vibrateControllerCommand(50, 0.25)),
-                shooter.intakeFromShooterCommand()).andThen(
+                shooter.intakeFromShooterCommand())
+                .andThen(
                 new ConditionalCommand(
                         new ParallelCommandGroup(
                                 intake.intakeFromAngleCommand(SHOOTER, intakeVibrate),
                                 new WaitCommand(0.75).andThen(shooter.transportToIntakeCommand()).until(intake.hasNoteTrigger)
                         ),
-                        Commands.none(),
+                        intake.getDefaultCommand().until(intake.atShooterTrigger).andThen(intake.pumpNoteCommand()),
                         shooter.hasNoteTrigger));
     }
 

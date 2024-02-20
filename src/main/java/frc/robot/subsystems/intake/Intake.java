@@ -121,15 +121,15 @@ public class Intake extends SubsystemBase implements Logged {
                 setIntakeCommand(new IntakeState(0.35, angle, true)).until(hasNoteTrigger.debounce(0.15)),
                 new InstantCommand(vibrateCommand::schedule),
                 setIntakeCommand(new IntakeState(0, IntakeAngle.SHOOTER, false)).until(atShooterTrigger),
-                pumpNoteCommand()).withName("intakeCommand");
+                pumpNoteCommand()).withName("intakeCommand").withInterruptBehavior(kCancelIncoming);
     }
 
     public Command shootToAmpCommand() {
         return setIntakeCommand(new IntakeState(AMP_SHOOTER_SPEED, IntakeAngle.AMP, true)).until(hasNoteTrigger.negate());
     }
 
-    public Command transportToShooterCommand(Supplier<ShooterState> state) {
-        return setIntakeCommand(new IntakeState(state.get().isSameVel() ? -0.75 : -0.35, IntakeAngle.SHOOTER, true))
+    public Command transportToShooterCommand(BooleanSupplier toAmp) {
+        return setIntakeCommand(new IntakeState(toAmp.getAsBoolean() ? -0.4 : -0.75, IntakeAngle.SHOOTER, false))
                 .until(hasNoteTrigger.negate().debounce(0.75));
     }
 
@@ -145,6 +145,11 @@ public class Intake extends SubsystemBase implements Logged {
         return new StartEndCommand(
                 () -> angleMotor.setIdleMode(IdleMode.kCoast),
                 () -> angleMotor.setIdleMode(IdleMode.kBrake)).ignoringDisable(true);
+    }
+
+    @Log.NT
+    private boolean intakingTrigger(){
+        return intakingTrigger.getAsBoolean();
     }
 
     // SysId stuff
