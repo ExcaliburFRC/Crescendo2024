@@ -1,5 +1,6 @@
 package frc.robot;
 
+import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.event.EventLoop;
@@ -156,7 +157,8 @@ public class RobotContainer implements Logged {
                                 intake.intakeFromAngleCommand(SHOOTER, intakeVibrate),
                                 new WaitCommand(0.75).andThen(shooter.transportToIntakeCommand()).until(intake.hasNoteTrigger)
                         ),
-                        intake.getDefaultCommand().until(intake.atShooterTrigger).andThen(intake.pumpNoteCommand()),
+                        new InstantCommand(()-> {}),
+//                        intake.getDefaultCommand().until(intake.atShooterTrigger).andThen(intake.pumpNoteCommand()),
                         shooter.hasNoteTrigger));
     }
 
@@ -170,6 +172,8 @@ public class RobotContainer implements Logged {
     }
 
     private void init() {
+        NamedCommands.registerCommand("shootToSpeakerCommand", shooter.shootToSpeakerManualCommand());
+
         pitTab.add("Match prep", matchPrepCommand());
 //        pitTab.add("System tester", systemTesterCommand());
 
@@ -187,7 +191,7 @@ public class RobotContainer implements Logged {
     }
 
     public Command getAutonomousCommand() {
-        return Commands.none();
+        return swerve.runPath("test");
     }
 }
 //this is line 200

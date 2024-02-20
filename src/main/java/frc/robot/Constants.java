@@ -90,7 +90,7 @@ public final class Constants {
 
     public static final class ModuleConstants {
         public static final double kWheelDiameterMeters = Units.inchesToMeters(4);
-        public static final double kDriveMotorGearRatio = 1 / 8.14; // 6.12
+        public static final double kDriveMotorGearRatio = 1 / 6.12;
         public static final double kDriveEncoderRotationsToMeters = kDriveMotorGearRatio * PI * kWheelDiameterMeters;
         public static final double kDriveEncoderRPMToMeterPerSec = kDriveEncoderRotationsToMeters / 60;
         public static final double kTurningMotorGearRatio = 1 / 21.4285714;

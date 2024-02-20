@@ -14,7 +14,7 @@
         {
           "type": "named",
           "data": {
-            "name": "shootFromWooferCommand"
+            "name": "shootToSpeakerCommand"
           }
         },
         {
@@ -58,7 +58,7 @@
         {
           "type": "named",
           "data": {
-            "name": "shootFromWooferCommand"
+            "name": "shootToSpeakerCommand"
           }
         },
         {
@@ -102,7 +102,7 @@
         {
           "type": "named",
           "data": {
-            "name": "shootFromWooferCommand"
+            "name": "shootToSpeakerCommand"
           }
         },
         {
@@ -146,7 +146,7 @@
         {
           "type": "named",
           "data": {
-            "name": "shootFromWooferCommand"
+            "name": "shootToSpeakerCommand"
           }
         },
         {

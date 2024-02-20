@@ -70,7 +70,7 @@ public class Intake extends SubsystemBase implements Logged {
 
         anglePIDcontroller.setTolerance(INTAKE_TOLERANCE);
 
-        setDefaultCommand(setIntakeCommand(new IntakeState(0, IntakeAngle.SHOOTER, false)));
+//        setDefaultCommand(setIntakeCommand(new IntakeState(0, IntakeAngle.SHOOTER, false)));
     }
 
     @Log.NT(key = "intakeAngle")

@@ -4,6 +4,7 @@ import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.kauailabs.navx.frc.AHRS;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
@@ -384,6 +385,15 @@ public class Swerve extends SubsystemBase implements Logged {
                 AutoBuilder.pathfindThenFollowPath(bottomPath, PATH_CONSTRAINTS),
                 () -> getDistanceFromPose(topPath.getStartingDifferentialPose()) < getDistanceFromPose(bottomPath.getStartingDifferentialPose())
         );
+    }
+
+    public Command runAuto(String autoName){
+        return setOdometryPositionCommand(PathPlannerAuto.getStaringPoseFromAutoFile(autoName)).andThen(
+                AutoBuilder.buildAuto(autoName));
+    }
+
+    public Command runPath(String pathName){
+        return AutoBuilder.followPath(PathPlannerPath.fromPathFile(pathName));
     }
     // ----------
 
