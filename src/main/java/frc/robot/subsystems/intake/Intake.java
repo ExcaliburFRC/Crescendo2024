@@ -77,8 +77,8 @@ public class Intake extends SubsystemBase implements Logged {
     @Log.NT(key = "intakeAngle")
     public double getAngle() {
         double angle = -intakeEncoder.getDistance();
-        while (angle < -360) angle += 360;
-        while (angle > 360) angle -= 360;
+        while (angle < -200) angle += 360;
+        while (angle > 200) angle -= 360;
         return angle;
     }
 

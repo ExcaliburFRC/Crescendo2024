@@ -197,12 +197,12 @@ public class RobotContainer implements Logged {
     }
 
     public Command getAutonomousCommand() {
-//        Pose2d startingPose = new Pose2d(1.25, 5.57, new Rotation2d());
-//
-//        return swerve.setOdometryPositionCommand(startingPose).andThen(
-//                swerve.runAuto("note123"));
+        Pose2d startingPose = new Pose2d(1.25, 5.57, new Rotation2d());
 
-        return swerve.runPath("PID Test");
+        return swerve.setOdometryPositionCommand(startingPose).andThen(
+                swerve.runAuto("note123"));
+
+//        return swerve.setOdometryPositionCommand(new Pose2d()).andThen(swerve.runPath("PID Test"));
     }
 
 }

@@ -37,7 +37,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Pose2ToNote1"
+                  "pathName": "Pose1ToNote1"
                 }
               },
               {
@@ -56,7 +56,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Note1ToPose2"
+                  "pathName": "Note1ToPose1"
                 }
               },
               {
@@ -87,7 +87,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Pose2ToNote2"
+                  "pathName": "Pose1ToNote4"
                 }
               },
               {
@@ -106,7 +106,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Note2ToPose2"
+                  "pathName": "Pose1ToNote4"
                 }
               },
               {
@@ -137,38 +137,13 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Pose2ToNote3"
+                  "pathName": "Note4ToPose1"
                 }
               },
               {
                 "type": "named",
                 "data": {
                   "name": "intakeFromGround"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "deadline",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "Note3ToPose2"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "prepShooterCommand"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "closeIntake"
                 }
               }
             ]

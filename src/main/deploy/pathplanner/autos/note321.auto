@@ -37,7 +37,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Pose2ToNote1"
+                  "pathName": "Pose2ToNote3"
                 }
               },
               {
@@ -56,7 +56,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Note1ToPose2"
+                  "pathName": "Note3ToPose2"
                 }
               },
               {
@@ -72,12 +72,6 @@
                 }
               }
             ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "shootToSpeakerCommand"
           }
         },
         {
@@ -125,38 +119,13 @@
           }
         },
         {
-          "type": "named",
-          "data": {
-            "name": "shootToSpeakerCommand"
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "Pose2ToNote3"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "intakeFromGround"
-                }
-              }
-            ]
-          }
-        },
-        {
           "type": "deadline",
           "data": {
             "commands": [
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Note3ToPose2"
+                  "pathName": "Note1ToPose2"
                 }
               },
               {
@@ -172,6 +141,37 @@
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shootToSpeakerCommand"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Pose2ToNote1"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "intakeFromGround"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shootToSpeakerCommand"
           }
         },
         {

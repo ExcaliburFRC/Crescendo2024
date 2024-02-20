@@ -1,6 +1,5 @@
 package frc.robot.subsystems.shooter;
 
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.units.*;
@@ -15,7 +14,6 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.Neo;
 import frc.robot.Constants.FieldConstants.FieldLocations;
 import frc.robot.subsystems.LEDs;
-import frc.robot.subsystems.intake.Intake;
 import monologue.Annotations.Log;
 import monologue.Logged;
 
@@ -26,7 +24,6 @@ import static edu.wpi.first.units.Units.*;
 import static edu.wpi.first.units.Units.RPM;
 import static frc.lib.Color.Colors.GREEN;
 import static frc.robot.Constants.ShooterConstants.*;
-import static frc.robot.subsystems.LEDs.LEDPattern.BLINKING;
 import static frc.robot.subsystems.LEDs.LEDPattern.SOLID;
 
 public class Shooter extends SubsystemBase implements Logged {
@@ -143,8 +140,8 @@ public class Shooter extends SubsystemBase implements Logged {
 
     public Command prepShooterCommand() {
         return new RunCommand(() -> {
-            upperShooter.set(SPEAKER_PREP_DC);
-            lowerShooter.set(SPEAKER_PREP_DC);
+            upperShooter.set(SPEAKER_DC);
+            lowerShooter.set(SPEAKER_DC);
         }, this);
     }
 
@@ -170,8 +167,8 @@ public class Shooter extends SubsystemBase implements Logged {
         return this.runEnd(
                 ()-> {
                     this.currentState = new ShooterState(WOOFER_RPM);
-                    upperShooter.set(0.8);
-                    lowerShooter.set(0.8);
+                    upperShooter.set(SPEAKER_DC);
+                    lowerShooter.set(SPEAKER_DC);
                 },
                 this::stopMotors).until(noteShotTrigger);
     }

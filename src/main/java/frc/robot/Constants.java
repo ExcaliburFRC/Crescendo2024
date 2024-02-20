@@ -80,8 +80,8 @@ public final class Constants {
         public static final Gains ANGLE_GAINS = new Gains(0.12, 0, 0.00015);
         public static final Gains TRANSLATION_GAINS = new Gains(0, 0, 0);
 
-        public static final Gains PATHPLANNER_ANGLE_GAINS = new Gains(3.5, 0, 0);
-        public static final Gains PATHPLANNER_TRANSLATION_GAINS = new Gains(2.5, 0, 0);
+        public static final Gains PATHPLANNER_ANGLE_GAINS = new Gains(10, 0, 0);
+        public static final Gains PATHPLANNER_TRANSLATION_GAINS = new Gains(4.5, 0, 0);
 
         public static final PathConstraints PATH_CONSTRAINTS = new PathConstraints(
                 MAX_VELOCITY_METER_PER_SECOND, MAX_VELOCITY_ACCELERATION_METER_PER_SECOND,
@@ -121,7 +121,7 @@ public final class Constants {
 
         public static final double SHOOTER_PID_TOLERANCE = 300;
 
-        public static final double SPEAKER_PREP_DC = 0.8; //TODO: find value
+        public static final double SPEAKER_DC = 0.77; //TODO: find value
         public static final double SPEAKER_PREP_RADIUS = 0;//TODO: find value
 
         // sysid
