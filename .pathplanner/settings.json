@@ -7,9 +7,9 @@
     "Teleop"
   ],
   "autoFolders": [],
-  "defaultMaxVel": 5.0,
-  "defaultMaxAccel": 3.0,
-  "defaultMaxAngVel": 720.0,
-  "defaultMaxAngAccel": 720.0,
+  "defaultMaxVel": 5.5,
+  "defaultMaxAccel": 4.0,
+  "defaultMaxAngVel": 290.0,
+  "defaultMaxAngAccel": 360.0,
   "maxModuleSpeed": 5.88
 }

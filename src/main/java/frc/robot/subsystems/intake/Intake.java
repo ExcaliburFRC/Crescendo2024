@@ -6,6 +6,7 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.units.*;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.*;
@@ -70,13 +71,14 @@ public class Intake extends SubsystemBase implements Logged {
 
         anglePIDcontroller.setTolerance(INTAKE_TOLERANCE);
 
-//        setDefaultCommand(setIntakeCommand(new IntakeState(0, IntakeAngle.SHOOTER, false)));
+        setDefaultCommand(setIntakeCommand(new IntakeState(0, IntakeAngle.SHOOTER, false)));
     }
 
     @Log.NT(key = "intakeAngle")
     public double getAngle() {
         double angle = -intakeEncoder.getDistance();
-        while (angle < -100) angle += 360;
+        while (angle < -360) angle += 360;
+        while (angle > 360) angle -= 360;
         return angle;
     }
 
@@ -121,7 +123,15 @@ public class Intake extends SubsystemBase implements Logged {
                 setIntakeCommand(new IntakeState(0.35, angle, true)).until(hasNoteTrigger.debounce(0.15)),
                 new InstantCommand(vibrateCommand::schedule),
                 setIntakeCommand(new IntakeState(0, IntakeAngle.SHOOTER, false)).until(atShooterTrigger),
-                pumpNoteCommand()).withName("intakeCommand").withInterruptBehavior(kCancelIncoming);
+                pumpNoteCommand().unless(DriverStation::isAutonomous)).withName("intakeCommand").withInterruptBehavior(kCancelIncoming);
+    }
+
+    public Command halfIntakeFromGround(){
+        return setIntakeCommand(new IntakeState(0.35, IntakeAngle.GROUND, false)).until(hasNoteTrigger);
+    }
+
+    public Command closeIntakeCommand(){
+        return setIntakeCommand(new IntakeState(0, IntakeAngle.SHOOTER, false));
     }
 
     public Command shootToAmpCommand() {

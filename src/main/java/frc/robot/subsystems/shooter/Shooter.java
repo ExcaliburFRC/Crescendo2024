@@ -12,7 +12,6 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.util.ContinuouslyConditionalCommand;
 import frc.lib.Neo;
 import frc.robot.Constants.FieldConstants.FieldLocations;
 import frc.robot.subsystems.LEDs;
@@ -53,7 +52,7 @@ public class Shooter extends SubsystemBase implements Logged {
     private final LEDs leds = LEDs.getInstance();
 
     @Log.NT
-    public Trigger shooterReadyTrigger = new Trigger(ShooterState::atSetpoint)
+    public Trigger shooterReadyTrigger = currentState.stateReady
             .onTrue(leds.setPattern(SOLID, GREEN.color))
             .onFalse(leds.restoreLEDs());
 
@@ -86,9 +85,6 @@ public class Shooter extends SubsystemBase implements Logged {
         return new FunctionalCommand(
                 ()-> currentState = state,
                 ()-> {
-//                    upperShooter.set(0.5);
-//                    lowerShooter.set(0.5);
-//                },
                     state.setVelocities(upperShooter.getVelocity(), lowerShooter.getVelocity());
 
                     upperShooter.setVoltage(state.upperVoltage);
@@ -137,16 +133,19 @@ public class Shooter extends SubsystemBase implements Logged {
         }).until(hasNoteTrigger.negate());
     }
 
-    public Command prepShooterCommand(Trigger isAtSpeakerRadius, Intake intake) {
-        return new ContinuouslyConditionalCommand(
-                prepShooterCommand().alongWith(leds.setPattern(BLINKING, GREEN.color)),
-                new RunCommand(upperShooter::stopMotor, this),
-                isAtSpeakerRadius.and(intake.atShooterTrigger).and(intake.hasNoteTrigger)
-        );
-    }
+//    public Command prepShooterCommand(Trigger isAtSpeakerRadius, Intake intake) {
+//        return new ContinuouslyConditionalCommand(
+//                prepShooterCommand().alongWith(leds.setPattern(BLINKING, GREEN.color)),
+//                new RunCommand(upperShooter::stopMotor, this),
+//                isAtSpeakerRadius.and(intake.atShooterTrigger).and(intake.hasNoteTrigger)
+//        );
+//    }
 
     public Command prepShooterCommand() {
-        return new RunCommand(() -> upperShooter.set(SPEAKER_PREP_DC), this);
+        return new RunCommand(() -> {
+            upperShooter.set(SPEAKER_PREP_DC);
+            lowerShooter.set(SPEAKER_PREP_DC);
+        }, this);
     }
 
     public Command manualShooterCommand() {

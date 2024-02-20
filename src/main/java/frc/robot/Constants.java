@@ -119,9 +119,9 @@ public final class Constants {
         public static final double AMP_LOWER_SHOOTER_RPM = 1700;
         public static final double WOOFER_RPM = 0; //TODO: find value
 
-        public static final double SHOOTER_PID_TOLERANCE = 100;
+        public static final double SHOOTER_PID_TOLERANCE = 300;
 
-        public static final double SPEAKER_PREP_DC = 0; //TODO: find value
+        public static final double SPEAKER_PREP_DC = 0.8; //TODO: find value
         public static final double SPEAKER_PREP_RADIUS = 0;//TODO: find value
 
         // sysid

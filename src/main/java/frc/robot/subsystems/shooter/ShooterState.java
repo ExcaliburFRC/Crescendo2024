@@ -2,6 +2,7 @@ package frc.robot.subsystems.shooter;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import static frc.robot.Constants.ShooterConstants.*;
 
@@ -15,6 +16,7 @@ public class ShooterState {
     private static final SimpleMotorFeedforward upperFFcontroller = new SimpleMotorFeedforward(UPPER_GAINS.ks, UPPER_GAINS.kv, UPPER_GAINS.ka);
     private static final SimpleMotorFeedforward lowerFFcontroller = new SimpleMotorFeedforward(LOWER_GAINS.ks, LOWER_GAINS.kv, LOWER_GAINS.ka);
 
+    public final Trigger stateReady = new Trigger(()-> upperPIDcontroller.atSetpoint() && lowerPIDcontroller.atSetpoint());
 
     public ShooterState(double uppersetpoint, double lowersetpoint) {
         this.upperRPMsetpoint = uppersetpoint;

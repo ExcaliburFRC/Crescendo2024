@@ -79,6 +79,7 @@ public class Robot extends TimedRobot implements Logged {
 
   @Override
   public void teleopInit() {
+    CommandScheduler.getInstance().removeDefaultCommand(robotContainer.shooter);
     autonomousCommand.cancel();
   }
 

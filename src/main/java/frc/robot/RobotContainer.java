@@ -2,6 +2,7 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -30,9 +31,9 @@ import static frc.robot.subsystems.intake.IntakeState.IntakeAngle.*;
 
 public class RobotContainer implements Logged {
     // subsystems
+    public final Shooter shooter = new Shooter();
     private final Swerve swerve = new Swerve();
     private final LEDs leds = LEDs.getInstance();
-    private final Shooter shooter = new Shooter();
     private final Intake intake = new Intake();
     private final Climber climber = new Climber();
 
@@ -91,7 +92,7 @@ public class RobotContainer implements Logged {
 
         // intake
         driver.circle().toggleOnTrue(dynamicIntakeCommand());
-        driver.cross().toggleOnTrue(intake.intakeFromAngleCommand(GROUND, vibrateControllerCommand(50, 0.25)));
+        driver.cross().toggleOnTrue(intake.intakeFromAngleCommand(GROUND, intakeVibrate));
 
         driver.options().onTrue(intake.pumpNoteCommand());
 
@@ -172,7 +173,12 @@ public class RobotContainer implements Logged {
     }
 
     private void init() {
-        NamedCommands.registerCommand("shootToSpeakerCommand", shooter.shootToSpeakerManualCommand());
+        NamedCommands.registerCommand("shootToSpeakerCommand", scoreNoteCommand(shooter.shootToSpeakerManualCommand(), new Trigger(()-> true), false));
+        NamedCommands.registerCommand("prepShooterCommand", shooter.prepShooterCommand());
+        NamedCommands.registerCommand("shootToAmpCommand", scoreNoteCommand(shooter.shootToAmpCommand(), shooter.shooterReadyTrigger, false));
+
+        NamedCommands.registerCommand("intakeFromGround", intake.halfIntakeFromGround());
+        NamedCommands.registerCommand("closeIntake", intake.closeIntakeCommand());
 
         pitTab.add("Match prep", matchPrepCommand());
 //        pitTab.add("System tester", systemTesterCommand());
@@ -191,7 +197,12 @@ public class RobotContainer implements Logged {
     }
 
     public Command getAutonomousCommand() {
-        return swerve.runPath("test");
+//        Pose2d startingPose = new Pose2d(1.25, 5.57, new Rotation2d());
+//
+//        return swerve.setOdometryPositionCommand(startingPose).andThen(
+//                swerve.runAuto("note123"));
+
+        return swerve.runPath("PID Test");
     }
+
 }
-//this is line 200

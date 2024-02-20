@@ -25,6 +25,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.SPI;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -308,6 +309,9 @@ public class Swerve extends SubsystemBase implements Logged {
                 .ignoringDisable(true);
     }
 
+    double prevRate = 0;
+    double prevTime = 0;
+
     @Override
     public void periodic() {
         odometry.update(getGyroRotation2d(), getModulesPositions());
@@ -321,6 +325,8 @@ public class Swerve extends SubsystemBase implements Logged {
 
         field.setRobotPose(odometry.getEstimatedPosition());
         SmartDashboard.putData(field);
+
+        System.out.println();
     }
 
     // on-the-fly auto generation functions
@@ -388,12 +394,12 @@ public class Swerve extends SubsystemBase implements Logged {
     }
 
     public Command runAuto(String autoName){
-        return setOdometryPositionCommand(PathPlannerAuto.getStaringPoseFromAutoFile(autoName)).andThen(
-                AutoBuilder.buildAuto(autoName));
+        return straightenModulesCommand().andThen(new PathPlannerAuto(autoName));
     }
 
     public Command runPath(String pathName){
-        return AutoBuilder.followPath(PathPlannerPath.fromPathFile(pathName));
+        return setOdometryPositionCommand(PathPlannerPath.fromPathFile(pathName).getStartingDifferentialPose())
+                .andThen(AutoBuilder.followPath(PathPlannerPath.fromPathFile(pathName)));
     }
     // ----------
 
