@@ -69,8 +69,8 @@ class ClimberSide implements Logged {
     public Command manualCommand(BooleanSupplier rise, BooleanSupplier lower){
         return Commands.runEnd(
                 ()-> {
-                    if (rise.getAsBoolean()) motor.set(0.5);
-                    else if (lower.getAsBoolean()) motor.set(-0.5);
+                    if (rise.getAsBoolean()) motor.set(0.05);
+                    else if (lower.getAsBoolean()) motor.set(-0.05);
                     else motor.stopMotor();
                 },
                 motor::stopMotor

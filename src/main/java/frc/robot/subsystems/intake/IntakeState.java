@@ -10,7 +10,7 @@ public class IntakeState {
     public enum IntakeAngle {
         GROUND(-22),
         AMP(104),
-        HUMAN_PLAYER_BACKWARD(150),
+        HUMAN_PLAYER_BACKWARD(146),
         HUMAN_PLAYER_FORWARD(104), // needs to intake from shooter as well
         SHOOTER(168);
 

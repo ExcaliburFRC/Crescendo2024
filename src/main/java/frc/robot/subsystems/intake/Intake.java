@@ -117,7 +117,7 @@ public class Intake extends SubsystemBase implements Logged {
                 setIntakeCommand(new IntakeState(0.35, angle, true)).until(hasNoteTrigger.debounce(0.15)),
                 new InstantCommand(vibrateCommand::schedule),
                 setIntakeCommand(new IntakeState(0, IntakeAngle.SHOOTER, false)).until(atShooterTrigger),
-                pumpNoteCommand().unless(DriverStation::isAutonomous)).withName("intakeCommand").withInterruptBehavior(kCancelIncoming);
+                pumpNoteCommand().unless(DriverStation::isAutonomous)).withName("intakeCommand");
     }
 
     public Command halfIntakeFromGround(){
@@ -155,7 +155,7 @@ public class Intake extends SubsystemBase implements Logged {
         RobotContainer.robotData.addBoolean("hasNote", hasNoteTrigger);
         RobotContainer.robotData.addBoolean("atSetpoint", atSetpointTrigger);
         RobotContainer.robotData.addBoolean("intaking", intakingTrigger);
-        RobotContainer.robotData.addString("setpoint", ()-> this.setpoint.toString());
+//        RobotContainer.robotData.addString("setpoint", ()-> this.setpoint.toString());
     }
 
     @Log.NT

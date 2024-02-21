@@ -92,7 +92,7 @@ public class RobotContainer implements Logged {
         climber.setDefaultCommand(climber.manualCommand(driver.L1(climberLoop), driver.R1(climberLoop), driver.L2(climberLoop), driver.R2(climberLoop)));
 
         // intake
-        driver.circle().toggleOnTrue(dynamicIntakeCommand());
+        driver.circle().toggleOnTrue(intake.intakeFromAngleCommand(HUMAN_PLAYER_BACKWARD, intakeVibrate));
         driver.cross().toggleOnTrue(intake.intakeFromAngleCommand(GROUND, intakeVibrate));
 
         driver.options().onTrue(intake.pumpNoteCommand());
@@ -130,7 +130,7 @@ public class RobotContainer implements Logged {
     private Command systemTesterCommand() {
         return new SequentialCommandGroup(
                 swerve.driveSwerveCommand(() -> 0.25, () -> 0, () -> 0.25, () -> false).withTimeout(5),
-                dynamicIntakeCommand(),
+                intake.intakeFromAngleCommand(HUMAN_PLAYER_BACKWARD, intakeVibrate),
                 scoreNoteCommand(shooter.shootToAmpCommand(), new Trigger(() -> true), true));
         // TODO: add climberTestCommand
     }
