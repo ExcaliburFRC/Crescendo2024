@@ -39,7 +39,7 @@ public class RobotContainer implements Logged {
 
     // controllers
     private final CommandPS5Controller driver = new CommandPS5Controller(0);
-        private final CommandPS5Controller sysid = new CommandPS5Controller(1);
+    private final CommandPS5Controller sysid = new CommandPS5Controller(1);
     private final XboxController driverVibration = new XboxController(5);
 
     public ShuffleboardTab matchTab = Shuffleboard.getTab("match");
@@ -96,8 +96,8 @@ public class RobotContainer implements Logged {
 
         driver.options().onTrue(intake.pumpNoteCommand());
 
-        driver.create().onTrue(new InstantCommand(()-> CommandScheduler.getInstance().setActiveButtonLoop(climberLoop)));
-        climberLoop.bind(()-> driver.create().onTrue(new InstantCommand(()-> CommandScheduler.getInstance().setActiveButtonLoop(CommandScheduler.getInstance().getDefaultButtonLoop()))));
+        driver.create().onTrue(new InstantCommand(() -> CommandScheduler.getInstance().setActiveButtonLoop(climberLoop)));
+        climberLoop.bind(() -> driver.create().onTrue(new InstantCommand(() -> CommandScheduler.getInstance().setActiveButtonLoop(CommandScheduler.getInstance().getDefaultButtonLoop()))));
 
         // shooter
         driver.square().toggleOnTrue(scoreNoteCommand(shooter.shootToAmpCommand(), driver.R1(), true));
@@ -120,7 +120,7 @@ public class RobotContainer implements Logged {
     // methods
     private Command scoreNoteCommand(Command shooterCommand, Trigger release, boolean toAmp) {
         return shooterCommand.alongWith(
-                new WaitUntilCommand(release).andThen(intake.transportToShooterCommand(()-> toAmp))
+                new WaitUntilCommand(release).andThen(intake.transportToShooterCommand(() -> toAmp))
         );
     }
 
@@ -147,20 +147,20 @@ public class RobotContainer implements Logged {
                 .withTimeout(seconds).ignoringDisable(true);
     }
 
-    public Command dynamicIntakeCommand(){
+    public Command dynamicIntakeCommand() {
         return new ParallelDeadlineGroup(
                 new WaitUntilCommand(intake.hasNoteTrigger.or(shooter.hasNoteTrigger)),
                 intake.intakeFromAngleCommand(HUMAN_PLAYER_BACKWARD, vibrateControllerCommand(50, 0.25)),
-                shooter.intakeFromShooterCommand())
-                .andThen(
+                shooter.intakeFromShooterCommand()).andThen(
                 new ConditionalCommand(
                         new ParallelCommandGroup(
                                 intake.intakeFromAngleCommand(SHOOTER, intakeVibrate),
                                 new WaitCommand(0.75).andThen(shooter.transportToIntakeCommand()).until(intake.hasNoteTrigger)
                         ),
-                        new InstantCommand(()-> {}),
-//                        intake.getDefaultCommand().until(intake.atShooterTrigger).andThen(intake.pumpNoteCommand()),
-                        shooter.hasNoteTrigger));
+                        Commands.none(),
+                        shooter.hasNoteTrigger),
+                intake.pumpNoteCommand()
+        );
     }
 
     public Command toggleMotorsIdleMode() {
@@ -173,7 +173,7 @@ public class RobotContainer implements Logged {
     }
 
     private void init() {
-        NamedCommands.registerCommand("shootToSpeakerCommand", scoreNoteCommand(shooter.shootToSpeakerManualCommand(), new Trigger(()-> true), false));
+        NamedCommands.registerCommand("shootToSpeakerCommand", scoreNoteCommand(shooter.shootToSpeakerManualCommand(), new Trigger(() -> true), false));
         NamedCommands.registerCommand("prepShooterCommand", shooter.prepShooterCommand());
         NamedCommands.registerCommand("shootToAmpCommand", scoreNoteCommand(shooter.shootToAmpCommand(), shooter.shooterReadyTrigger, false));
 
