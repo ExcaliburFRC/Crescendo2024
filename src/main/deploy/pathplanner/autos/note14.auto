@@ -106,7 +106,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Pose1ToNote4"
+                  "pathName": "Note4ToPose1"
                 }
               },
               {
@@ -128,25 +128,6 @@
           "type": "named",
           "data": {
             "name": "shootToSpeakerCommand"
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "Note4ToPose1"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "intakeFromGround"
-                }
-              }
-            ]
           }
         },
         {

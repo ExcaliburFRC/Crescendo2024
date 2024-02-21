@@ -2,6 +2,7 @@ package frc.robot.subsystems.intake;
 
 import com.revrobotics.CANSparkBase;
 import com.revrobotics.CANSparkBase.IdleMode;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.units.*;
@@ -57,11 +58,13 @@ public class Intake extends SubsystemBase implements Logged {
     public Intake() {
         intakeMotor.setIdleMode(IdleMode.kCoast);
 
+        angleMotor.setConversionFactors(INTAKE_MOTOR_CONVERSION_FACTOR);
         angleMotor.setIdleMode(IdleMode.kBrake);
         angleMotor.setSmartCurrentLimit(40);
         angleMotor.setInverted(true);
         angleMotor.setIdleMode(IdleMode.kBrake);
         angleMotor.setOpenLoopRampRate(0.35);
+        angleMotor.setPosition(intakeEncoder.getDistance());
 
         angleMotor.enableSoftLimit(CANSparkBase.SoftLimitDirection.kForward, false);
         angleMotor.enableSoftLimit(CANSparkBase.SoftLimitDirection.kReverse, false);
@@ -76,10 +79,14 @@ public class Intake extends SubsystemBase implements Logged {
 
     @Log.NT(key = "intakeAngle")
     public double getAngle() {
-        double angle = -intakeEncoder.getDistance();
-        while (angle < -200) angle += 360;
-        while (angle > 200) angle -= 360;
-        return angle;
+        double absAngle =  MathUtil.inputModulus(-intakeEncoder.getDistance(), -180, 180);
+        return absAngle;
+//        return Math.abs(absAngle - angleMotor.getPosition()) > 80? angleMotor.getPosition(): absAngle;
+    }
+
+    @Log.NT (key = "intakeMotorPosition")
+    public double getMotorAngle(){
+        return angleMotor.getPosition();
     }
 
     @Log.NT(key = "intakeVelocity")

@@ -75,6 +75,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "shootToSpeakerCommand"
+          }
+        },
+        {
           "type": "parallel",
           "data": {
             "commands": [
@@ -119,31 +125,6 @@
           }
         },
         {
-          "type": "deadline",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "Note1ToPose2"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "prepShooterCommand"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "closeIntake"
-                }
-              }
-            ]
-          }
-        },
-        {
           "type": "named",
           "data": {
             "name": "shootToSpeakerCommand"
@@ -169,9 +150,28 @@
           }
         },
         {
-          "type": "named",
+          "type": "deadline",
           "data": {
-            "name": "shootToSpeakerCommand"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Note1ToPose2"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "prepShooterCommand"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "closeIntake"
+                }
+              }
+            ]
           }
         },
         {
