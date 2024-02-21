@@ -55,6 +55,8 @@ public class Robot extends TimedRobot implements Logged {
       // Basing this condition on the connected state of the FMS is a suggestion only.
       Monologue.setFileOnly(DriverStation.isFMSAttached());
       Monologue.updateAll();
+
+      robotContainer.climberLoop.poll();
   }
 
   @Override

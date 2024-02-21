@@ -97,6 +97,7 @@ public class RobotContainer implements Logged {
         driver.options().onTrue(intake.pumpNoteCommand());
 
         driver.create().onTrue(new InstantCommand(() -> CommandScheduler.getInstance().setActiveButtonLoop(climberLoop)));
+
         climberLoop.bind(() -> driver.create().onTrue(new InstantCommand(() -> CommandScheduler.getInstance().setActiveButtonLoop(CommandScheduler.getInstance().getDefaultButtonLoop()))));
 
         // shooter
