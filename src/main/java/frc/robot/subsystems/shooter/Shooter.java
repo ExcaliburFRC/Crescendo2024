@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.Neo;
 import frc.robot.Constants.FieldConstants.FieldLocations;
+import frc.robot.RobotContainer;
 import frc.robot.subsystems.LEDs;
 import monologue.Annotations.Log;
 import monologue.Logged;
@@ -39,12 +40,6 @@ public class Shooter extends SubsystemBase implements Logged {
     public final Trigger beambreakTrigger = new Trigger(() -> !shooterBeambreak.get());
     public final Trigger hasNoteTrigger = new Trigger(() -> !shooterBeambreak.get()).debounce(0.05);
 
-    private ShuffleboardTab shooterTab = Shuffleboard.getTab("ShooterTab");
-    private final GenericEntry upperShooterVel = shooterTab.add("upperShooter", 0).getEntry();
-    private final GenericEntry lowerShooterVel = shooterTab.add("lowerShooter", 0).getEntry();
-    private final GenericEntry bothShootersVel = shooterTab.add("bothShooters", 0).getEntry();
-
-    private static InterpolatingDoubleTreeMap metersToRPM = new InterpolatingDoubleTreeMap();
 
     private final LEDs leds = LEDs.getInstance();
 
@@ -64,9 +59,7 @@ public class Shooter extends SubsystemBase implements Logged {
         lowerShooter.setInverted(true);
         lowerShooter.setPosition(0);
 
-        metersToRPM.put(0.0, 0.0);
-
-        shooterTab.add("beambreak", beambreakTrigger.getAsBoolean());
+        RobotContainer.robotData.add("beambreak", beambreakTrigger.getAsBoolean());
     }
 
     private void stopMotors(){
@@ -145,24 +138,6 @@ public class Shooter extends SubsystemBase implements Logged {
         }, this);
     }
 
-    public Command manualShooterCommand() {
-        return new StartEndCommand(
-                () -> {
-                    if (bothShootersVel.getDouble(0) == 0) {
-                        upperShooter.set(upperShooterVel.getDouble(0) / 100);
-                        lowerShooter.set(lowerShooterVel.getDouble(0) / 100);
-                    } else {
-                        upperShooter.set(bothShootersVel.getDouble(0));
-                        lowerShooter.set(bothShootersVel.getDouble(0));
-                    }
-                },
-                () -> {
-                    upperShooter.stopMotor();
-                    lowerShooter.stopMotor();
-                },
-                this);
-    }
-
     public Command shootToSpeakerManualCommand() {
         return this.runEnd(
                 ()-> {
@@ -176,8 +151,8 @@ public class Shooter extends SubsystemBase implements Logged {
     public Command toggleIdleModeCommand() {
         return new StartEndCommand(
                 () -> upperShooter.setIdleMode(kCoast),
-                () -> upperShooter.setIdleMode(kBrake)
-        ).ignoringDisable(true);
+                () -> upperShooter.setIdleMode(kBrake))
+                .ignoringDisable(true);
     }
 
     @Log.NT

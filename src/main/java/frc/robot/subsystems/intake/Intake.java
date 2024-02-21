@@ -10,19 +10,19 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.Neo;
+import frc.robot.RobotContainer;
 import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.intake.IntakeState.IntakeAngle;
-import frc.robot.subsystems.shooter.ShooterState;
 import monologue.Annotations.Log;
 import monologue.Logged;
 
 import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
 
 import static edu.wpi.first.units.MutableMeasure.mutable;
 import static edu.wpi.first.units.Units.*;
@@ -56,24 +56,21 @@ public class Intake extends SubsystemBase implements Logged {
     private final LEDs leds = LEDs.getInstance();
 
     public Intake() {
-        intakeMotor.setIdleMode(IdleMode.kCoast);
-
-        angleMotor.setConversionFactors(INTAKE_MOTOR_CONVERSION_FACTOR);
-        angleMotor.setIdleMode(IdleMode.kBrake);
-        angleMotor.setSmartCurrentLimit(40);
-        angleMotor.setInverted(true);
-        angleMotor.setIdleMode(IdleMode.kBrake);
-        angleMotor.setOpenLoopRampRate(0.35);
-        angleMotor.setPosition(intakeEncoder.getDistance());
-
-        angleMotor.enableSoftLimit(CANSparkBase.SoftLimitDirection.kForward, false);
-        angleMotor.enableSoftLimit(CANSparkBase.SoftLimitDirection.kReverse, false);
-
         intakeEncoder.setDistancePerRotation(360);
         intakeEncoder.setPositionOffset(INTAKE_ENCODER_OFFSET_POSITION);
 
+        intakeMotor.setIdleMode(IdleMode.kCoast);
+
+        angleMotor.setConversionFactors(ANGLE_MOTOR_CONVERSION_FACTOR);
+        angleMotor.setIdleMode(IdleMode.kBrake);
+        angleMotor.setSmartCurrentLimit(40);
+        angleMotor.setInverted(true);
+        angleMotor.setOpenLoopRampRate(0.35);
+        angleMotor.setPosition(intakeEncoder.getDistance());
+
         anglePIDcontroller.setTolerance(INTAKE_TOLERANCE);
 
+        initShuffleboard();
         setDefaultCommand(setIntakeCommand(new IntakeState(0, IntakeAngle.SHOOTER, false)));
     }
 
@@ -82,16 +79,6 @@ public class Intake extends SubsystemBase implements Logged {
         double absAngle =  MathUtil.inputModulus(-intakeEncoder.getDistance(), -180, 180);
         return absAngle;
 //        return Math.abs(absAngle - angleMotor.getPosition()) > 80? angleMotor.getPosition(): absAngle;
-    }
-
-    @Log.NT (key = "intakeMotorPosition")
-    public double getMotorAngle(){
-        return angleMotor.getPosition();
-    }
-
-    @Log.NT(key = "intakeVelocity")
-    private double getIntakeVel() {
-        return intakeMotor.getVelocity();
     }
 
     private void setIntakeSpeed(double speed) {
@@ -164,9 +151,26 @@ public class Intake extends SubsystemBase implements Logged {
                 () -> angleMotor.setIdleMode(IdleMode.kBrake)).ignoringDisable(true);
     }
 
+    private void initShuffleboard(){
+        RobotContainer.robotData.addBoolean("hasNote", hasNoteTrigger);
+        RobotContainer.robotData.addBoolean("atSetpoint", atSetpointTrigger);
+        RobotContainer.robotData.addBoolean("intaking", intakingTrigger);
+        RobotContainer.robotData.addString("setpoint", ()-> this.setpoint.toString());
+    }
+
     @Log.NT
     private boolean intakingTrigger(){
         return intakingTrigger.getAsBoolean();
+    }
+
+    @Log.NT (key = "intakeMotorPosition")
+    private double getMotorAngle(){
+        return angleMotor.getPosition();
+    }
+
+    @Log.NT(key = "intakeVelocity")
+    private double getIntakeVel() {
+        return intakeMotor.getVelocity();
     }
 
     // SysId stuff

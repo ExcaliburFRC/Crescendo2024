@@ -138,13 +138,12 @@ public final class Constants {
         public static final Gains INTAKE_GAINS = new Gains(0.058037 * 2 , 0.0, 0.011109 / 4,0.038684, 0.12578, 0.022038, 54.356);
         public static final double INTAKE_TOLERANCE = 10;
 
-        public static final double INTAKE_MOTOR_CONVERSION_FACTOR = 1 / 10.0 * 1 / 3.0 * 16 / 40;
+        public static final double ANGLE_MOTOR_CONVERSION_FACTOR = (1 / 10.0) * (1 / 3.0) * (16.0 / 40.0);
 
         public static final double INTAKE_ENCODER_OFFSET_POSITION = 0.2293;
         public static final int INTAKE_READING_OFFSET = 50; // deg
-        public static final int MINIMAL_INTAKE_ANGLE = -15;
 
-        public static final double AMP_SHOOTER_SPEED = -0.5;//TODO: find value
+        public static final double AMP_SHOOTER_SPEED = -0.5;
         public static final double STALL_DC = 0.1;
 
         //sysid
@@ -156,27 +155,27 @@ public final class Constants {
         public static final int RIGHT_MOTOR_ID = 31;
 
         //gains
-        public static final Gains LEFT_GAINS = new Gains(0, 0, 0); //TODO
-        public static final Gains RIGHT_GAINS = new Gains(0, 0, 0);//TODO
+        public static final Gains LEFT_GAINS = new Gains(0, 0, 0);
+        public static final Gains RIGHT_GAINS = new Gains(0, 0, 0);
 
         //movement limitation
-        public static final double MAX_LINEAR_VELOCITY = 0;//TODO
-        public static final double MAX_LINEAR_ACCELERATION = 0;//TODO
+        public static final double MAX_LINEAR_VELOCITY = 0;
+        public static final double MAX_LINEAR_ACCELERATION = 0;
 
-        public static final double GEARING = 0;//TODO
-        public static final double DRIVE_WHEEL_RADIUS = 0;//TODO
+        public static final double GEARING = 0;
+        public static final double DRIVE_WHEEL_RADIUS = 0;
 
-        public static final double ROT_TO_METR = 2 * PI * DRIVE_WHEEL_RADIUS * GEARING;//TODO
-        public static final double ROT_TO_METER_PER_SEC = ROT_TO_METR / 60;//TODO
+        public static final double ROT_TO_METR = 2 * PI * DRIVE_WHEEL_RADIUS * GEARING;
+        public static final double ROT_TO_METER_PER_SEC = ROT_TO_METR / 60.0;
 
-        public static final double kG = 0;//TODO
+        public static final double kG = 0;
         //representing the location of the arms on an axis
         // that is parallel to the middle of the robot (the 0 point is the middle of the robot)
-        public static final double LEFT_ARM_LOCATION = 0;//TODO
-        public static final double RIGHT_ARM_LOCATION = 0;//TODO
+        public static final double LEFT_ARM_LOCATION = 0;
+        public static final double RIGHT_ARM_LOCATION = 0;
 
-        public static final double MINIMAL_HEIGHT = 0;//TODO
-        public static final double EXTRA_SAFETY_DISTANCE = 0.1;//TODO
+        public static final double MINIMAL_HEIGHT = 0;
+        public static final double EXTRA_SAFETY_DISTANCE = 0.1;
 
         public enum Chain {
             CHAIN_0(new Translation2d(0, 0), new Translation2d(0, 0), new Translation2d(0, 0)),//TODO
@@ -251,7 +250,6 @@ public final class Constants {
         public static final double CHAIN_LENGTH_IN_XY_METERS = 2.51;
         public static final double CHAIN_PARABOLA_PARAMETER = 0.3174;
     }
-
 
     public static final class FieldConstants {
         public static final double FIELD_LENGTH_METERS = 16.54;

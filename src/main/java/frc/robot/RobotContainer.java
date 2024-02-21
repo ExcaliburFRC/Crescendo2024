@@ -42,8 +42,9 @@ public class RobotContainer implements Logged {
     private final CommandPS5Controller sysid = new CommandPS5Controller(1);
     private final XboxController driverVibration = new XboxController(5);
 
-    public ShuffleboardTab matchTab = Shuffleboard.getTab("match");
-    public ShuffleboardTab pitTab = Shuffleboard.getTab("pit");
+    public static ShuffleboardTab matchTab = Shuffleboard.getTab("match");
+    public static ShuffleboardTab pitTab = Shuffleboard.getTab("pit");
+    public static ShuffleboardTab robotData = Shuffleboard.getTab("RobotData");
 
     // swerve
     boolean robotRelativeDrive = false;
@@ -105,12 +106,6 @@ public class RobotContainer implements Logged {
         driver.triangle().toggleOnTrue(scoreNoteCommand(shooter.shootToSpeakerManualCommand(), driver.R1(), false));
 
         sysid.L1().toggleOnTrue(shooter.setShootercommand(new ShooterState(2500)));
-
-//        // susid
-//        sysid.circle().toggleOnTrue(shooter.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-//        sysid.square().toggleOnTrue(shooter.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-//        sysid.triangle().toggleOnTrue(shooter.sysIdDynamic(SysIdRoutine.Direction.kForward));
-//        sysid.cross().toggleOnTrue(shooter.sysIdDynamic(SysIdRoutine.Direction.kReverse));
     }
 
     // triangle - shoot to speaker
@@ -132,14 +127,13 @@ public class RobotContainer implements Logged {
         );
     }
 
-//    private Command systemTesterCommand() {
-//        return new SequentialCommandGroup(
-//                swerve.driveSwerveCommand(() -> 0.25, () -> 0, () -> 0.25, () -> false).withTimeout(5),
-//                intake.intakeFromAngleCommand(HUMAN_PLAYER),
-//                scoreNoteCommand(shooter.shootToAmpCommand())
-    /// TODO: add climber test
-//        );
-//    }
+    private Command systemTesterCommand() {
+        return new SequentialCommandGroup(
+                swerve.driveSwerveCommand(() -> 0.25, () -> 0, () -> 0.25, () -> false).withTimeout(5),
+                dynamicIntakeCommand(),
+                scoreNoteCommand(shooter.shootToAmpCommand(), new Trigger(() -> true), true));
+        // TODO: add climberTestCommand
+    }
 
     private Command vibrateControllerCommand(int intensity, double seconds) {
         return Commands.runEnd(
@@ -149,17 +143,24 @@ public class RobotContainer implements Logged {
     }
 
     public Command dynamicIntakeCommand() {
-        return new ParallelDeadlineGroup(
-                new WaitUntilCommand(intake.hasNoteTrigger.or(shooter.hasNoteTrigger)),
-                intake.intakeFromAngleCommand(HUMAN_PLAYER_BACKWARD, vibrateControllerCommand(50, 0.25)),
-                shooter.intakeFromShooterCommand()).andThen(
+        return new SequentialCommandGroup(
+                // intake from both the intake and the shooter
+                new ParallelDeadlineGroup(
+                        new WaitUntilCommand(intake.hasNoteTrigger.or(shooter.hasNoteTrigger)),
+                        intake.intakeFromAngleCommand(HUMAN_PLAYER_BACKWARD, intakeVibrate),
+                        shooter.intakeFromShooterCommand()),
+
                 new ConditionalCommand(
+                        // if the note is in the shooter, transport it to the intake
                         new ParallelCommandGroup(
                                 intake.intakeFromAngleCommand(SHOOTER, intakeVibrate),
                                 new WaitCommand(0.75).andThen(shooter.transportToIntakeCommand()).until(intake.hasNoteTrigger)
                         ),
+                        // if it's in the intake, do nothing
                         Commands.none(),
                         shooter.hasNoteTrigger),
+
+                // pump the note (just to make sure)
                 intake.pumpNoteCommand()
         );
     }
@@ -182,7 +183,7 @@ public class RobotContainer implements Logged {
         NamedCommands.registerCommand("closeIntake", intake.closeIntakeCommand());
 
         pitTab.add("Match prep", matchPrepCommand());
-//        pitTab.add("System tester", systemTesterCommand());
+        pitTab.add("System tester", systemTesterCommand());
 
         matchTab.add("HP_Left", new InstantCommand(() -> HP_Station = HP_LEFT));
         matchTab.add("HP_Center", new InstantCommand(() -> HP_Station = HP_CENTER));
@@ -195,17 +196,14 @@ public class RobotContainer implements Logged {
         matchTab.add("toggleIntakeWorks", new InstantCommand(() -> intakeWorks = !intakeWorks));
 
         matchTab.add("prepShooter", shooter.prepShooterCommand());
+        matchTab.add("pumpNote", intake.pumpNoteCommand());
     }
 
     public Command getAutonomousCommand() {
 //        Pose2d startingPose = new Pose2d(1.25, 5.57, new Rotation2d());
         Pose2d startingPose = new Pose2d(0.94, 6.48, Rotation2d.fromDegrees(60));
 
-
         return swerve.setOdometryPositionCommand(startingPose).andThen(
                 swerve.runAuto("note14"));
-
-//        return swerve.setOdometryPositionCommand(new Pose2d()).andThen(swerve.runPath("PID Test"));
     }
-
 }

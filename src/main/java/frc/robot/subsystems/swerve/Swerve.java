@@ -394,7 +394,10 @@ public class Swerve extends SubsystemBase implements Logged {
     }
 
     public Command runAuto(String autoName){
-        return straightenModulesCommand().andThen(new PathPlannerAuto(autoName));
+        return new SequentialCommandGroup(
+                straightenModulesCommand(),
+                setOdometryPositionCommand(PathPlannerAuto.getStaringPoseFromAutoFile(autoName)), // TODO: test
+                new PathPlannerAuto(autoName));
     }
 
     public Command runPath(String pathName){
