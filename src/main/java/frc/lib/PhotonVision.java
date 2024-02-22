@@ -3,6 +3,7 @@ package frc.lib;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import org.photonvision.EstimatedRobotPose;
@@ -20,20 +21,16 @@ public class PhotonVision {
 
     private PhotonPoseEstimator photonPoseEstimator;
 
-    private final Transform3d robotToCamera = new Transform3d();
+    private final Transform3d robotToCamera = new Transform3d(0,0,0,new Rotation3d(0,1.04719755, 0));
 
     public static PhotonVision INSTANCE = new PhotonVision();
 
     private PhotonVision() {
-        camera.setDriverMode(true);
+        camera = new PhotonCamera("atagCamera");
+        camera.setDriverMode(false);
 
-        try {
-            fieldLayout = AprilTagFieldLayout.loadFromResource(AprilTagFields.k2023ChargedUp.m_resourceFile);
-            photonPoseEstimator = new PhotonPoseEstimator(fieldLayout, PhotonPoseEstimator.PoseStrategy.LOWEST_AMBIGUITY, camera, robotToCamera);
-        } catch (IOException e) {
-            DriverStation.reportError(e.getMessage(), e.getStackTrace());
-            throw new RuntimeException(e);
-        }
+        fieldLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
+        photonPoseEstimator = new PhotonPoseEstimator(fieldLayout, PhotonPoseEstimator.PoseStrategy.LOWEST_AMBIGUITY, camera, robotToCamera);
     }
 
     public PhotonCamera getCamera() {

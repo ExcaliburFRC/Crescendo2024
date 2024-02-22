@@ -16,6 +16,7 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -33,12 +34,19 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.lib.PhotonVision;
 import frc.robot.Constants;
 import frc.robot.Constants.FieldConstants.*;
 import frc.robot.util.AllianceUtils;
 import monologue.Annotations.Log;
 import monologue.Logged;
+import org.photonvision.EstimatedRobotPose;
+import org.photonvision.PhotonCamera;
+import org.photonvision.targeting.PhotonPipelineResult;
+import org.photonvision.targeting.PhotonTrackedTarget;
 
+import java.lang.annotation.Target;
+import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
@@ -97,7 +105,8 @@ public class Swerve extends SubsystemBase implements Logged {
 
     private final Field2d field = new Field2d();
 
-//    private final Limelight limelight = Limelight.INSTANCE;
+  //  private final PhotonVision limelight = PhotonVision.INSTANCE;
+    PhotonCamera camera = new PhotonCamera("atagCamera");
 
     private GenericEntry maxSpeed = Shuffleboard.getTab("Swerve").add("speedPercent", DRIVE_SPEED_PERCENTAGE).withPosition(2, 0).withSize(2, 2).getEntry();
 
@@ -192,12 +201,12 @@ public class Swerve extends SubsystemBase implements Logged {
             BooleanSupplier fieldOriented,
             DoubleSupplier decelerator, // credit to @oh_fear (discord) from Trigon 5990
             Supplier<Pose2d> turnToPose) {
-
+        int allianceMultiplier = AllianceUtils.isRedAlliance()? -1: 1;
         return straightenModulesCommand().andThen(this.run(
                 () -> {
                     //create the speeds for x,y and spin
-                    double xSpeed = xSpeedSupplier.getAsDouble() * MAX_VELOCITY_METER_PER_SECOND / 100 * maxSpeed.getDouble(DRIVE_SPEED_PERCENTAGE) * interpolate.get(decelerator.getAsDouble());
-                    double ySpeed = ySpeedSupplier.getAsDouble() * MAX_VELOCITY_METER_PER_SECOND / 100 * maxSpeed.getDouble(DRIVE_SPEED_PERCENTAGE) * interpolate.get(decelerator.getAsDouble());
+                    double xSpeed = xSpeedSupplier.getAsDouble() * MAX_VELOCITY_METER_PER_SECOND / 100 * maxSpeed.getDouble(DRIVE_SPEED_PERCENTAGE) * interpolate.get(decelerator.getAsDouble()) * allianceMultiplier;
+                    double ySpeed = ySpeedSupplier.getAsDouble() * MAX_VELOCITY_METER_PER_SECOND / 100 * maxSpeed.getDouble(DRIVE_SPEED_PERCENTAGE) * interpolate.get(decelerator.getAsDouble()) * allianceMultiplier;
                     double spinningSpeed = spinningSpeedSupplier.getAsDouble() * MAX_VELOCITY_METER_PER_SECOND / 100 * maxSpeed.getDouble(DRIVE_SPEED_PERCENTAGE) * interpolate.get(decelerator.getAsDouble());
 
                     // if a pose was supplied, replace the driver input with a pid calculated value for turning to the given pose
@@ -318,12 +327,12 @@ public class Swerve extends SubsystemBase implements Logged {
     public void periodic() {
         odometry.update(getGyroRotation2d(), getModulesPositions());
 
-        // localization with PhotonPoseEstimator
-//        Optional<EstimatedRobotPose> pose = limelight.getEstimatedGlobalPose(odometry.getEstimatedPosition());
-//        if (pose.isPresent()) odometry.addVisionMeasurement(pose.get().estimatedPose.toPose2d(), pose.get().timestampSeconds);
+      //      localization with PhotonPoseEstimator
+        //Optional<EstimatedRobotPose> pose = limelight.getEstimatedGlobalPose(odometry.getEstimatedPosition());
+        //if (pose.isPresent()) odometry.addVisionMeasurement(pose.get().estimatedPose.toPose2d(), pose.get().timestampSeconds);
 
         // localization with SwervePoseEstimator
-//        if (limelight.getLatestResualt().hasTargets()) limelight.updateFromAprilTagPose(odometry::addVisionMeasurement);
+  //      if (limelight.getLatestResualt().hasTargets()) limelight.updateFromAprilTagPose(odometry::addVisionMeasurement);
 
         field.setRobotPose(odometry.getEstimatedPosition());
         SmartDashboard.putData(field);
@@ -420,7 +429,7 @@ public class Swerve extends SubsystemBase implements Logged {
                 .withPosition(4, 4).withSize(4, 4);
         swerveTab.add("BR", swerveModules[BACK_RIGHT]).withWidget(BuiltInWidgets.kGyro)
                 .withPosition(8, 4).withSize(4, 4);
-        swerveTab.addDouble("SwerveAngle", () -> getOdometryRotation2d().getDegrees()).withWidget(BuiltInWidgets.kGyro)
+        swerveTab.addDouble("SwerveAngle", () -> getGyroRotation2d().getDegrees()).withWidget(BuiltInWidgets.kGyro)
                 .withPosition(0, 2).withSize(4, 4);
         swerveTab.add("Field2d", field).withSize(9, 5).withPosition(12, 0);
         swerveTab.addDouble("robotPitch", this::getRobotPitch);
@@ -440,5 +449,24 @@ public class Swerve extends SubsystemBase implements Logged {
                         new ReplanningConfig()),
                 () -> DriverStation.getAlliance().get().equals(Red), this
         );
+    }
+    public Command adjustTo(FieldParts fieldPart){
+        int id = AllianceUtils.isRedAlliance()? fieldPart.redID : fieldPart.blueID;
+        PhotonPipelineResult results = camera.getLatestResult();
+        if (!results.hasTargets()) return new PrintCommand("target "+ id +"not found");
+        List<PhotonTrackedTarget> targets = results.getTargets();
+        PhotonTrackedTarget desiredTarget = null;
+        for (PhotonTrackedTarget target : targets){
+            if (target.getFiducialId() == id) {
+                desiredTarget = target;
+                break;
+            }
+        }
+        Transform3d cameraToTarget = desiredTarget.getBestCameraToTarget();
+        Transform3d TargetToRobot;
+        return null;//TODO get the diffrence between the required transform to the given transform and driving it using pp
+    }
+    private Transform3d targetToRobot(Transform3d cameraToTarget){
+        return null;//TODO write a function that receives the transform of the camera to a target, returns the transform of the robot to the target
     }
 }

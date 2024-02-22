@@ -86,6 +86,20 @@ public final class Constants {
         public static final PathConstraints PATH_CONSTRAINTS = new PathConstraints(
                 MAX_VELOCITY_METER_PER_SECOND, MAX_VELOCITY_ACCELERATION_METER_PER_SECOND,
                 MAX_ANGULAR_VELOCITY_RAD_PER_SECOND, MAX_ANGULAR_ACCELERATION_RAD_PER_SECOND);
+        public enum FieldParts{
+            SPEAKER(0,0),
+            AMP(0,0),
+            SOURCE(0,0),
+            Trap1(0,0),
+            Trap2(0,0),
+            Trap3(0,0);
+            public final int blueID;
+            public final int redID;
+            private FieldParts(int blueID, int redID){
+                this.blueID = blueID;
+                this.redID = redID;
+            }
+        }
     }
 
     public static final class ModuleConstants {
