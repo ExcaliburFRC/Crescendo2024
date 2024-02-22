@@ -166,6 +166,16 @@ public class Shooter extends SubsystemBase implements Logged {
     }
 
     @Log.NT
+    private double getUpperSetpoint(){
+        return currentState.upperRPMsetpoint;
+    }
+
+    @Log.NT
+    private double getLowerSetpoint(){
+        return currentState.lowerRPMsetpoint;
+    }
+
+    @Log.NT
     private double getLowerRPM(){
         return lowerShooter.getVelocity();
     }

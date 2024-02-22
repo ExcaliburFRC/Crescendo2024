@@ -24,6 +24,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
@@ -43,6 +44,7 @@ import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
+import static edu.wpi.first.wpilibj.DriverStation.Alliance.Red;
 import static frc.robot.Constants.SwerveConstants.*;
 import static frc.robot.Constants.SwerveConstants.Modules.*;
 
@@ -326,6 +328,8 @@ public class Swerve extends SubsystemBase implements Logged {
         field.setRobotPose(odometry.getEstimatedPosition());
         SmartDashboard.putData(field);
 
+        System.out.println(odometry.getEstimatedPosition());
+
         System.out.println();
     }
 
@@ -396,7 +400,7 @@ public class Swerve extends SubsystemBase implements Logged {
     public Command runAuto(String autoName){
         return new SequentialCommandGroup(
                 straightenModulesCommand(),
-                setOdometryPositionCommand(PathPlannerAuto.getStaringPoseFromAutoFile(autoName)), // TODO: test
+//                setOdometryPositionCommand(PathPlannerAuto.getStaringPoseFromAutoFile(autoName)), // TODO: test
                 new PathPlannerAuto(autoName));
     }
 
@@ -434,7 +438,7 @@ public class Swerve extends SubsystemBase implements Logged {
                         MAX_VELOCITY_METER_PER_SECOND,
                         Math.sqrt(2) * (TRACK_WIDTH / 2), // needs to change for a non-square swerve
                         new ReplanningConfig()),
-                AllianceUtils::isRedAlliance, this
+                () -> DriverStation.getAlliance().get().equals(Red), this
         );
     }
 }

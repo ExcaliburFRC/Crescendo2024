@@ -18,6 +18,7 @@ import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterState;
 import frc.robot.subsystems.swerve.Swerve;
+import frc.robot.util.AllianceUtils;
 import monologue.Logged;
 
 import static edu.wpi.first.math.MathUtil.applyDeadband;
@@ -89,7 +90,7 @@ public class RobotContainer implements Logged {
         driver.PS().onTrue(swerve.resetOdometryAngleCommand());
 
         // manual actions
-        climber.setDefaultCommand(climber.manualCommand(driver.L1(climberLoop), driver.R1(climberLoop), driver.L2(climberLoop), driver.R2(climberLoop)));
+//        climber.setDefaultCommand(climber.manualCommand(driver.L1(climberLoop), driver.R1(climberLoop), driver.L2(climberLoop), driver.R2(climberLoop)));
 
         // intake
         driver.circle().toggleOnTrue(intake.intakeFromAngleCommand(HUMAN_PLAYER_BACKWARD, intakeVibrate));
@@ -104,8 +105,6 @@ public class RobotContainer implements Logged {
         // shooter
         driver.square().toggleOnTrue(scoreNoteCommand(shooter.shootToAmpCommand(), driver.R1(), true));
         driver.triangle().toggleOnTrue(scoreNoteCommand(shooter.shootToSpeakerManualCommand(), driver.R1(), false));
-
-        sysid.L1().toggleOnTrue(shooter.setShootercommand(new ShooterState(2500)));
     }
 
     // triangle - shoot to speaker
@@ -200,10 +199,13 @@ public class RobotContainer implements Logged {
     }
 
     public Command getAutonomousCommand() {
+        // Pose 1
 //        Pose2d startingPose = new Pose2d(1.25, 5.57, new Rotation2d());
-        Pose2d startingPose = new Pose2d(0.94, 6.48, Rotation2d.fromDegrees(60));
+        // Pose 2
+//        Pose2d startingPose = new Pose2d(0.94, 6.48, Rotation2d.fromDegrees(60));
+        // Pose 3
+        Pose2d startingPose = AllianceUtils.mirrorAlliance(new Pose2d(0.74, 4.48, Rotation2d.fromDegrees(-60)));
 
-        return swerve.setOdometryPositionCommand(startingPose).andThen(
-                swerve.runAuto("note14"));
+        return swerve.setOdometryPositionCommand(startingPose).andThen(swerve.runAuto("78"));
     }
 }

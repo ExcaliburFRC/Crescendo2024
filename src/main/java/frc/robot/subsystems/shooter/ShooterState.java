@@ -8,7 +8,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import static frc.robot.Constants.ShooterConstants.*;
 
 public class ShooterState {
-    private double upperRPMsetpoint, lowerRPMsetpoint;
+    public double upperRPMsetpoint, lowerRPMsetpoint;
     public double upperVoltage, lowerVoltage;
 
     private static final PIDController upperPIDcontroller = new PIDController(UPPER_GAINS.kp, UPPER_GAINS.ki, UPPER_GAINS.kd);

@@ -60,6 +60,7 @@ public class Intake extends SubsystemBase implements Logged {
         intakeEncoder.setPositionOffset(INTAKE_ENCODER_OFFSET_POSITION);
 
         intakeMotor.setIdleMode(IdleMode.kCoast);
+        intakeMotor.setSmartCurrentLimit(30);
 
         angleMotor.setConversionFactors(ANGLE_MOTOR_CONVERSION_FACTOR);
         angleMotor.setIdleMode(IdleMode.kBrake);
@@ -133,7 +134,7 @@ public class Intake extends SubsystemBase implements Logged {
     }
 
     public Command transportToShooterCommand(BooleanSupplier toAmp) {
-        return setIntakeCommand(new IntakeState(toAmp.getAsBoolean() ? -0.4 : -0.75, IntakeAngle.SHOOTER, false))
+        return setIntakeCommand(new IntakeState(toAmp.getAsBoolean() ? -0.35 : -0.75, IntakeAngle.SHOOTER, false))
                 .until(hasNoteTrigger.negate().debounce(0.75));
     }
 
