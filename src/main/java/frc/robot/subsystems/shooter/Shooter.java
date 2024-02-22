@@ -81,7 +81,6 @@ public class Shooter extends SubsystemBase implements Logged {
                     lowerShooter.setVoltage(state.lowerVoltage);
                 },
                 (__)-> {
-                    System.out.println(__);
                     stopMotors();
                     currentState = new ShooterState(0);
                 },

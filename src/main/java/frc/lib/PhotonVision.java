@@ -26,7 +26,7 @@ public class PhotonVision {
     public static PhotonVision INSTANCE = new PhotonVision();
 
     private PhotonVision() {
-        camera = new PhotonCamera("atagCamera");
+        camera = new PhotonCamera("AprilTagCamera1");
         camera.setDriverMode(false);
 
         fieldLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();

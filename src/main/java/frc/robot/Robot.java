@@ -33,7 +33,7 @@ public class Robot extends TimedRobot implements Logged {
   public void robotInit() {
     robotContainer = new RobotContainer();
 
-//    Monologue.setupMonologue(robotContainer, "Robot", false, false);
+    Monologue.setupMonologue(robotContainer, "Robot", false, false);
   }
 
   /**
@@ -53,10 +53,8 @@ public class Robot extends TimedRobot implements Logged {
 
       // setFileOnly is used to shut off NetworkTables broadcasting for most logging calls.
       // Basing this condition on the connected state of the FMS is a suggestion only.
-//      Monologue.setFileOnly(DriverStation.isFMSAttached());
-//      Monologue.updateAll();
-
-      robotContainer.climberLoop.poll();
+      Monologue.setFileOnly(DriverStation.isFMSAttached());
+      Monologue.updateAll();
   }
 
   @Override

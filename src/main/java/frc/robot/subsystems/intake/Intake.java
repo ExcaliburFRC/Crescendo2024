@@ -1,6 +1,5 @@
 package frc.robot.subsystems.intake;
 
-import com.revrobotics.CANSparkBase;
 import com.revrobotics.CANSparkBase.IdleMode;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
@@ -10,8 +9,6 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -45,7 +42,7 @@ public class Intake extends SubsystemBase implements Logged {
     private final ArmFeedforward angleFFcontroller = new ArmFeedforward(INTAKE_GAINS.ks, INTAKE_GAINS.kg, INTAKE_GAINS.kv, INTAKE_GAINS.ka);
 
     @Log.NT
-    public IntakeAngle setpoint;
+    public IntakeAngle setpoint = IntakeAngle.SHOOTER;
 
     @Log.NT
     public final Trigger atSetpointTrigger = new Trigger(anglePIDcontroller::atSetpoint).debounce(0.2);
@@ -60,7 +57,7 @@ public class Intake extends SubsystemBase implements Logged {
         intakeEncoder.setPositionOffset(INTAKE_ENCODER_OFFSET_POSITION);
 
         intakeMotor.setIdleMode(IdleMode.kCoast);
-        intakeMotor.setSmartCurrentLimit(30);
+        intakeMotor.setSmartCurrentLimit(50);
 
         angleMotor.setConversionFactors(ANGLE_MOTOR_CONVERSION_FACTOR);
         angleMotor.setIdleMode(IdleMode.kBrake);
@@ -130,11 +127,11 @@ public class Intake extends SubsystemBase implements Logged {
     }
 
     public Command shootToAmpCommand() {
-        return setIntakeCommand(new IntakeState(AMP_SHOOTER_SPEED, IntakeAngle.AMP, true)).until(hasNoteTrigger.negate());
+        return setIntakeCommand(new IntakeState(AMP_SHOOTER_SPEED, IntakeAngle.AMP, true)).until(hasNoteTrigger.negate().debounce(0.3));
     }
 
     public Command transportToShooterCommand(BooleanSupplier toAmp) {
-        return setIntakeCommand(new IntakeState(toAmp.getAsBoolean() ? -0.35 : -0.75, IntakeAngle.SHOOTER, false))
+        return setIntakeCommand(new IntakeState(toAmp.getAsBoolean() ? -0.475 : -0.75, IntakeAngle.SHOOTER, false))
                 .until(hasNoteTrigger.negate().debounce(0.75));
     }
 

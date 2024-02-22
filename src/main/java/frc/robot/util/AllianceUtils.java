@@ -32,7 +32,7 @@ public class AllianceUtils {
      */
     public static Pose2d toAlliancePose(Pose2d pose) {
         if (isBlueAlliance()) return pose;
-        return switchAlliance(pose);
+        return mirrorAlliance(pose);
     }
 
     public static Pose2d switchAlliance(Pose2d pose) {
@@ -54,7 +54,11 @@ public class AllianceUtils {
         private Pose2d pose;
 
         public AlliancePose(double x, double y, double degrees){
-            pose = new Pose2d(x, y, Rotation2d.fromDegrees(degrees));
+            this.pose = new Pose2d(x, y, Rotation2d.fromDegrees(degrees));
+        }
+
+        public AlliancePose(double degrees){
+            this.pose = new Pose2d(0, 0, Rotation2d.fromDegrees(degrees));
         }
 
         public Pose2d get() {

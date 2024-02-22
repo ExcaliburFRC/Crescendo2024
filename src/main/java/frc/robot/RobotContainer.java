@@ -3,27 +3,24 @@ package frc.robot;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.FieldConstants.FieldLocations;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.shooter.Shooter;
-import frc.robot.subsystems.shooter.ShooterState;
 import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.util.AllianceUtils;
 import monologue.Logged;
 
 import static edu.wpi.first.math.MathUtil.applyDeadband;
 import static edu.wpi.first.wpilibj.GenericHID.RumbleType.kBothRumble;
-import static edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior.kCancelSelf;
 import static frc.lib.Color.Colors.*;
 import static frc.robot.Constants.FieldConstants.FieldLocations.*;
 import static frc.robot.Constants.ShooterConstants.SPEAKER_PREP_RADIUS;
@@ -53,8 +50,6 @@ public class RobotContainer implements Logged {
 
     FieldLocations HP_Station = HP_CENTER;
     FieldLocations shooter_Location = AMPLIFIER;
-
-    EventLoop climberLoop = new EventLoop();
 
     // TODO: find leftX & leftY axis indexes
     final Trigger terminateAutoTrigger = new Trigger(driver.axisGreaterThan(0, 0.5).or(driver.axisGreaterThan(0, 0.5)));
@@ -86,7 +81,7 @@ public class RobotContainer implements Logged {
                         () -> emptyPose)
         );
 
-        driver.touchpad().whileTrue(toggleMotorsIdleMode().alongWith(leds.setPattern(SOLID, WHITE.color)));
+        driver.options().whileTrue(toggleMotorsIdleMode().alongWith(leds.setPattern(SOLID, WHITE.color)));
         driver.PS().onTrue(swerve.resetOdometryAngleCommand());
 
         // manual actions
@@ -96,15 +91,16 @@ public class RobotContainer implements Logged {
         driver.circle().toggleOnTrue(intake.intakeFromAngleCommand(HUMAN_PLAYER_BACKWARD, intakeVibrate));
         driver.cross().toggleOnTrue(intake.intakeFromAngleCommand(GROUND, intakeVibrate));
 
-        driver.options().onTrue(intake.pumpNoteCommand());
+        driver.options().onTrue(intake.toggleIdleModeCommand());
 
-        driver.create().onTrue(new InstantCommand(() -> CommandScheduler.getInstance().setActiveButtonLoop(climberLoop)));
-
-        climberLoop.bind(() -> driver.create().onTrue(new InstantCommand(() -> CommandScheduler.getInstance().setActiveButtonLoop(CommandScheduler.getInstance().getDefaultButtonLoop()))));
+        driver.touchpad().onTrue(intake.pumpNoteCommand());
 
         // shooter
         driver.square().toggleOnTrue(scoreNoteCommand(shooter.shootToAmpCommand(), driver.R1(), true));
         driver.triangle().toggleOnTrue(scoreNoteCommand(shooter.shootToSpeakerManualCommand(), driver.R1(), false));
+
+        driver.create().toggleOnTrue(intake.shootToAmpCommand().alongWith(
+                new RunCommand(()-> swerve.driveRobotRelative(new ChassisSpeeds(-0.75, 0, 0))).withTimeout(0.1)));
     }
 
     // triangle - shoot to speaker
@@ -129,7 +125,7 @@ public class RobotContainer implements Logged {
     private Command systemTesterCommand() {
         return new SequentialCommandGroup(
                 swerve.driveSwerveCommand(() -> 0.25, () -> 0, () -> 0.25, () -> false).withTimeout(5),
-                intake.intakeFromAngleCommand(HUMAN_PLAYER_BACKWARD, intakeVibrate),
+//                intake.intakeFromAngleCommand(HUMAN_PLAYER_BACKWARD, intakeVibrate),
                 scoreNoteCommand(shooter.shootToAmpCommand(), new Trigger(() -> true), true));
         // TODO: add climberTestCommand
     }
@@ -146,13 +142,13 @@ public class RobotContainer implements Logged {
                 // intake from both the intake and the shooter
                 new ParallelDeadlineGroup(
                         new WaitUntilCommand(intake.hasNoteTrigger.or(shooter.hasNoteTrigger)),
-                        intake.intakeFromAngleCommand(HUMAN_PLAYER_BACKWARD, intakeVibrate),
+//                        intake.intakeFromAngleCommand(HUMAN_PLAYER_BACKWARD, intakeVibrate),
                         shooter.intakeFromShooterCommand()),
 
                 new ConditionalCommand(
                         // if the note is in the shooter, transport it to the intake
                         new ParallelCommandGroup(
-                                intake.intakeFromAngleCommand(SHOOTER, intakeVibrate),
+//                                intake.intakeFromAngleCommand(SHOOTER, intakeVibrate),
                                 new WaitCommand(0.75).andThen(shooter.transportToIntakeCommand()).until(intake.hasNoteTrigger)
                         ),
                         // if it's in the intake, do nothing
