@@ -129,14 +129,14 @@ public final class Constants {
         public static final Gains UPPER_GAINS = new Gains(new Gains(1.9027035E-4, 0, 0), new Gains(0.4045404132, 0, 0.11433157 * 1.025, 0.011852));
         public static final Gains LOWER_GAINS = new Gains(new Gains(2.378379375E-4, 0, 0), new Gains(0.30647001, 0, 0.11433157, 0.011852));
 
-        public static final double AMP_UPPER_SHOOTER_RPM = 1000;
-        public static final double AMP_LOWER_SHOOTER_RPM = 2000 * 1.25;
-        public static final double WOOFER_RPM = 0; //TODO: find value
+        public static final double AMP_UPPER_SHOOTER_RPM = 1000; // 1000
+        public static final double AMP_LOWER_SHOOTER_RPM = 2500; // 2300
+        public static final double WOOFER_RPM = 0;
 
         public static final double SHOOTER_PID_TOLERANCE = 300;
 
         public static final double SPEAKER_DC = 0.83; //75
-        public static final double SPEAKER_PREP_RADIUS = 0;//TODO: find value
+        public static final double SPEAKER_PREP_RADIUS = 0;
 
         // sysid
         public static final SysIdRoutine.Config sysidConfig = new SysIdConfig(0.5, 6, 30);

@@ -36,10 +36,8 @@ public class Shooter extends SubsystemBase implements Logged {
     @Log.NT
     private final DigitalInput shooterBeambreak = new DigitalInput(SHOOTER_BEAMBREAK_CHANNEL);
 
-    public final BooleanEvent noteShotTrigger = new BooleanEvent(CommandScheduler.getInstance().getDefaultButtonLoop(), () -> !shooterBeambreak.get()).falling();
-    public final Trigger beambreakTrigger = new Trigger(() -> !shooterBeambreak.get());
+    public final BooleanEvent noteShotTrigger= new BooleanEvent(CommandScheduler.getInstance().getDefaultButtonLoop(), () -> !shooterBeambreak.get()).falling();
     public final Trigger hasNoteTrigger = new Trigger(() -> !shooterBeambreak.get()).debounce(0.05);
-
 
     private final LEDs leds = LEDs.getInstance();
 
@@ -59,7 +57,7 @@ public class Shooter extends SubsystemBase implements Logged {
         lowerShooter.setInverted(true);
         lowerShooter.setPosition(0);
 
-        RobotContainer.robotData.add("beambreak", beambreakTrigger.getAsBoolean());
+        RobotContainer.robotData.add("beambreak", hasNoteTrigger.getAsBoolean());
     }
 
     private void stopMotors(){

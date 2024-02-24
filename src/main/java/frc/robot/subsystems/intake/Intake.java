@@ -35,7 +35,7 @@ public class Intake extends SubsystemBase implements Logged {
     private final DutyCycleEncoder intakeEncoder = new DutyCycleEncoder(ENCODER_PORT);
 
     @Log.NT
-    private final DigitalInput intakeBeambreak = new DigitalInput(BEAMBREAK_PORT);
+    public final DigitalInput intakeBeambreak = new DigitalInput(BEAMBREAK_PORT);
     public final Trigger hasNoteTrigger = new Trigger(() -> !intakeBeambreak.get()).debounce(0.2);
 
     private final PIDController anglePIDcontroller = new PIDController(INTAKE_GAINS.kp, INTAKE_GAINS.ki, INTAKE_GAINS.kd);
@@ -131,7 +131,7 @@ public class Intake extends SubsystemBase implements Logged {
     }
 
     public Command transportToShooterCommand(BooleanSupplier toAmp) {
-        return setIntakeCommand(new IntakeState(toAmp.getAsBoolean() ? -0.475 : -0.75, IntakeAngle.SHOOTER, false))
+        return setIntakeCommand(new IntakeState(toAmp.getAsBoolean() ? -0.4 : -0.75, IntakeAngle.SHOOTER, false))
                 .until(hasNoteTrigger.negate().debounce(0.75));
     }
 

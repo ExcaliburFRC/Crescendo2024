@@ -335,9 +335,9 @@ public class Swerve extends SubsystemBase implements Logged {
         odometry.update(getGyroRotation2d(), getModulesPositions());
 
       //      localization with PhotonPoseEstimator
-        Optional<EstimatedRobotPose> pose = photonVision.getEstimatedGlobalPose(odometry.getEstimatedPosition());
-        if (pose.isPresent()) odometry.addVisionMeasurement(pose.get().estimatedPose.toPose2d(), pose.get().timestampSeconds);
-
+//        Optional<EstimatedRobotPose> pose = photonVision.getEstimatedGlobalPose(odometry.getEstimatedPosition());
+//        if (pose.isPresent()) odometry.addVisionMeasurement(pose.get().estimatedPose.toPose2d(), pose.get().timestampSeconds);
+//
         // localization with SwervePoseEstimator
   //      if (limelight.getLatestResualt().hasTargets()) limelight.updateFromAprilTagPose(odometry::addVisionMeasurement);
 
@@ -413,13 +413,20 @@ public class Swerve extends SubsystemBase implements Logged {
     public Command runAuto(String autoName){
         return new SequentialCommandGroup(
                 straightenModulesCommand(),
-//                setOdometryPositionCommand(PathPlannerAuto.getStaringPoseFromAutoFile(autoName)), // TODO: test
+                setOdometryPositionCommand(PathPlannerAuto.getStaringPoseFromAutoFile(autoName)),
                 new PathPlannerAuto(autoName));
     }
 
     public Command runPath(String pathName){
         return setOdometryPositionCommand(PathPlannerPath.fromPathFile(pathName).getStartingDifferentialPose())
                 .andThen(AutoBuilder.followPath(PathPlannerPath.fromPathFile(pathName)));
+    }
+
+    public Command estimatePoseCommand(){
+        return new RunCommand(()-> {
+            Optional<EstimatedRobotPose> pose = photonVision.getEstimatedGlobalPose(odometry.getEstimatedPosition());
+        if (pose.isPresent()) odometry.addVisionMeasurement(pose.get().estimatedPose.toPose2d(), pose.get().timestampSeconds);
+        });
     }
     // ----------
 

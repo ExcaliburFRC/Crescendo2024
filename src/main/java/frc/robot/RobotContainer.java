@@ -7,6 +7,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -44,6 +45,7 @@ public class RobotContainer implements Logged {
     public static ShuffleboardTab pitTab = Shuffleboard.getTab("pit");
     public static ShuffleboardTab robotData = Shuffleboard.getTab("RobotData");
 
+    public static SendableChooser<Command> autoChooser = new SendableChooser<>();
     // swerve
     boolean robotRelativeDrive = false;
     final Pose2d emptyPose = new Pose2d();
@@ -85,7 +87,7 @@ public class RobotContainer implements Logged {
         driver.PS().onTrue(swerve.resetOdometryAngleCommand());
 
         // manual actions
-//        climber.setDefaultCommand(climber.manualCommand(driver.L1(climberLoop), driver.R1(climberLoop), driver.L2(climberLoop), driver.R2(climberLoop)));
+//        climber.setDefaultCommand(climber.manualCommand(driver.L1(), driver.R1(), driver.L2(), driver.R2()));
 
         // intake
         driver.circle().toggleOnTrue(intake.intakeFromAngleCommand(HUMAN_PLAYER_BACKWARD, intakeVibrate));
@@ -101,6 +103,7 @@ public class RobotContainer implements Logged {
 
         driver.create().toggleOnTrue(intake.shootToAmpCommand().alongWith(
                 new RunCommand(()-> swerve.driveRobotRelative(new ChassisSpeeds(-0.75, 0, 0))).withTimeout(0.1)));
+//        driver.button(15).whileTrue(swerve.estimatePoseCommand());
     }
 
     // triangle - shoot to speaker
@@ -176,32 +179,44 @@ public class RobotContainer implements Logged {
 
         NamedCommands.registerCommand("intakeFromGround", intake.halfIntakeFromGround());
         NamedCommands.registerCommand("closeIntake", intake.closeIntakeCommand());
+        NamedCommands.registerCommand("pumpNote", intake.pumpNoteCommand());
 
         pitTab.add("Match prep", matchPrepCommand());
         pitTab.add("System tester", systemTesterCommand());
 
-        matchTab.add("HP_Left", new InstantCommand(() -> HP_Station = HP_LEFT));
-        matchTab.add("HP_Center", new InstantCommand(() -> HP_Station = HP_CENTER));
-        matchTab.add("HP_Right", new InstantCommand(() -> HP_Station = HP_RIGHT));
+//        matchTab.add("HP_Left", new InstantCommand(() -> HP_Station = HP_LEFT));
+//        matchTab.add("HP_Center", new InstantCommand(() -> HP_Station = HP_CENTER));
+//        matchTab.add("HP_Right", new InstantCommand(() -> HP_Station = HP_RIGHT));
+//
+//        matchTab.add("Amplifier", new InstantCommand(() -> shooter_Location = AMPLIFIER));
+//        matchTab.add("Speaker", new InstantCommand(() -> shooter_Location = SPEAKER));
 
-        matchTab.add("Amplifier", new InstantCommand(() -> shooter_Location = AMPLIFIER));
-        matchTab.add("Speaker", new InstantCommand(() -> shooter_Location = SPEAKER));
+//        matchTab.add("toggleShooterWorks", new InstantCommand(() -> shooterWorks = !shooterWorks)); // TODO: display as toggle (not as button) in shuffleboard
+//        matchTab.add("toggleIntakeWorks", new InstantCommand(() -> intakeWorks = !intakeWorks));
 
-        matchTab.add("toggleShooterWorks", new InstantCommand(() -> shooterWorks = !shooterWorks)); // TODO: display as toggle (not as button) in shuffleboard
-        matchTab.add("toggleIntakeWorks", new InstantCommand(() -> intakeWorks = !intakeWorks));
+//        matchTab.add("prepShooter", shooter.prepShooterCommand());
+        matchTab.add("pumpNote", intake.pumpNoteCommand()).withPosition(15, 1).withSize(4, 4);
+        matchTab.addBoolean("intakeBeambreak", ()-> !intake.intakeBeambreak.get()).withPosition(1, 1).withSize(4, 4);
 
-        matchTab.add("prepShooter", shooter.prepShooterCommand());
-        matchTab.add("pumpNote", intake.pumpNoteCommand());
+        matchTab.add("highAmp", scoreNoteCommand(shooter.shootToAmpCommand(), driver.R1(), true)).withPosition(19, 1).withSize(2, 2);
+        matchTab.add("lowAmp", scoreNoteCommand(shooter.shootToAmpCommand(), driver.R1(), true)).withPosition(19, 3).withSize(2, 2);
+
+        autoChooser.setDefaultOption("none", new InstantCommand(()-> {}));
+        autoChooser.addOption("123", swerve.runAuto("123"));
+        autoChooser.addOption("321", swerve.runAuto("321"));
+        autoChooser.addOption("14", swerve.runAuto("14"));
+
+        Shuffleboard.getTab("Auto").add(autoChooser);
     }
 
     public Command getAutonomousCommand() {
         // Pose 1
-//        Pose2d startingPose = new Pose2d(1.25, 5.57, new Rotation2d());
-        // Pose 2
 //        Pose2d startingPose = new Pose2d(0.94, 6.48, Rotation2d.fromDegrees(60));
+        // Pose 2
+//        Pose2d startingPose = new Pose2d(1.3, 5.57, new Rotation2d());
         // Pose 3
-        Pose2d startingPose = AllianceUtils.mirrorAlliance(new Pose2d(0.74, 4.48, Rotation2d.fromDegrees(-60)));
+//        Pose2d startingPose = AllianceUtils.mirrorAlliance(new Pose2d(0.74, 4.48, Rotation2d.fromDegrees(-60)));
 
-        return swerve.setOdometryPositionCommand(startingPose).andThen(swerve.runAuto("78"));
+        return new ProxyCommand(()-> autoChooser.getSelected());
     }
 }
