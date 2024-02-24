@@ -114,7 +114,7 @@ public class Swerve extends SubsystemBase implements Logged {
 
     private final PhotonVision photonVision = PhotonVision.INSTANCE;
 
-    private GenericEntry maxSpeed = Shuffleboard.getTab("Swerve").add("speedPercent", DRIVE_SPEED_PERCENTAGE).withPosition(2, 0).withSize(2, 2).getEntry();
+    public GenericEntry maxSpeed = Shuffleboard.getTab("Swerve").add("speedPercent", DRIVE_SPEED_PERCENTAGE).withPosition(2, 0).withSize(2, 2).getEntry();
 
     private final InterpolatingDoubleTreeMap interpolate = new InterpolatingDoubleTreeMap();
 

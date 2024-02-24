@@ -4,13 +4,9 @@ import com.revrobotics.CANSparkBase;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.FunctionalCommand;
-import edu.wpi.first.wpilibj2.command.StartEndCommand;
+import edu.wpi.first.wpilibj2.command.*;
 import frc.lib.Gains;
 import frc.lib.Neo;
-import monologue.Annotations;
 import monologue.Annotations.Log;
 import monologue.Logged;
 
@@ -23,10 +19,11 @@ class ClimberSide implements Logged {
     private final Neo motor;
     @Log.NT
     private double liftingForce = 0;
+    private final Timer autoCloseTimer = new Timer();
 
     public ClimberSide(Gains motorGains, int motorID) {
         motor = new Neo(motorID, motorGains);
-        motor.setConversionFactors(ROT_TO_METR, ROT_TO_METER_PER_SEC);
+//        motor.setConversionFactors(ROT_TO_METR, ROT_TO_METER_PER_SEC);
     }
 
     public Command setLengthCommand(double length) {
@@ -69,11 +66,20 @@ class ClimberSide implements Logged {
     public Command manualCommand(BooleanSupplier rise, BooleanSupplier lower){
         return Commands.runEnd(
                 ()-> {
-                    if (rise.getAsBoolean()) motor.set(0.5);
-                    else if (lower.getAsBoolean()) motor.set(-0.3);
+                    if (rise.getAsBoolean()) motor.set(0.85);
+                    else if (lower.getAsBoolean()) motor.set(-0.5);
                     else motor.stopMotor();
                 },
                 motor::stopMotor
+        );
+    }
+
+    public Command autoClose(){
+        return new FunctionalCommand(
+                autoCloseTimer::restart,
+                ()-> motor.set(-0.2),
+                (__)-> motor.stopMotor(),
+                ()-> (autoCloseTimer.get() > 0.25 && Math.abs(motor.getVelocity()) < 0.01)
         );
     }
 

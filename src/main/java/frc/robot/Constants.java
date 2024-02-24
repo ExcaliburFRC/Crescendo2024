@@ -74,7 +74,7 @@ public final class Constants {
         public static final double MAX_ANGULAR_ACCELERATION_RAD_PER_SECOND = 2 * 2 * PI; //TODO: find values
 
         // intentional limitations
-        public static final double DRIVE_SPEED_PERCENTAGE = 20; // %
+        public static final double DRIVE_SPEED_PERCENTAGE = 80; // %
 
         // autonomous constants
         public static final Gains ANGLE_GAINS = new Gains(0.12, 0, 0.00015);

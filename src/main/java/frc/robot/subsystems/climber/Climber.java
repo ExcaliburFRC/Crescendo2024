@@ -88,6 +88,14 @@ public class Climber extends SubsystemBase {
                 new RunCommand(()-> {}, this));
     }
 
+    public Command autoCloseCommand(){
+        return new ParallelCommandGroup(
+                leftSide.autoClose(),
+                rightSide.autoClose(),
+                new RunCommand(()-> {}, this)
+        );
+    }
+
     public Command toggleIdleModeCommand(){
         return leftSide.toggleCoastCommand().alongWith(rightSide.toggleCoastCommand());
     }
