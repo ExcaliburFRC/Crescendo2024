@@ -23,6 +23,7 @@ import monologue.Logged;
 
 import static edu.wpi.first.math.MathUtil.applyDeadband;
 import static edu.wpi.first.wpilibj.GenericHID.RumbleType.kBothRumble;
+import static edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior.kCancelSelf;
 import static frc.lib.Color.Colors.*;
 import static frc.robot.subsystems.LEDs.LEDPattern.*;
 import static frc.robot.subsystems.intake.IntakeState.IntakeAngle.*;
@@ -37,7 +38,7 @@ public class RobotContainer implements Logged {
 
     // controllers
     private final CommandPS5Controller driver = new CommandPS5Controller(0);
-    private final CommandPS5Controller sysid = new CommandPS5Controller(1);
+//    private final CommandPS5Controller sysid = new CommandPS5Controller(1);
     private final XboxController driverVibration = new XboxController(5);
 
     public static ShuffleboardTab matchTab = Shuffleboard.getTab("match");
@@ -51,9 +52,6 @@ public class RobotContainer implements Logged {
     boolean robotRelativeDrive = false;
     final Pose2d emptyPose = new Pose2d();
     private boolean climberMode = false;
-
-    // intake
-    boolean intakeWorks = true;
 
     Command intakeVibrate = vibrateControllerCommand(50, 0.25);
 
@@ -72,6 +70,7 @@ public class RobotContainer implements Logged {
                         () -> applyDeadband(-driver.getRightX(), 0.07),
                         () -> !robotRelativeDrive,
                         driver::getL2Axis, // decelerator
+                        driver.L1().and(()-> !climberMode),
                         () -> emptyPose)
         );
 
@@ -94,8 +93,7 @@ public class RobotContainer implements Logged {
         driver.triangle().toggleOnTrue(scoreNoteCommand(shooter.shootToSpeakerManualCommand(), driver.R1(), false));
 
         driver.create().toggleOnTrue(intake.shootToAmpCommand().alongWith(
-                new RunCommand(()-> swerve.driveRobotRelative(new ChassisSpeeds(-0.75, 0, 0))).withTimeout(0.1)));
-//        driver.button(15).whileTrue(swerve.estimatePoseCommand());
+                new RunCommand(()-> swerve.driveRobotRelative(new ChassisSpeeds(-0.75, 0, 0)), swerve).withTimeout(0.1)));
     }
 
     // triangle - shoot to speaker
@@ -106,7 +104,7 @@ public class RobotContainer implements Logged {
     // methods
     private Command scoreNoteCommand(Command shooterCommand, Trigger release, boolean toAmp) {
         return shooterCommand.alongWith(
-                new WaitUntilCommand(release).andThen(intake.transportToShooterCommand(() -> toAmp))
+                new WaitUntilCommand(release).andThen(intake.transportToShooterCommand(() -> toAmp)).withInterruptBehavior(kCancelSelf)
         );
     }
 
@@ -126,7 +124,7 @@ public class RobotContainer implements Logged {
                 climber.manualCommand(()-> true, ()-> true, ()-> false, ()-> false).withTimeout(1.5),
                 new WaitCommand(1),
                 climber.manualCommand(()-> false, ()-> false, ()-> true, ()-> true).withTimeout(1.5),
-                climber.manualCommand(()-> false, ()-> false, ()-> false, ()-> false).withTimeout(1.5)
+                climber.manualCommand(()-> false, ()-> false, ()-> false, ()-> false).withTimeout(0.5)
                 );
     }
 
@@ -170,7 +168,7 @@ public class RobotContainer implements Logged {
     }
 
     private void init() {
-        NamedCommands.registerCommand("shootToSpeakerCommand", scoreNoteCommand(shooter.shootToSpeakerManualCommand(), new Trigger(() -> true), false));
+        NamedCommands.registerCommand("shootToSpeakerCommand", scoreNoteCommand(shooter.shootToSpeakerManualCommand(), new Trigger(() -> true), false).until(intake.hasNoteTrigger.negate().debounce(1)));
         NamedCommands.registerCommand("prepShooterCommand", shooter.prepShooterCommand());
         NamedCommands.registerCommand("shootToAmpCommand", scoreNoteCommand(shooter.shootToAmpCommand(), shooter.shooterReadyTrigger, false));
 
@@ -180,16 +178,6 @@ public class RobotContainer implements Logged {
 
         pitTab.add("Match prep", matchPrepCommand().withName("MatchPrep")).withSize(2, 2);
         pitTab.add("System tester", systemTesterCommand().withName("SystemTest")).withSize(2, 2);
-
-//        matchTab.add("HP_Left", new InstantCommand(() -> HP_Station = HP_LEFT));
-//        matchTab.add("HP_Center", new InstantCommand(() -> HP_Station = HP_CENTER));
-//        matchTab.add("HP_Right", new InstantCommand(() -> HP_Station = HP_RIGHT));
-//
-//        matchTab.add("Amplifier", new InstantCommand(() -> shooter_Location = AMPLIFIER));
-//        matchTab.add("Speaker", new InstantCommand(() -> shooter_Location = SPEAKER));
-
-//        matchTab.add("toggleShooterWorks", new InstantCommand(() -> shooterWorks = !shooterWorks)); // TODO: display as toggle (not as button) in shuffleboard
-//        matchTab.add("toggleIntakeWorks", new InstantCommand(() -> intakeWorks = !intakeWorks));
 
         matchTab.add("pumpNote", intake.pumpNoteCommand().withName("PumpNote")).withPosition(15, 1).withSize(4, 4);
         matchTab.addBoolean("intakeBeambreak", ()-> !intake.intakeBeambreak.get()).withPosition(19, 3).withSize(4, 4);
@@ -211,6 +199,8 @@ public class RobotContainer implements Logged {
         autoChooser.addOption("123", swerve.runAuto("123"));
         autoChooser.addOption("321", swerve.runAuto("321"));
         autoChooser.addOption("14", swerve.runAuto("14"));
+        autoChooser.addOption("shoot", swerve.runAuto("Shoot"));
+        autoChooser.addOption("leaveFromBottom", swerve.runAuto("Shoot"));
 
         Shuffleboard.getTab("Auto").add(autoChooser);
     }

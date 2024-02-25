@@ -206,15 +206,18 @@ public class Swerve extends SubsystemBase implements Logged {
             DoubleSupplier spinningSpeedSupplier,
             BooleanSupplier fieldOriented,
             DoubleSupplier decelerator, // credit to @oh_fear (discord) from Trigon 5990
-            Supplier<Pose2d> turnToPose) {
+            BooleanSupplier boost,
+            Supplier<Pose2d> turnToPose
+    ) {
         return straightenModulesCommand().andThen(this.run(
                 () -> {
                     int allianceMultiplier = AllianceUtils.isRedAlliance()? -1: 1;
+                    double speedLimit = boost.getAsBoolean()? 1 : maxSpeed.getDouble(DRIVE_SPEED_PERCENTAGE);
 
                     //create the speeds for x,y and spin
-                    double xSpeed = xSpeedSupplier.getAsDouble() * MAX_VELOCITY_METER_PER_SECOND / 100 * maxSpeed.getDouble(DRIVE_SPEED_PERCENTAGE) * interpolate.get(decelerator.getAsDouble()) * allianceMultiplier;
-                    double ySpeed = ySpeedSupplier.getAsDouble() * MAX_VELOCITY_METER_PER_SECOND / 100 * maxSpeed.getDouble(DRIVE_SPEED_PERCENTAGE) * interpolate.get(decelerator.getAsDouble()) * allianceMultiplier;
-                    double spinningSpeed = spinningSpeedSupplier.getAsDouble() * MAX_VELOCITY_METER_PER_SECOND / 100 * maxSpeed.getDouble(DRIVE_SPEED_PERCENTAGE) * interpolate.get(decelerator.getAsDouble());
+                    double xSpeed = xSpeedSupplier.getAsDouble() * MAX_VELOCITY_METER_PER_SECOND / 100 * speedLimit * interpolate.get(decelerator.getAsDouble()) * allianceMultiplier;
+                    double ySpeed = ySpeedSupplier.getAsDouble() * MAX_VELOCITY_METER_PER_SECOND / 100 * speedLimit * interpolate.get(decelerator.getAsDouble()) * allianceMultiplier;
+                    double spinningSpeed = spinningSpeedSupplier.getAsDouble() * MAX_VELOCITY_METER_PER_SECOND / 100 * speedLimit * interpolate.get(decelerator.getAsDouble());
 
                     // if a pose was supplied, replace the driver input with a pid calculated value for turning to the given pose
                     if (!turnToPose.get().equals(new Pose2d()))
@@ -240,7 +243,7 @@ public class Swerve extends SubsystemBase implements Logged {
             DoubleSupplier spinningSpeedSupplier,
             BooleanSupplier fieldOriented) {
         Pose2d emptyPose = new Pose2d();
-        return driveSwerveCommand(xSpeedSupplier, ySpeedSupplier, spinningSpeedSupplier, fieldOriented, () -> 1, () -> emptyPose);
+        return driveSwerveCommand(xSpeedSupplier, ySpeedSupplier, spinningSpeedSupplier, fieldOriented, () -> 1, ()-> false, () -> emptyPose);
     }
 
     public Command straightenModulesCommand() {
