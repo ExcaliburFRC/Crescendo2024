@@ -74,7 +74,8 @@ public final class Constants {
         public static final double MAX_ANGULAR_ACCELERATION_RAD_PER_SECOND = 2 * 2 * PI; //TODO: find values
 
         // intentional limitations
-        public static final double DRIVE_SPEED_PERCENTAGE = 80; // %
+        public static final double DRIVE_SPEED_PERCENTAGE = 85; // %
+        public static final double BOOST_SPEED_PERCENTAGE = 100; // %
 
         // autonomous constants
         public static final Gains ANGLE_GAINS = new Gains(0.12, 0, 0.00015);
@@ -114,7 +115,7 @@ public final class Constants {
         public static final Gains MODULE_ANGLE_GAINS = new Gains(0.75, 0, 0);
         public static final double TOLERANCE = 0.05;
 
-        public static final int DRIVE_CURRENT_LIMIT = 65;
+        public static final int DRIVE_CURRENT_LIMIT = 60;
         public static final int ANGLE_CURRENT_LIMIT = 25;
     }
 
@@ -129,8 +130,8 @@ public final class Constants {
         public static final Gains UPPER_GAINS = new Gains(new Gains(1.9027035E-4, 0, 0), new Gains(0.4045404132, 0, 0.11433157 * 1.025, 0.011852));
         public static final Gains LOWER_GAINS = new Gains(new Gains(2.378379375E-4, 0, 0), new Gains(0.30647001, 0, 0.11433157, 0.011852));
 
-        public static final double AMP_UPPER_SHOOTER_RPM = 1000; // 1000
-        public static final double AMP_LOWER_SHOOTER_RPM = 2500; // 2300
+        public static final double AMP_UPPER_SHOOTER_RPM = 800; // 1000
+        public static final double AMP_LOWER_SHOOTER_RPM = 2800; // 2300
         public static final double WOOFER_RPM = 0;
 
         public static final double SHOOTER_PID_TOLERANCE = 300;

@@ -132,6 +132,8 @@ public class Swerve extends SubsystemBase implements Logged {
 
         initAutoBuilder();
         initShuffleboardData();
+
+        swerveModules[BACK_RIGHT].setIdleModeCoast();
     }
 
     // gyro getters and setters
@@ -212,7 +214,7 @@ public class Swerve extends SubsystemBase implements Logged {
         return straightenModulesCommand().andThen(this.run(
                 () -> {
                     int allianceMultiplier = AllianceUtils.isRedAlliance()? -1: 1;
-                    double speedLimit = boost.getAsBoolean()? 1 : maxSpeed.getDouble(DRIVE_SPEED_PERCENTAGE);
+                    double speedLimit = boost.getAsBoolean()? BOOST_SPEED_PERCENTAGE: maxSpeed.getDouble(DRIVE_SPEED_PERCENTAGE);
 
                     //create the speeds for x,y and spin
                     double xSpeed = xSpeedSupplier.getAsDouble() * MAX_VELOCITY_METER_PER_SECOND / 100 * speedLimit * interpolate.get(decelerator.getAsDouble()) * allianceMultiplier;
@@ -294,7 +296,7 @@ public class Swerve extends SubsystemBase implements Logged {
         swerveModules[FRONT_LEFT].setDesiredState(states[FRONT_LEFT]);
         swerveModules[FRONT_RIGHT].setDesiredState(states[FRONT_RIGHT]);
         swerveModules[BACK_LEFT].setDesiredState(states[BACK_LEFT]);
-        swerveModules[BACK_RIGHT].setDesiredState(states[BACK_RIGHT]);
+//        swerveModules[BACK_RIGHT].setDesiredState(states[BACK_RIGHT]);
     }
 
     @Log.NT
@@ -330,9 +332,6 @@ public class Swerve extends SubsystemBase implements Logged {
                 .ignoringDisable(true);
     }
 
-    double prevRate = 0;
-    double prevTime = 0;
-
     @Override
     public void periodic() {
         odometry.update(getGyroRotation2d(), getModulesPositions());
@@ -346,7 +345,6 @@ public class Swerve extends SubsystemBase implements Logged {
 
         field.setRobotPose(odometry.getEstimatedPosition());
         SmartDashboard.putData(field);
-
     }
 
     // on-the-fly auto generation functions

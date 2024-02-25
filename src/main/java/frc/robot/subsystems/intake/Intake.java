@@ -131,7 +131,7 @@ public class Intake extends SubsystemBase implements Logged {
     }
 
     public Command transportToShooterCommand(BooleanSupplier toAmp) {
-        return setIntakeCommand(new IntakeState(toAmp.getAsBoolean() ? -0.4 : -0.75, IntakeAngle.SHOOTER, false))
+        return setIntakeCommand(new IntakeState(toAmp.getAsBoolean() ? -0.4 : -0.75, IntakeAngle.SHOOTER, true))
                 .until(hasNoteTrigger.negate().debounce(0.75));
     }
 
@@ -150,10 +150,8 @@ public class Intake extends SubsystemBase implements Logged {
     }
 
     private void initShuffleboard(){
-        RobotContainer.robotData.addBoolean("hasNote", hasNoteTrigger);
-        RobotContainer.robotData.addBoolean("atSetpoint", atSetpointTrigger);
-        RobotContainer.robotData.addBoolean("intaking", intakingTrigger);
-//        RobotContainer.robotData.addString("setpoint", ()-> this.setpoint.toString());
+        RobotContainer.robotData.addBoolean("intake beambreak", hasNoteTrigger);
+        RobotContainer.robotData.addDouble("intake angle", this::getAngle).withSize(2, 2);
     }
 
     @Log.NT
