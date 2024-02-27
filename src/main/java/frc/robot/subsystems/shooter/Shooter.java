@@ -33,6 +33,9 @@ public class Shooter extends SubsystemBase implements Logged {
 
     private ShooterState currentState = new ShooterState(0);
 
+    public GenericEntry upperSpeed = Shuffleboard.getTab("match").add("upper speed", SPEAKER_DC * 100).withSize(2, 2).getEntry();
+    public GenericEntry lowerSpeed = Shuffleboard.getTab("match").add("lower speed", SPEAKER_DC * 100).withSize(2, 2).getEntry();
+
     @Log.NT
     private final DigitalInput shooterBeambreak = new DigitalInput(SHOOTER_BEAMBREAK_CHANNEL);
 
@@ -140,8 +143,8 @@ public class Shooter extends SubsystemBase implements Logged {
         return this.runEnd(
                 ()-> {
                     this.currentState = new ShooterState(WOOFER_RPM);
-                    upperShooter.set(SPEAKER_DC);
-                    lowerShooter.set(SPEAKER_DC);
+                    upperShooter.set(upperSpeed.getDouble(SPEAKER_DC * 100) / 100.0);
+                    lowerShooter.set(lowerSpeed.getDouble(SPEAKER_DC * 100) / 100.0);
                 },
                 this::stopMotors).until(noteShotTrigger);
     }

@@ -132,8 +132,6 @@ public class Swerve extends SubsystemBase implements Logged {
 
         initAutoBuilder();
         initShuffleboardData();
-
-        swerveModules[BACK_RIGHT].setIdleModeCoast();
     }
 
     // gyro getters and setters
@@ -296,7 +294,7 @@ public class Swerve extends SubsystemBase implements Logged {
         swerveModules[FRONT_LEFT].setDesiredState(states[FRONT_LEFT]);
         swerveModules[FRONT_RIGHT].setDesiredState(states[FRONT_RIGHT]);
         swerveModules[BACK_LEFT].setDesiredState(states[BACK_LEFT]);
-//        swerveModules[BACK_RIGHT].setDesiredState(states[BACK_RIGHT]);
+        swerveModules[BACK_RIGHT].setDesiredState(states[BACK_RIGHT]);
     }
 
     @Log.NT
@@ -338,10 +336,7 @@ public class Swerve extends SubsystemBase implements Logged {
 
       //      localization with PhotonPoseEstimator
 //        Optional<EstimatedRobotPose> pose = photonVision.getEstimatedGlobalPose(odometry.getEstimatedPosition());
-//        if (pose.isPresent()) odometry.addVisionMeasurement(pose.get().estimatedPose.toPose2d(), pose.get().timestampSeconds);
-//
-        // localization with SwervePoseEstimator
-  //      if (limelight.getLatestResualt().hasTargets()) limelight.updateFromAprilTagPose(odometry::addVisionMeasurement);
+//        if (pose.isPresent()) odometry.addVisionMeasurement(pose.get().estimatedPose.toPose2d(), pose.get().timestampSeconds);//
 
         field.setRobotPose(odometry.getEstimatedPosition());
         SmartDashboard.putData(field);

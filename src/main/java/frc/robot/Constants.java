@@ -74,7 +74,7 @@ public final class Constants {
         public static final double MAX_ANGULAR_ACCELERATION_RAD_PER_SECOND = 2 * 2 * PI; //TODO: find values
 
         // intentional limitations
-        public static final double DRIVE_SPEED_PERCENTAGE = 85; // %
+        public static final double DRIVE_SPEED_PERCENTAGE = 80; // %
         public static final double BOOST_SPEED_PERCENTAGE = 100; // %
 
         // autonomous constants
@@ -136,7 +136,7 @@ public final class Constants {
 
         public static final double SHOOTER_PID_TOLERANCE = 300;
 
-        public static final double SPEAKER_DC = 0.83; //75
+        public static final double SPEAKER_DC = 0.9;
         public static final double SPEAKER_PREP_RADIUS = 0;
 
         // sysid
