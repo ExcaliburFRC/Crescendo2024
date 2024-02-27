@@ -1,12 +1,14 @@
 package frc.robot.subsystems.climber;
 
 import com.revrobotics.CANSparkBase;
+import com.revrobotics.CANSparkLowLevel;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.*;
 import frc.lib.Gains;
 import frc.lib.Neo;
+import frc.lib.Neo.Model;
 import monologue.Annotations.Log;
 import monologue.Logged;
 
@@ -22,7 +24,7 @@ class ClimberSide implements Logged {
     private final Timer autoCloseTimer = new Timer();
 
     public ClimberSide(Gains motorGains, int motorID) {
-        motor = new Neo(motorID, motorGains);
+        motor = new Neo(motorID, motorGains, Model.SparkMax);
 //        motor.setConversionFactors(ROT_TO_METR, ROT_TO_METER_PER_SEC);
     }
 

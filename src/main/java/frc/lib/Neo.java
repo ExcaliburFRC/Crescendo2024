@@ -8,14 +8,25 @@ public class Neo extends CANSparkBase {
     private final RelativeEncoder encoder;
     private final Gains gains;
 
+    public enum Model{
+        SparkMax(1),
+        SparkFlex(2);
+
+        SparkModel model;
+
+        Model(int model){
+            this.model = (model == 1? SparkModel.SparkMax : SparkModel.SparkFlex);
+        }
+    }
+
     /**
      * constructor for the Neo class
      *
      * @param motorID id of the motor
      * @param gains   the gains of the motor
      */
-    public Neo(int motorID, Gains gains) {
-        super(motorID, MotorType.kBrushless);
+    public Neo(int motorID, Gains gains, Model model) {
+        super(motorID, MotorType.kBrushless, model.model);
         this.encoder = this.getEncoder();
         this.pidController = this.getPIDController();
         this.gains = gains;
@@ -25,8 +36,8 @@ public class Neo extends CANSparkBase {
         initPIDcontroller(gains);
     }
 
-    public Neo(int motorID) {
-        this(motorID, new Gains());
+    public Neo(int motorID, Model model) {
+        this(motorID, new Gains(), model);
     }
 
     public void setConversionFactors(double positionFactor, double velocityFactor) {

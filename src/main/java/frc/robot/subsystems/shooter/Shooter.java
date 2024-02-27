@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.Neo;
+import frc.lib.Neo.Model;
 import frc.robot.Constants.FieldConstants.FieldLocations;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.LEDs;
@@ -28,8 +29,8 @@ import static frc.robot.Constants.ShooterConstants.*;
 import static frc.robot.subsystems.LEDs.LEDPattern.SOLID;
 
 public class Shooter extends SubsystemBase implements Logged {
-    private final Neo upperShooter = new Neo(UPPER_SHOOTER_MOTOR_ID);
-    private final Neo lowerShooter = new Neo(LOWER_SHOOTER_MOTOR_ID);
+    private final Neo upperShooter = new Neo(UPPER_SHOOTER_MOTOR_ID, Model.SparkFlex);
+    private final Neo lowerShooter = new Neo(LOWER_SHOOTER_MOTOR_ID, Model.SparkFlex);
 
     private ShooterState currentState = new ShooterState(0);
 

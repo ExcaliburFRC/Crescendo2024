@@ -29,8 +29,8 @@ import static frc.robot.Constants.IntakeConstants.*;
 import static frc.robot.subsystems.LEDs.LEDPattern.BLINKING;
 
 public class Intake extends SubsystemBase implements Logged {
-    private final Neo intakeMotor = new Neo(INTAKE_MOTOR_ID);
-    private final Neo angleMotor = new Neo(ANGLE_MOTOR_ID);
+    private final Neo intakeMotor = new Neo(INTAKE_MOTOR_ID, Neo.Model.SparkMax);
+    private final Neo angleMotor = new Neo(ANGLE_MOTOR_ID, Neo.Model.SparkMax);
 
     private final DutyCycleEncoder intakeEncoder = new DutyCycleEncoder(ENCODER_PORT);
 
