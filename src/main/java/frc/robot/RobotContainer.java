@@ -1,56 +1,70 @@
 package frc.robot;
 
+import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants.FieldConstants.FieldLocations;
+import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.swerve.Swerve;
+import frc.robot.util.AllianceUtils;
+import monologue.Logged;
 
 import static edu.wpi.first.math.MathUtil.applyDeadband;
 import static edu.wpi.first.wpilibj.GenericHID.RumbleType.kBothRumble;
+import static edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior.kCancelSelf;
 import static frc.lib.Color.Colors.*;
-import static frc.robot.Constants.FieldConstants.FieldLocations.*;
-import static frc.robot.Constants.ShooterConstants.SPEAKER_PREP_RADIUS;
 import static frc.robot.subsystems.LEDs.LEDPattern.*;
-import static frc.robot.subsystems.intake.IntakeState.intakeAngle.*;
+import static frc.robot.subsystems.intake.IntakeState.IntakeAngle.*;
 
-public class RobotContainer {
+public class RobotContainer implements Logged {
     // subsystems
+    public final Shooter shooter = new Shooter();
     private final Swerve swerve = new Swerve();
     private final LEDs leds = LEDs.getInstance();
-    private final Shooter shooter = new Shooter();
     private final Intake intake = new Intake();
+    private final Climber climber = new Climber();
 
     // controllers
     private final CommandPS5Controller driver = new CommandPS5Controller(0);
-    private final XboxController driverVibration = new XboxController(4);
+//    private final CommandPS5Controller sysid = new CommandPS5Controller(1);
+    private final XboxController driverVibration = new XboxController(5);
 
-    public ShuffleboardTab matchTab = Shuffleboard.getTab("match");
-    public ShuffleboardTab pitTab = Shuffleboard.getTab("pit");
+    public static ShuffleboardTab matchTab = Shuffleboard.getTab("match");
+    public static ShuffleboardTab pitTab = Shuffleboard.getTab("pit");
+    public static ShuffleboardTab robotData = Shuffleboard.getTab("RobotData");
 
+    public static SendableChooser<Command> autoChooser = new SendableChooser<>();
+
+    private static EventLoop climberLoop = new EventLoop();
     // swerve
     boolean robotRelativeDrive = false;
     final Pose2d emptyPose = new Pose2d();
+    private boolean climberMode = false;
 
-    FieldLocations HP_Station = HP_CENTER;
-    FieldLocations shooter_Location = AMPLIFIER;
+    private final Command climberModeCommand = new InstantCommand(()-> {
+        final CommandScheduler cs = CommandScheduler.getInstance();
+        climberMode = !climberMode;
 
-    // TODO: find leftX & leftY axis indexes
-    final Trigger terminateAutoTrigger = new Trigger(driver.axisGreaterThan(0, 0.5).or(driver.axisGreaterThan(0, 0.5)));
+        if (climberMode) {
+            cs.setActiveButtonLoop(climberLoop);
+            swerve.maxSpeed.setDouble(20);
+        } else {
+            cs.setActiveButtonLoop(cs.getDefaultButtonLoop());
+            swerve.maxSpeed.setDouble(Constants.SwerveConstants.DRIVE_SPEED_PERCENTAGE);
+        }
+    }).withName("ClimberMode");
 
-    // shooter
-    boolean shooterWorks = true;
-    final Trigger isAtSpeakerRadius = new Trigger(() -> swerve.getDistanceFromPose(SPEAKER_CENTER.pose.get()) < SPEAKER_PREP_RADIUS);
-
-    // intake
-    boolean intakeWorks = true;
+    Command intakeVibrate = vibrateControllerCommand(50, 0.25);
 
     public RobotContainer() {
         init();
@@ -59,93 +73,71 @@ public class RobotContainer {
 
     // bindings
     private void configureBindings() {
+        // swerve
         swerve.setDefaultCommand(
                 swerve.driveSwerveCommand(
                         () -> applyDeadband(-driver.getLeftY(), 0.07),
                         () -> applyDeadband(-driver.getLeftX(), 0.07),
                         () -> applyDeadband(-driver.getRightX(), 0.07),
-                        () -> robotRelativeDrive,
+                        () -> !robotRelativeDrive,
                         driver::getL2Axis, // decelerator
-                        () -> driver.R1().getAsBoolean() ? SPEAKER.pose.get() : emptyPose) // if R1 pressed, turn swerve to Speaker
+                        driver.L1().and(()-> !climberMode),
+                        () -> emptyPose)
         );
 
-        shooter.setDefaultCommand(shooter.prepShooterCommand(isAtSpeakerRadius, intake));
-        driver.touchpad().whileTrue(toggleMotorsIdleMode().alongWith(leds.applyPatternCommand(SOLID, WHITE.color)));
+        driver.options().whileTrue(toggleMotorsIdleMode().alongWith(leds.setPattern(SOLID, WHITE.color)));
         driver.PS().onTrue(swerve.resetOdometryAngleCommand());
 
-        // if R1 is pressed and the robot is stationary, shoot to speaker
-        driver.R1().and(() -> Math.max(swerve.getRobotRelativeSpeeds().vxMetersPerSecond, swerve.getRobotRelativeSpeeds().vyMetersPerSecond) < 0.2)
-                .whileTrue(scoreNoteCommand(shooter.shootFromWooferCommand()));
-
-        Command robotRelativeAndCam = Commands.startEnd(() -> {
-            Shuffleboard.selectTab("intakeCam");
-            robotRelativeDrive = true;
-        }, () -> {
-            Shuffleboard.selectTab("match");
-            robotRelativeDrive = false;
-        });
-
-        // toggle intake cam & robotRelative if currently intaking & R3 pressed
-        driver.R3().and(intake.intakingTrigger).toggleOnTrue(robotRelativeAndCam);
-        intake.intakingTrigger.onFalse(robotRelativeAndCam);
-
         // manual actions
-        // if the shooter doesn't work, we shoot the note from the intake
-        driver.square().toggleOnTrue(new ConditionalCommand(
-                scoreNoteCommand(shooter.shootToAmpCommand()),
-                intake.shootToAmpCommand(),
-                () -> shooterWorks)
-        );
-        // if the intake doesn't work, we intake the note from the shooter
-        driver.cross().toggleOnTrue(new ConditionalCommand(
-                intake.intakeFromAngleCommand(HUMAN_PLAYER, vibrateControllerCommand(50, 0.5)),
-                shooter.intakeFromShooterCommand(),
-                () -> intakeWorks));
-        driver.triangle().toggleOnTrue(shooter.shootFromWooferCommand());
-        driver.circle().toggleOnTrue(intake.intakeFromAngleCommand(GROUND, vibrateControllerCommand(50, 0.5)));
+        climber.setDefaultCommand(climber.manualCommand(driver.L1(climberLoop), driver.R1(climberLoop), driver.L2(climberLoop), driver.R2(climberLoop)));
 
-        // TODO: add auto intake from ground
-//        driver.povDown().onTrue(swerve.intakeNoteCommand().alongWith(intake.intakeFromAngleCommand(GROUND)).until(terminateAutoTrigger));
-        driver.povRight().onTrue(swerve.shootInMotionCommand().until(terminateAutoTrigger));
-        driver.povUp().onTrue(swerve.pathFindToLocation(HP_Station).alongWith(intake.intakeFromAngleCommand(HUMAN_PLAYER)).until(terminateAutoTrigger));
-        driver.povLeft().onTrue(scoreNoteCommand(swerve.pathFindToLocation(shooter_Location), shooter.shootToLocationCommand(shooter_Location)).until(terminateAutoTrigger));
+        // intake
+        driver.circle().toggleOnTrue(intake.intakeFromAngleCommand(HUMAN_PLAYER_BACKWARD, intakeVibrate));
+        driver.cross().toggleOnTrue(intake.intakeFromAngleCommand(GROUND, intakeVibrate));
 
-        leds.setDefaultCommand(leds.applyPatternCommand(TRAIN, TEAM_GOLD.color, TEAM_BLUE.color));
+        driver.options().onTrue(intake.toggleIdleModeCommand());
+
+        driver.touchpad().onTrue(intake.pumpNoteCommand());
+
+        // shooter
+        driver.square().and(intake.intakingTrigger.negate()).toggleOnTrue(scoreNoteCommand(shooter.shootToAmpCommand(), driver.R1(), true));
+        driver.triangle().and(intake.intakingTrigger.negate()).toggleOnTrue(scoreNoteCommand(shooter.shootToSpeakerManualCommand(), driver.R1(), false));
+
+        driver.povLeft().toggleOnTrue(intake.shootToAmpCommand().alongWith(
+                new RunCommand(()-> swerve.driveRobotRelative(new ChassisSpeeds(-0.75, 0, 0))).withTimeout(0.1)));
+        driver.povUp().onTrue(climberModeCommand);
     }
+
+    // triangle - shoot to speaker
+    // square - shoot to amp
+    // circle - intake from ground
+    // cross - intake from HP
 
     // methods
+    private Command scoreNoteCommand(Command shooterCommand, Trigger release, boolean toAmp) {
+        return shooterCommand.alongWith(
+                new WaitUntilCommand(release).andThen(intake.transportToShooterCommand(() -> toAmp))
+        );
+    }
+
     public Command matchPrepCommand() {
-        return new SequentialCommandGroup(
-                swerve.straightenModulesCommand(),
-                intake.intakeIdleCommand()
-                // TODO: add close climber telescopic arms
-        );
-    }
-
-    private Command scoreNoteCommand(Command shooterCommand) {
-        return new ParallelCommandGroup(
-                shooterCommand,
-                new WaitUntilCommand(shooter.shooterReadyTrigger).andThen(
-                        new ParallelDeadlineGroup(
-                        intake.transportToShooterCommand(),
-                        leds.applyPatternCommand(SOLID, RED.color)))
-        );
-    }
-
-    private Command scoreNoteCommand(Command swerveCommand, Command shooterCommand) {
-        return new SequentialCommandGroup(
-                swerveCommand.deadlineWith(shooter.prepShooterCommand()),
-                scoreNoteCommand(shooterCommand)
-        );
+        return new InstantCommand(()-> {});
+//        return swerve.straightenModulesCommand().andThen(climber.autoCloseCommand());
     }
 
     private Command systemTesterCommand() {
         return new SequentialCommandGroup(
-                swerve.driveSwerveCommand(() -> 0.25, () -> 0, () -> 0.25, () -> false).withTimeout(5),
-                intake.intakeFromAngleCommand(HUMAN_PLAYER),
-                scoreNoteCommand(shooter.shootToAmpCommand())
-                /// TODO: add climber test
-        );
+                swerve.driveSwerveCommand(() -> 0, () -> 0, () -> 0.75, () -> false).withTimeout(5),
+                swerve.straightenModulesCommand(),
+                intake.intakeFromAngleCommand(HUMAN_PLAYER_BACKWARD, intakeVibrate),
+                new WaitCommand(1),
+                scoreNoteCommand(shooter.shootToAmpCommand(), new Trigger(() -> true), true)
+//                new WaitCommand(1),
+//                climber.manualCommand(()-> true, ()-> true, ()-> false, ()-> false).withTimeout(1.5),
+//                new WaitCommand(1),
+//                climber.manualCommand(()-> false, ()-> false, ()-> true, ()-> true).withTimeout(1.5),
+//                climber.manualCommand(()-> false, ()-> false, ()-> false, ()-> false).withTimeout(0.5)
+                );
     }
 
     private Command vibrateControllerCommand(int intensity, double seconds) {
@@ -155,32 +147,75 @@ public class RobotContainer {
                 .withTimeout(seconds).ignoringDisable(true);
     }
 
+    public Command dynamicIntakeCommand() {
+        return new SequentialCommandGroup(
+                // intake from both the intake and the shooter
+                new ParallelDeadlineGroup(
+                        new WaitUntilCommand(intake.hasNoteTrigger.or(shooter.hasNoteTrigger)),
+//                        intake.intakeFromAngleCommand(HUMAN_PLAYER_BACKWARD, intakeVibrate),
+                        shooter.intakeFromShooterCommand()),
+
+                new ConditionalCommand(
+                        // if the note is in the shooter, transport it to the intake
+                        new ParallelCommandGroup(
+//                                intake.intakeFromAngleCommand(SHOOTER, intakeVibrate),
+                                new WaitCommand(0.75).andThen(shooter.transportToIntakeCommand()).until(intake.hasNoteTrigger)
+                        ),
+                        // if it's in the intake, do nothing
+                        Commands.none(),
+                        shooter.hasNoteTrigger),
+
+                // pump the note (just to make sure)
+                intake.pumpNoteCommand()
+        );
+    }
+
     public Command toggleMotorsIdleMode() {
         return new ParallelCommandGroup(
                 swerve.toggleIdleModeCommand(),
                 shooter.toggleIdleModeCommand(),
-                intake.toggleIdleModeCommand()
+                intake.toggleIdleModeCommand(),
+                climber.toggleIdleModeCommand()
         );
     }
 
     private void init() {
-        pitTab.add("Match prep", matchPrepCommand());
-        pitTab.add("System tester", systemTesterCommand());
+        NamedCommands.registerCommand("shootToSpeakerCommand", scoreNoteCommand(shooter.shootToSpeakerManualCommand(), new Trigger(() -> true), false));
+        NamedCommands.registerCommand("prepShooterCommand", shooter.prepShooterCommand());
+        NamedCommands.registerCommand("shootToAmpCommand", scoreNoteCommand(shooter.shootToAmpCommand(), shooter.shooterReadyTrigger, false));
 
-        matchTab.add("HP_Left", new InstantCommand(() -> HP_Station = HP_LEFT));
-        matchTab.add("HP_Center", new InstantCommand(() -> HP_Station = HP_CENTER));
-        matchTab.add("HP_Right", new InstantCommand(() -> HP_Station = HP_RIGHT));
+        NamedCommands.registerCommand("intakeFromGround", intake.halfIntakeFromGround());
+        NamedCommands.registerCommand("closeIntake", intake.closeIntakeCommand());
+        NamedCommands.registerCommand("pumpNote", intake.pumpNoteCommand());
 
-        matchTab.add("Amplifier", new InstantCommand(() -> shooter_Location = AMPLIFIER));
-        matchTab.add("Speaker", new InstantCommand(() -> shooter_Location = SPEAKER));
+        pitTab.add("Match prep", matchPrepCommand().withName("MatchPrep")).withSize(2, 2);
+        pitTab.add("System tester", systemTesterCommand().withName("SystemTest")).withSize(2, 2);
 
-        matchTab.add("toggleShooterWorks", new InstantCommand(() -> shooterWorks = !shooterWorks)); // TODO: display as toggle (not as button) in shuffleboard
-        matchTab.add("toggleIntakeWorks", new InstantCommand(() -> intakeWorks = !intakeWorks));
+        matchTab.add("pumpNote", intake.pumpNoteCommand().withName("PumpNote")).withPosition(15, 1).withSize(4, 4);
+        matchTab.addBoolean("intakeBeambreak", ()-> !intake.intakeBeambreak.get()).withPosition(19, 1).withSize(4, 4);
+        matchTab.addBoolean("shooterWorks", shooter.shooterSpins).withPosition(19, 5).withSize(4, 4);
+//        matchTab.addCamera("intakeCam", "", "").withPosition(0, 1).withSize(13, 10);
 
-        matchTab.add("prepShooter", shooter.prepShooterCommand());
+        matchTab.add("climberMode", climberModeCommand).withPosition(15, 5).withSize(4, 4);
+
+        autoChooser.setDefaultOption("none", new InstantCommand(()-> {}));
+        autoChooser.addOption("123", swerve.runAuto("123"));
+        autoChooser.addOption("321", swerve.runAuto("321"));
+        autoChooser.addOption("14", swerve.runAuto("14"));
+        autoChooser.addOption("shoot", swerve.runAuto("shoot"));
+        autoChooser.addOption("leaveFromBottom", swerve.runAuto("shootAndLeave"));
+
+        Shuffleboard.getTab("Auto").add(autoChooser);
     }
 
     public Command getAutonomousCommand() {
-        return Commands.none();
+        // Pose 1
+//        Pose2d startingPose = new Pose2d(0.94, 6.48, Rotation2d.fromDegrees(60));
+        // Pose 2
+//        Pose2d startingPose = new Pose2d(1.3, 5.57, new Rotation2d());
+        // Pose 3
+//        Pose2d startingPose = AllianceUtils.mirrorAlliance(new Pose2d(0.74, 4.48, Rotation2d.fromDegrees(-60)));
+
+        return new ProxyCommand(()-> autoChooser.getSelected());
     }
 }

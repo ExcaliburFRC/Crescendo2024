@@ -11,13 +11,12 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.util.ContinuouslyConditionalCommand;
 import frc.lib.Neo;
 import frc.robot.Constants.FieldConstants.FieldLocations;
+import frc.robot.RobotContainer;
 import frc.robot.subsystems.LEDs;
-import frc.robot.subsystems.intake.Intake;
-
-import java.util.function.DoubleSupplier;
+import monologue.Annotations.Log;
+import monologue.Logged;
 
 import static com.revrobotics.CANSparkBase.IdleMode.kBrake;
 import static com.revrobotics.CANSparkBase.IdleMode.kCoast;
@@ -26,37 +25,43 @@ import static edu.wpi.first.units.Units.*;
 import static edu.wpi.first.units.Units.RPM;
 import static frc.lib.Color.Colors.GREEN;
 import static frc.robot.Constants.ShooterConstants.*;
-import static frc.robot.subsystems.LEDs.LEDPattern.BLINKING;
 import static frc.robot.subsystems.LEDs.LEDPattern.SOLID;
 
-public class Shooter extends SubsystemBase {
+public class Shooter extends SubsystemBase implements Logged {
     private final Neo upperShooter = new Neo(UPPER_SHOOTER_MOTOR_ID);
     private final Neo lowerShooter = new Neo(LOWER_SHOOTER_MOTOR_ID);
 
-    private final DigitalInput beamBreak = new DigitalInput(SHOOTER_BEAMBREAK_CHANNEL);
-    public final BooleanEvent noteShotTrigger =
-            new BooleanEvent(CommandScheduler.getInstance().getDefaultButtonLoop(), beamBreak::get).falling().debounce(0.2);
+    private ShooterState currentState = new ShooterState(0);
 
-    private ShuffleboardTab shooterTab = Shuffleboard.getTab("ShooterTab");
-    private final GenericEntry shooterSpeed = shooterTab.add("shootSpeedPercent", 0).getEntry();
+    public GenericEntry upperSpeed = Shuffleboard.getTab("match").add("upper speed", SPEAKER_DC * 100).withSize(2, 2).getEntry();
+    public GenericEntry lowerSpeed = Shuffleboard.getTab("match").add("lower speed", SPEAKER_DC * 100).withSize(2, 2).getEntry();
 
-    private static InterpolatingDoubleTreeMap metersToRPM = new InterpolatingDoubleTreeMap();
+    @Log.NT
+    private final DigitalInput shooterBeambreak = new DigitalInput(SHOOTER_BEAMBREAK_CHANNEL);
+
+    public final BooleanEvent noteShotTrigger= new BooleanEvent(CommandScheduler.getInstance().getDefaultButtonLoop(), () -> !shooterBeambreak.get()).falling();
+    public final Trigger hasNoteTrigger = new Trigger(() -> !shooterBeambreak.get()).debounce(0.05);
+    public final Trigger shooterSpins = new Trigger(() -> upperShooter.getVelocity() > 50).debounce(0.05);
 
     private final LEDs leds = LEDs.getInstance();
 
-    public Trigger shooterReadyTrigger = new Trigger(ShooterState::atSetpoint)
-            .onTrue(leds.applyPatternCommand(SOLID, GREEN.color))
+    @Log.NT
+    public Trigger shooterReadyTrigger = currentState.stateReady
+            .onTrue(leds.setPattern(SOLID, GREEN.color))
             .onFalse(leds.restoreLEDs());
 
     public Shooter() {
         upperShooter.setIdleMode(kCoast);
         upperShooter.setSmartCurrentLimit(SHOOTER_CURRENT_LIMIT);
+        upperShooter.setInverted(true);
+        upperShooter.setPosition(0);
 
-        lowerShooter.follow(upperShooter, false);
         lowerShooter.setIdleMode(kCoast);
         lowerShooter.setSmartCurrentLimit(SHOOTER_CURRENT_LIMIT);
+        lowerShooter.setInverted(true);
+        lowerShooter.setPosition(0);
 
-        metersToRPM.put(0.0, 0.0);
+        RobotContainer.robotData.addBoolean("shooter beambreak", hasNoteTrigger);
     }
 
     private void stopMotors(){
@@ -64,22 +69,32 @@ public class Shooter extends SubsystemBase {
         lowerShooter.stopMotor();
     }
 
-    private Command setShooterRPMcommand(ShooterState state) {
-        return this.runEnd(
-                () -> {
+    public ShooterState getCurrentState() {
+        return this.currentState;
+    }
+
+    public Command setShootercommand(ShooterState state) {
+        return new FunctionalCommand(
+                ()-> currentState = state,
+                ()-> {
                     state.setVelocities(upperShooter.getVelocity(), lowerShooter.getVelocity());
 
                     upperShooter.setVoltage(state.upperVoltage);
-                    upperShooter.setVoltage(state.lowerVoltage);
-                }, this::stopMotors).until(noteShotTrigger);
+                    lowerShooter.setVoltage(state.lowerVoltage);
+                },
+                (__)-> {
+                    stopMotors();
+                    currentState = new ShooterState(0);
+                },
+                noteShotTrigger, this);
     }
 
     public Command shootToAmpCommand() {
-        return setShooterRPMcommand(new ShooterState(AMP_UPPER_SHOOTER_RPM, AMP_LOWER_SHOOTER_RPM));
+        return setShootercommand(new ShooterState(AMP_UPPER_SHOOTER_RPM, AMP_LOWER_SHOOTER_RPM));
     }
 
     public Command shootFromWooferCommand() {
-        return setShooterRPMcommand(new ShooterState(WOOFER_RPM));
+        return setShootercommand(new ShooterState(WOOFER_RPM));
     }
 
     public Command shootToLocationCommand(FieldLocations locations) {
@@ -90,48 +105,97 @@ public class Shooter extends SubsystemBase {
     }
 
     public Command intakeFromShooterCommand() {
-        return this.runEnd(() -> upperShooter.set(-0.5), upperShooter::stopMotor).until(beamBreak::get);
+        return this.runEnd(() -> {
+            upperShooter.set(-0.15);
+            lowerShooter.set(-0.15);
+        }, ()-> {
+            upperShooter.stopMotor();
+            lowerShooter.stopMotor();
+        }).until(hasNoteTrigger);
     }
 
-    public Command prepShooterCommand(Trigger isAtSpeakerRadius, Intake intake) {
-        return new ContinuouslyConditionalCommand(
-                prepShooterCommand().alongWith(leds.applyPatternCommand(BLINKING, GREEN.color)),
-                new RunCommand(upperShooter::stopMotor, this),
-                isAtSpeakerRadius.and(intake.atShooterTrigger).and(intake.hasNoteTrigger)
-        );
+    public Command transportToIntakeCommand(){
+        return this.runEnd(() -> {
+            upperShooter.set(-1);
+            lowerShooter.set(-1);
+        }, ()-> {
+            upperShooter.stopMotor();
+            lowerShooter.stopMotor();
+        }).until(hasNoteTrigger.negate());
     }
+
+//    public Command prepShooterCommand(Trigger isAtSpeakerRadius, Intake intake) {
+//        return new ContinuouslyConditionalCommand(
+//                prepShooterCommand().alongWith(leds.setPattern(BLINKING, GREEN.color)),
+//                new RunCommand(upperShooter::stopMotor, this),
+//                isAtSpeakerRadius.and(intake.atShooterTrigger).and(intake.hasNoteTrigger)
+//        );
+//    }
 
     public Command prepShooterCommand() {
-        return new RunCommand(() -> upperShooter.set(SPEAKER_PREP_DC), this);
+        return new RunCommand(() -> {
+            upperShooter.set(SPEAKER_DC);
+            lowerShooter.set(SPEAKER_DC);
+        }, this);
     }
 
-    public Command manualShooterCommand() {
-        return new RunCommand(() -> upperShooter.set(shooterSpeed.getDouble(0)), this);
+    public Command shootToSpeakerManualCommand() {
+        return this.runEnd(
+                ()-> {
+                    this.currentState = new ShooterState(WOOFER_RPM);
+                    upperShooter.set(upperSpeed.getDouble(SPEAKER_DC * 100) / 100.0);
+                    lowerShooter.set(lowerSpeed.getDouble(SPEAKER_DC * 100) / 100.0);
+                },
+                this::stopMotors).until(noteShotTrigger);
     }
 
     public Command toggleIdleModeCommand() {
         return new StartEndCommand(
                 () -> upperShooter.setIdleMode(kCoast),
-                () -> upperShooter.setIdleMode(kBrake)
-        );
+                () -> upperShooter.setIdleMode(kBrake))
+                .ignoringDisable(true);
     }
+
+    @Log.NT
+    private boolean noteShotTrigger(){
+        return noteShotTrigger.getAsBoolean();
+    }
+
+    @Log.NT
+    private double getUpperRPM(){
+        return upperShooter.getVelocity();
+    }
+
+    @Log.NT
+    private double getUpperSetpoint(){
+        return currentState.upperRPMsetpoint;
+    }
+
+    @Log.NT
+    private double getLowerSetpoint(){
+        return currentState.lowerRPMsetpoint;
+    }
+
+    @Log.NT
+    private double getLowerRPM(){
+        return lowerShooter.getVelocity();
+    }
+
 
     // sysid stuff
     private final MutableMeasure<Voltage> appliedVoltage = mutable(Volts.of(0));
-    private final MutableMeasure<Velocity<Angle>> velocity = mutable(DegreesPerSecond.of(0));
-
-    private final MutableMeasure<Angle> degrees = mutable(Degrees.of(0));
+    private final MutableMeasure<Velocity<Angle>> velocity = mutable(RotationsPerSecond.of(0));
+    private final MutableMeasure<Angle> degrees = mutable(Rotations.of(0));
 
     private final SysIdRoutine shooterSysid = new SysIdRoutine(
             sysidConfig,
             new SysIdRoutine.Mechanism(
-                    (Measure<Voltage> volts) -> upperShooter.setVoltage(volts.in(Volts)),
+                    (Measure<Voltage> volts) -> lowerShooter.setVoltage(volts.in(Volts)),
                     log -> log.motor("shooterMotor")
                             .voltage(appliedVoltage.mut_replace(
-                                    upperShooter.get() * RobotController.getBatteryVoltage(), Volts))
-                            .angularPosition(degrees.mut_replace(upperShooter.getPosition(), Degrees))
-                            .angularVelocity(velocity.mut_replace(upperShooter.getVelocity(), RPM)),
-
+                                    lowerShooter.getAppliedOutput() * RobotController.getBatteryVoltage(), Volts))
+                            .angularPosition(degrees.mut_replace(lowerShooter.getPosition(), Rotations))
+                            .angularVelocity(velocity.mut_replace(lowerShooter.getVelocity(), RPM)),
                     this
             ));
 

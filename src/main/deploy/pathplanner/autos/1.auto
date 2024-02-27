@@ -1,20 +1,33 @@
 {
   "version": 1.0,
-  "startingPose": {
-    "position": {
-      "x": 0.8352460341284319,
-      "y": 6.57676588080449
-    },
-    "rotation": 60.0
-  },
+  "startingPose": null,
   "command": {
     "type": "sequential",
     "data": {
       "commands": [
         {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 0.75
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "prepShooterCommand"
+                }
+              }
+            ]
+          }
+        },
+        {
           "type": "named",
           "data": {
-            "name": "shootFromWoofer"
+            "name": "shootToSpeakerCommand"
           }
         },
         {
@@ -24,7 +37,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "intakeTopNote"
+                  "pathName": "Pose1ToNote1"
                 }
               },
               {
@@ -37,75 +50,25 @@
           }
         },
         {
-          "type": "named",
-          "data": {
-            "name": "shootFromRobotPose"
-          }
-        },
-        {
-          "type": "parallel",
+          "type": "deadline",
           "data": {
             "commands": [
               {
                 "type": "path",
                 "data": {
-                  "pathName": "intakeMiddleNoteFromHigh"
+                  "pathName": "Note1ToPose1"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "intakeFromGround"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "shootFromRobotPose"
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "intakeButtomNoteFromMiddle"
+                  "name": "prepShooterCommand"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "intakeFromGround"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "shootFromRobotPose"
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "intake4thCenterLine"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "intakeFromGround"
+                  "name": "closeIntake"
                 }
               }
             ]

@@ -4,7 +4,7 @@ public class Gains {
     public double kp, ki, kd;
     public double ks, kg, kv, ka;
 
-    private Gains(double kp, double ki, double kd, double ks, double kg, double kv, double ka) {
+    public Gains(double kp, double ki, double kd, double ks, double kv, double ka, double kg) {
         this.kp = kp;
         this.ki = ki;
         this.kd = kd;
@@ -19,11 +19,19 @@ public class Gains {
     }
 
     public Gains(double ks, double kg, double kv, double ka) {
-        this(0, 0, 0, ks, kg, kv, ka);
+        this(0, 0, 0, ks, kv, ka, kg);
     }
 
     public Gains(Gains PIDgains, Gains FFgains){
-        this(PIDgains.kp, PIDgains.ki, PIDgains.kd, FFgains.ks, FFgains.kg, FFgains.kv, FFgains.ka);
+        this(PIDgains.kp, PIDgains.ki, PIDgains.kd, FFgains.ks, FFgains.kv, FFgains.ka, FFgains.kg);
+    }
+
+    public Gains(){
+        this(0, 0, 0, 0, 0, 0, 0);
+    }
+
+    public Gains(Gains gains){
+        this(gains.kp, gains.ki, gains.kd, gains.ks, gains.kg, gains.kv, gains.ka);
     }
 
     public void setPIDgains(double kp, double ki, double kd) {

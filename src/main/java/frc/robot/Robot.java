@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import monologue.Logged;
 import monologue.Monologue;
 
@@ -21,9 +22,8 @@ import monologue.Monologue;
  * project.
  */
 public class Robot extends TimedRobot implements Logged {
-
   private RobotContainer robotContainer;
-  private Command autonomousCommand;
+  private Command autonomousCommand = Commands.none();
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -33,9 +33,7 @@ public class Robot extends TimedRobot implements Logged {
   public void robotInit() {
     robotContainer = new RobotContainer();
 
-    boolean fileOnly = false;
-    boolean lazyLogging = false;
-    Monologue.setupMonologue(this, "Robot", fileOnly, lazyLogging);
+    Monologue.setupMonologue(robotContainer, "Robot", false, false);
   }
 
   /**
@@ -81,6 +79,7 @@ public class Robot extends TimedRobot implements Logged {
 
   @Override
   public void teleopInit() {
+    CommandScheduler.getInstance().removeDefaultCommand(robotContainer.shooter);
     autonomousCommand.cancel();
   }
 

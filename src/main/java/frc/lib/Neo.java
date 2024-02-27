@@ -1,18 +1,32 @@
 package frc.lib;
 
+import com.revrobotics.CANSparkBase;
 import com.revrobotics.*;
-
-import static com.revrobotics.CANSparkLowLevel.MotorType.kBrushless;
 
 public class Neo extends CANSparkBase {
     private final SparkPIDController pidController;
     private final RelativeEncoder encoder;
+    private final Gains gains;
 
-    public Neo(int motorID){
-        super(motorID, kBrushless);
+    /**
+     * constructor for the Neo class
+     *
+     * @param motorID id of the motor
+     * @param gains   the gains of the motor
+     */
+    public Neo(int motorID, Gains gains) {
+        super(motorID, MotorType.kBrushless);
         this.encoder = this.getEncoder();
         this.pidController = this.getPIDController();
-        setBrake(true); // motors default to brake mode
+        this.gains = gains;
+
+        this.setIdleMode(IdleMode.kBrake); // motors default to brake mode
+        this.
+        initPIDcontroller(gains);
+    }
+
+    public Neo(int motorID) {
+        this(motorID, new Gains());
     }
 
     public void setConversionFactors(double positionFactor, double velocityFactor) {
@@ -20,26 +34,34 @@ public class Neo extends CANSparkBase {
         this.encoder.setVelocityConversionFactor(velocityFactor);
     }
 
-    public void setBrake(boolean isBrake){
-        if (isBrake) this.setIdleMode(IdleMode.kBrake);
-        else this.setIdleMode(IdleMode.kCoast);
+    public void setConversionFactors(double conversionFactor) {
+        this.encoder.setPositionConversionFactor(conversionFactor);
+        this.encoder.setVelocityConversionFactor(conversionFactor);
     }
 
-    public void initPIDcontroller(Gains gains){
+    public void initPIDcontroller(Gains gains) {
         pidController.setP(gains.kp);
         pidController.setI(gains.ki);
         pidController.setD(gains.kd);
     }
 
-    public double getPosition(){
+    public double getPosition() {
         return encoder.getPosition();
     }
 
-    public void setPosition(double position){
+    public void setPosition(double position) {
         encoder.setPosition(position);
     }
 
-    public double getVelocity(){
+    public void setReference(double value, CANSparkBase.ControlType ctrl, int pidSlot, double arbFeedforward) {
+        pidController.setReference(value, ctrl, pidSlot, arbFeedforward);
+    }
+
+    public double getVelocity() {
         return encoder.getVelocity();
     }
-}
+
+    public Gains getGains() {
+        return new Gains(gains);
+    }
+    }
