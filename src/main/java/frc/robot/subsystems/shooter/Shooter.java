@@ -150,6 +150,16 @@ public class Shooter extends SubsystemBase implements Logged {
                 this::stopMotors).until(noteShotTrigger);
     }
 
+    public Command shootToAmpManualCommand() {
+        return this.runEnd(
+                ()-> {
+                    this.currentState = new ShooterState(WOOFER_RPM);
+                    upperShooter.set(0.2);
+                    lowerShooter.set(0.4);
+                },
+                this::stopMotors).until(noteShotTrigger);
+    }
+
     public Command toggleIdleModeCommand() {
         return new StartEndCommand(
                 () -> upperShooter.setIdleMode(kCoast),
