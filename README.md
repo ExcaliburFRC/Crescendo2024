@@ -3,9 +3,12 @@
 -----------------------------------------
 
 # What is this repository? 💻
-> ### This is our code for the FRC competition for the crescendo season, This code is responsible for the robot movement, robot systems, autonomous and much more 🚀
-# A little bit of our robot that runs on this code: 👨‍🎓
-> ### Our robot, who is a name is `Iron Sword`, And for now has been on the [***District #1 competition***](https://www.thebluealliance.com/event/2024isde1), and has won the ***[Industrial Design](https://www.firstinspires.org/resource-library/frc/awards-based-on-machine-creativity-innovation#:~:text=Industrial%20Design%20Award%C2%A0sponsored%20by%20General%20Motors) reward.***
+> ### This is our code for the FRC competition for the 2024 Crescendo season, This code is responsible for the robot movement, robot systems, autonomous and much more 🚀
+# A little bit about our robot: 👨‍🎓
+> ### Our robot `Iron Sword`, Will compete in:
+> * [***ISR District #1***](https://www.thebluealliance.com/event/2024isde1)
+> * [***ISR District #3***](https://www.thebluealliance.com/event/2024isde3)
+> * [***DCMP?***](https://www.thebluealliance.com/event/2024iscmp) 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------
 # Picture of `Iron Sword`: 📷
 ![image](https://github.com/I-No-oNe/I-No-oNe/blob/main/Frc/Iron%20sword%20picture.jpg?raw=true)
@@ -16,6 +19,3 @@
 - ### [*Github*](https://github.com/ExcaliburFRC)
 - ### [*Website*](https://excaliburfrc.github.io/#)
 ---------------------------------------------------------------
-# Tysm for checking out our code 🙏
-## Don't forget to give us a star 😉
- 
