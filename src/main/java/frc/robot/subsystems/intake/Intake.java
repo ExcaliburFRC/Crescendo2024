@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.Neo;
+import frc.lib.Neo.Model;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.intake.IntakeState.IntakeAngle;
@@ -29,8 +30,8 @@ import static frc.robot.Constants.IntakeConstants.*;
 import static frc.robot.subsystems.LEDs.LEDPattern.BLINKING;
 
 public class Intake extends SubsystemBase implements Logged {
-    private final Neo intakeMotor = new Neo(INTAKE_MOTOR_ID, Neo.Model.SparkMax);
-    private final Neo angleMotor = new Neo(ANGLE_MOTOR_ID, Neo.Model.SparkMax);
+    private final Neo intakeMotor = new Neo(INTAKE_MOTOR_ID, Model.SparkMax);
+    private final Neo angleMotor = new Neo(ANGLE_MOTOR_ID, Model.SparkMax);
 
     private final DutyCycleEncoder intakeEncoder = new DutyCycleEncoder(ENCODER_PORT);
 
