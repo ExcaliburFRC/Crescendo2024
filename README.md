@@ -1,5 +1,6 @@
-# ⚔️ Excalibur FRC 6738 - Crescendo 2024
+# ⚔️ Excalibur FRC 6738 - Crescendo 2024 
 
+Welcome to the official repository of Excalibur FRC 6738 for the Crescendo 2024 season...
 Welcome to the official repository of Excalibur FRC 6738 for the Crescendo 2024 season. This Java-based robotics control system is meticulously crafted for FRC (FIRST Robotics Competition) robots, incorporating cutting-edge technology and leveraging the WPILib library, the industry standard for FRC robots. Developed with Gradle, this project represents our team's commitment to excellence in the field of robotics.
 
 ## 🚀 Getting Started
@@ -29,9 +30,19 @@ Our project is intricately organized into distinct subsystems, each dedicated to
 
 These subsystems are modular and independent, allowing for efficient testing, debugging, and seamless collaboration among team members. The code's organization is intuitive, ensuring accessibility for new contributors.
 
+## 📷 Picture of Iron Sword
+<img src="https://github.com/I-No-oNe/I-No-oNe/blob/main/Frc/Iron%20sword%20picture.jpg?raw=true" width="500" alt="Iron Sword">
+
 ## 🎮 Usage
 
 The robot's behavior is orchestrated through a series of commands defined in the code. These commands empower the control of movement, shooting mechanisms, and other functionalities. Commands can be combined to create sophisticated behaviors and strategies.
+
+## 👨‍🎓 A little bit about our robot, Iron Sword:
+
+`Iron Sword` will compete in:
+- [ISR District #1](https://www.thebluealliance.com/event/2024isde1)
+- [ISR District #3](https://www.thebluealliance.com/event/2024isde3)
+- [DCMP?](https://www.thebluealliance.com/event/2024iscmp)
 
 ## 🛠 Built With
 
@@ -41,14 +52,13 @@ The robot's behavior is orchestrated through a series of commands defined in the
 
 ## 🧑‍💻 Authors
 
-- >[***Shai Grossman***](https://github.com/TapChap)
-- >[***Yoav Cohen***](https://github.com/yoavCohen2007)
-- >[***Yehuda Rothstein***](https://github.com/YehudaRothstein)
-- >[***Ori Korngut***](https://github.com/YehudaRothstein)
-- >[***Itai Keller***](https://github.com/Keller6738)
-- >[***Eliyah Ben Lulu***](https://github.com/eliya1452)
-- >[***Amit Sucer***](https://github.com/Amit-Sucher)
-
+- [Shai Grossman](https://github.com/TapChap)
+- [Yoav Cohen](https://github.com/yoavCohen2007)
+- [Yehuda Rothstein](https://github.com/YehudaRothstein)
+- [Ori Korngut](https://github.com/YehudaRothstein) (Note: Listed twice, might be a mistake)
+- [Itai Keller](https://github.com/Keller6738)
+- [Eliyah Ben Lulu](https://github.com/eliya1452)
+- [Amit Sucer](https://github.com/Amit-Sucher)
 
 ## 📄 License
 
@@ -66,4 +76,12 @@ Excalibur FRC 6738 proudly represents a FIRST Robotics Competition team based in
 
 ## 📧 Contact
 
-For any questions or inquiries, please reach out to us at [ExcaliburFRC@gmail.com](mailto:excaliburfrc@gmail.com).
+Check out our:
+
+- [Youtube](https://www.youtube.com/channel/UCVLYbxGoGUWkjDTZQfkLz5g)
+- [Instagram](https://www.instagram.com/excalibur_6738/)
+- [Facebook](https://www.facebook.com/excaliburfrc/)
+- [GitHub](https://github.com/ExcaliburFRC)
+- [Website](https://excaliburfrc.github.io/#)
+
+For any questions or inquiries, please reach out to us at [ExcaliburFRC@gmail.com](mailto:excaliburfrc@gmail.com)
