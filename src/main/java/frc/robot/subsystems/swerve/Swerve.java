@@ -127,7 +127,7 @@ public class Swerve extends SubsystemBase implements Logged {
         anglePIDcontroller.enableContinuousInput(0, 360);
         anglePIDcontroller.setTolerance(1);
 
-        interpolate.put(1.0, 0.2);
+        interpolate.put(1.0, 0.4);
         interpolate.put(-1.0, 1.0);
 
         initAutoBuilder();

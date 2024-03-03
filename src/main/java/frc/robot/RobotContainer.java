@@ -52,7 +52,7 @@ public class RobotContainer implements Logged {
     final Pose2d emptyPose = new Pose2d();
     private boolean climberMode = false;
 
-    private final Command climberModeCommand = new InstantCommand(()-> {
+    private final Command climberModeCommand = new InstantCommand(() -> {
         final CommandScheduler cs = CommandScheduler.getInstance();
         climberMode = !climberMode;
 
@@ -82,7 +82,7 @@ public class RobotContainer implements Logged {
                         () -> applyDeadband(-driver.getRightX(), 0.07),
                         () -> !robotRelativeDrive,
                         driver::getL2Axis, // decelerator
-                        driver.L1().and(()-> !climberMode),
+                        driver.L1().and(() -> !climberMode),
                         () -> emptyPose)
         );
 
@@ -104,18 +104,12 @@ public class RobotContainer implements Logged {
         driver.square().and(intake.intakingTrigger.negate()).toggleOnTrue(scoreNoteCommand(shooter.shootToAmpCommand(), driver.R1(), true));
         driver.triangle().and(intake.intakingTrigger.negate()).toggleOnTrue(scoreNoteCommand(shooter.shootToSpeakerManualCommand(), driver.R1(), false));
 
-        driver.povLeft().toggleOnTrue(
-                new SequentialCommandGroup(swerve.straightenModulesCommand(),
-                new RunCommand(()-> swerve.driveRobotRelative(new ChassisSpeeds(-0.75, 0, 0))).withTimeout(0.12
-                ),
-                        new InstantCommand(()->swerve.driveRobotRelative(new ChassisSpeeds(0,0,0))),
-                        intake.shootToAmpCommand()));
+        driver.povLeft().onTrue(new SequentialCommandGroup(
+                swerve.straightenModulesCommand(),
+                new RunCommand(() -> swerve.driveRobotRelative(new ChassisSpeeds(-0.75, 0, 0))).withTimeout(0.12),
+                new InstantCommand(() -> swerve.driveRobotRelative(new ChassisSpeeds(0, 0, 0))),
+                intake.shootToAmpCommand()));
         driver.povUp().onTrue(climberModeCommand);
-
-        sysid.cross().toggleOnTrue(shooter.sysIdDynamic(SysIdRoutine.Direction.kForward));
-        sysid.triangle().toggleOnTrue(shooter.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-        sysid.circle().toggleOnTrue(shooter.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-        sysid.square().toggleOnTrue(shooter.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
     }
 
     // triangle - shoot to speaker
@@ -129,7 +123,8 @@ public class RobotContainer implements Logged {
     }
 
     public Command matchPrepCommand() {
-        return new InstantCommand(()-> {});
+        return new InstantCommand(() -> {
+        });
 //        return swerve.straightenModulesCommand().andThen(climber.autoCloseCommand());
     }
 
@@ -145,7 +140,7 @@ public class RobotContainer implements Logged {
 //                new WaitCommand(1),
 //                climber.manualCommand(()-> false, ()-> false, ()-> true, ()-> true).withTimeout(1.5),
 //                climber.manualCommand(()-> false, ()-> false, ()-> false, ()-> false).withTimeout(0.5)
-                );
+        );
     }
 
     private Command vibrateControllerCommand(int intensity, double seconds) {
@@ -200,13 +195,14 @@ public class RobotContainer implements Logged {
         pitTab.add("System tester", systemTesterCommand().withName("SystemTest")).withSize(2, 2);
 
         matchTab.add("pumpNote", intake.pumpNoteCommand().withName("PumpNote")).withPosition(15, 1).withSize(4, 4);
-        matchTab.addBoolean("intakeBeambreak", ()-> !intake.intakeBeambreak.get()).withPosition(19, 1).withSize(4, 4);
+        matchTab.addBoolean("intakeBeambreak", () -> !intake.intakeBeambreak.get()).withPosition(19, 1).withSize(4, 4);
         matchTab.addBoolean("shooterWorks", shooter.shooterSpins).withPosition(19, 5).withSize(4, 4);
 //        matchTab.addCamera("intakeCam", "", "").withPosition(0, 1).withSize(13, 10);
 
         matchTab.add("climberMode", climberModeCommand).withPosition(15, 5).withSize(4, 4);
 
-        autoChooser.setDefaultOption("none", new InstantCommand(()-> {}));
+        autoChooser.setDefaultOption("none", new InstantCommand(() -> {
+        }));
         autoChooser.addOption("123", swerve.runAuto("123"));
         autoChooser.addOption("321", swerve.runAuto("321"));
         autoChooser.addOption("14", swerve.runAuto("14"));
@@ -224,6 +220,6 @@ public class RobotContainer implements Logged {
         // Pose 3
 //        Pose2d startingPose = AllianceUtils.mirrorAlliance(new Pose2d(0.74, 4.48, Rotation2d.fromDegrees(-60)));
 
-        return new ProxyCommand(()-> autoChooser.getSelected());
+        return new ProxyCommand(() -> autoChooser.getSelected());
     }
 }
