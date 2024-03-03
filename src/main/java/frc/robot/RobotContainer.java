@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.LEDs;
@@ -36,7 +37,7 @@ public class RobotContainer implements Logged {
 
     // controllers
     private final CommandPS5Controller driver = new CommandPS5Controller(0);
-//    private final CommandPS5Controller sysid = new CommandPS5Controller(1);
+    private final CommandPS5Controller sysid = new CommandPS5Controller(1);
     private final XboxController driverVibration = new XboxController(5);
 
     public static ShuffleboardTab matchTab = Shuffleboard.getTab("match");
@@ -100,12 +101,21 @@ public class RobotContainer implements Logged {
         driver.touchpad().onTrue(intake.pumpNoteCommand());
 
         // shooter
-        driver.square().and(intake.intakingTrigger.negate()).toggleOnTrue(scoreNoteCommand(shooter.shootToAmpManualCommand(), driver.R1(), true));
+        driver.square().and(intake.intakingTrigger.negate()).toggleOnTrue(scoreNoteCommand(shooter.shootToAmpCommand(), driver.R1(), true));
         driver.triangle().and(intake.intakingTrigger.negate()).toggleOnTrue(scoreNoteCommand(shooter.shootToSpeakerManualCommand(), driver.R1(), false));
 
-        driver.povLeft().toggleOnTrue(intake.shootToAmpCommand().alongWith(
-                new RunCommand(()-> swerve.driveRobotRelative(new ChassisSpeeds(-0.75, 0, 0))).withTimeout(0.1)));
+        driver.povLeft().toggleOnTrue(
+                new SequentialCommandGroup(swerve.straightenModulesCommand(),
+                new RunCommand(()-> swerve.driveRobotRelative(new ChassisSpeeds(-0.75, 0, 0))).withTimeout(0.12
+                ),
+                        new InstantCommand(()->swerve.driveRobotRelative(new ChassisSpeeds(0,0,0))),
+                        intake.shootToAmpCommand()));
         driver.povUp().onTrue(climberModeCommand);
+
+        sysid.cross().toggleOnTrue(shooter.sysIdDynamic(SysIdRoutine.Direction.kForward));
+        sysid.triangle().toggleOnTrue(shooter.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+        sysid.circle().toggleOnTrue(shooter.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+        sysid.square().toggleOnTrue(shooter.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
     }
 
     // triangle - shoot to speaker

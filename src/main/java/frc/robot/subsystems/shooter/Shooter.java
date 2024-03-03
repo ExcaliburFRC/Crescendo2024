@@ -41,7 +41,7 @@ public class Shooter extends SubsystemBase implements Logged {
     private final DigitalInput shooterBeambreak = new DigitalInput(SHOOTER_BEAMBREAK_CHANNEL);
 
     public final BooleanEvent noteShotTrigger= new BooleanEvent(CommandScheduler.getInstance().getDefaultButtonLoop(), () -> !shooterBeambreak.get()).falling();
-    public final Trigger hasNoteTrigger = new Trigger(() -> !shooterBeambreak.get()).debounce(0.05);
+    public final Trigger hasNoteTrigger = new Trigger(() -> !shooterBeambreak.get()).debounce(2);
     public final Trigger shooterSpins = new Trigger(() -> upperShooter.getVelocity() > 50).debounce(0.05);
 
     private final LEDs leds = LEDs.getInstance();
@@ -54,12 +54,12 @@ public class Shooter extends SubsystemBase implements Logged {
     public Shooter() {
         upperShooter.setIdleMode(kCoast);
         upperShooter.setSmartCurrentLimit(SHOOTER_CURRENT_LIMIT);
-        upperShooter.setInverted(true);
+        upperShooter.setInverted(false);
         upperShooter.setPosition(0);
 
         lowerShooter.setIdleMode(kCoast);
         lowerShooter.setSmartCurrentLimit(SHOOTER_CURRENT_LIMIT);
-        lowerShooter.setInverted(true);
+        lowerShooter.setInverted(false);
         lowerShooter.setPosition(0);
 
         RobotContainer.robotData.addBoolean("shooter beambreak", hasNoteTrigger);
@@ -154,8 +154,8 @@ public class Shooter extends SubsystemBase implements Logged {
         return this.runEnd(
                 ()-> {
                     this.currentState = new ShooterState(WOOFER_RPM);
-                    upperShooter.set(0.2);
-                    lowerShooter.set(0.4);
+                    upperShooter.set(0.1);
+                    lowerShooter.set(0.1);
                 },
                 this::stopMotors).until(noteShotTrigger);
     }
@@ -201,12 +201,12 @@ public class Shooter extends SubsystemBase implements Logged {
     private final SysIdRoutine shooterSysid = new SysIdRoutine(
             sysidConfig,
             new SysIdRoutine.Mechanism(
-                    (Measure<Voltage> volts) -> lowerShooter.setVoltage(volts.in(Volts)),
+                    (Measure<Voltage> volts) -> upperShooter.setVoltage(volts.in(Volts)),
                     log -> log.motor("shooterMotor")
                             .voltage(appliedVoltage.mut_replace(
-                                    lowerShooter.getAppliedOutput() * RobotController.getBatteryVoltage(), Volts))
-                            .angularPosition(degrees.mut_replace(lowerShooter.getPosition(), Rotations))
-                            .angularVelocity(velocity.mut_replace(lowerShooter.getVelocity(), RPM)),
+                                    upperShooter.getAppliedOutput() * RobotController.getBatteryVoltage(), Volts))
+                            .angularPosition(degrees.mut_replace(upperShooter.getPosition(), Rotations))
+                            .angularVelocity(velocity.mut_replace(upperShooter.getVelocity(), RPM)),
                     this
             ));
 

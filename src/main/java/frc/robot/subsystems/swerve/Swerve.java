@@ -335,13 +335,12 @@ public class Swerve extends SubsystemBase implements Logged {
         odometry.update(getGyroRotation2d(), getModulesPositions());
 
       //      localization with PhotonPoseEstimator
-//        Optional<EstimatedRobotPose> pose = photonVision.getEstimatedGlobalPose(odometry.getEstimatedPosition());
-//        if (pose.isPresent()) odometry.addVisionMeasurement(pose.get().estimatedPose.toPose2d(), pose.get().timestampSeconds);//
+        Optional<EstimatedRobotPose> pose = photonVision.getEstimatedGlobalPose(odometry.getEstimatedPosition());
+        if (pose.isPresent()) odometry.addVisionMeasurement(pose.get().estimatedPose.toPose2d(), pose.get().timestampSeconds);//
 
         field.setRobotPose(odometry.getEstimatedPosition());
         SmartDashboard.putData(field);
     }
-
     // on-the-fly auto generation functions
     // drive the robot from the current location to a given Pose2d
     public Command pathPlannerToPose(Pose2d position, double endVel) {
