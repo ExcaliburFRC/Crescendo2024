@@ -85,56 +85,6 @@
           "data": {
             "name": "shootToSpeakerCommand"
           }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "pose3ToNote7"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "intakeFromGround"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "deadline",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "note7ToPose3"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "prepShooterCommand"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "closeIntake"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "shootToSpeakerCommand"
-          }
         }
       ]
     }

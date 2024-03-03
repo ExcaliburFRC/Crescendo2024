@@ -22,8 +22,8 @@ import monologue.Logged;
 
 import static edu.wpi.first.math.MathUtil.applyDeadband;
 import static edu.wpi.first.wpilibj.GenericHID.RumbleType.kBothRumble;
-import static edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior.kCancelSelf;
 import static frc.lib.Color.Colors.*;
+import static frc.robot.Constants.ShooterConstants.SPEAKER_DC;
 import static frc.robot.subsystems.LEDs.LEDPattern.*;
 import static frc.robot.subsystems.intake.IntakeState.IntakeAngle.*;
 
@@ -48,9 +48,9 @@ public class RobotContainer implements Logged {
 
     private static EventLoop climberLoop = new EventLoop();
     // swerve
-    boolean robotRelativeDrive = false;
     final Pose2d emptyPose = new Pose2d();
     private boolean climberMode = false;
+    private boolean farShooter = false;
 
     private final Command climberModeCommand = new InstantCommand(() -> {
         final CommandScheduler cs = CommandScheduler.getInstance();
@@ -64,6 +64,18 @@ public class RobotContainer implements Logged {
             swerve.maxSpeed.setDouble(Constants.SwerveConstants.DRIVE_SPEED_PERCENTAGE);
         }
     }).withName("ClimberMode");
+
+    private final Command shooterDistanceCommand = new InstantCommand(()-> {
+        farShooter = !farShooter;
+
+        if (farShooter) {
+            shooter.upperSpeed.setDouble(60);
+            shooter.lowerSpeed.setDouble(100);
+        } else {
+            shooter.upperSpeed.setDouble(SPEAKER_DC);
+            shooter.lowerSpeed.setDouble(SPEAKER_DC);
+        }
+    }).ignoringDisable(true).withName("FarShooterCommand");
 
     Command intakeVibrate = vibrateControllerCommand(50, 0.25);
 
@@ -80,7 +92,7 @@ public class RobotContainer implements Logged {
                         () -> applyDeadband(-driver.getLeftY(), 0.07),
                         () -> applyDeadband(-driver.getLeftX(), 0.07),
                         () -> applyDeadband(-driver.getRightX(), 0.07),
-                        () -> !robotRelativeDrive,
+                        () -> true,
                         driver::getL2Axis, // decelerator
                         driver.L1().and(() -> !climberMode),
                         () -> emptyPose)
@@ -101,10 +113,10 @@ public class RobotContainer implements Logged {
         driver.touchpad().onTrue(intake.pumpNoteCommand());
 
         // shooter
-        driver.square().and(intake.intakingTrigger.negate()).toggleOnTrue(scoreNoteCommand(shooter.shootToAmpCommand(), driver.R1(), true));
-        driver.triangle().and(intake.intakingTrigger.negate()).toggleOnTrue(scoreNoteCommand(shooter.shootToSpeakerManualCommand(), driver.R1(), false));
+        driver.povLeft().and(intake.intakingTrigger.negate()).toggleOnTrue(scoreNoteCommand(shooter.shootToAmpManualCommand(), driver.R1(), true));
+        driver.triangle().and(intake.intakingTrigger.negate()).toggleOnTrue(scoreNoteCommand(shooter.shootToSpeakerManualCommand(intake.hasNoteTrigger), driver.R1(), false));
 
-        driver.povLeft().onTrue(new SequentialCommandGroup(
+        driver.square().onTrue(new SequentialCommandGroup(
                 swerve.straightenModulesCommand(),
                 new RunCommand(() -> swerve.driveRobotRelative(new ChassisSpeeds(-0.75, 0, 0))).withTimeout(0.12),
                 new InstantCommand(() -> swerve.driveRobotRelative(new ChassisSpeeds(0, 0, 0))),
@@ -183,7 +195,7 @@ public class RobotContainer implements Logged {
     }
 
     private void init() {
-        NamedCommands.registerCommand("shootToSpeakerCommand", scoreNoteCommand(shooter.shootToSpeakerManualCommand(), new Trigger(() -> true), false));
+        NamedCommands.registerCommand("shootToSpeakerCommand", scoreNoteCommand(shooter.shootToSpeakerManualCommand(intake.hasNoteTrigger), new Trigger(() -> true), false));
         NamedCommands.registerCommand("prepShooterCommand", shooter.prepShooterCommand());
         NamedCommands.registerCommand("shootToAmpCommand", scoreNoteCommand(shooter.shootToAmpCommand(), shooter.shooterReadyTrigger, false));
 
@@ -194,22 +206,26 @@ public class RobotContainer implements Logged {
         pitTab.add("Match prep", matchPrepCommand().withName("MatchPrep")).withSize(2, 2);
         pitTab.add("System tester", systemTesterCommand().withName("SystemTest")).withSize(2, 2);
 
-        matchTab.add("pumpNote", intake.pumpNoteCommand().withName("PumpNote")).withPosition(15, 1).withSize(4, 4);
         matchTab.addBoolean("intakeBeambreak", () -> !intake.intakeBeambreak.get()).withPosition(19, 1).withSize(4, 4);
         matchTab.addBoolean("shooterWorks", shooter.shooterSpins).withPosition(19, 5).withSize(4, 4);
-//        matchTab.addCamera("intakeCam", "", "").withPosition(0, 1).withSize(13, 10);
 
-        matchTab.add("climberMode", climberModeCommand).withPosition(15, 5).withSize(4, 4);
+        matchTab.add("pumpNote", intake.pumpNoteCommand().withName("PumpNote")).withPosition(16, 2).withSize(3, 2);
+        matchTab.add("climberMode", climberModeCommand).withPosition(16, 4).withSize(3, 2);
+        matchTab.add("FarShooter", shooterDistanceCommand).withPosition(16, 6).withSize(3, 2);
 
-        autoChooser.setDefaultOption("none", new InstantCommand(() -> {
-        }));
+        autoChooser.setDefaultOption("none", new InstantCommand(() -> {}));
         autoChooser.addOption("123", swerve.runAuto("123"));
         autoChooser.addOption("321", swerve.runAuto("321"));
         autoChooser.addOption("14", swerve.runAuto("14"));
+        autoChooser.addOption("73", swerve.runAuto("73"));
         autoChooser.addOption("shoot", swerve.runAuto("shoot"));
         autoChooser.addOption("leaveFromBottom", swerve.runAuto("shootAndLeave"));
 
         Shuffleboard.getTab("Auto").add(autoChooser);
+    }
+
+    public Command stopSwerveCommand(){
+        return swerve.driveSwerveCommand(()-> 0, ()-> 0, ()-> 0, ()-> false).withTimeout(0.1);
     }
 
     public Command getAutonomousCommand() {

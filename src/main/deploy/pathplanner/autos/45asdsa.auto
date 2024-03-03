@@ -18,7 +18,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 0.75
+                  "waitTime": 0.5
                 }
               },
               {
@@ -47,7 +47,7 @@
                     {
                       "type": "wait",
                       "data": {
-                        "waitTime": 3.0
+                        "waitTime": 5.0
                       }
                     },
                     {
@@ -62,7 +62,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Pose2ToNote3"
+                  "pathName": "Pose2ToNote4"
                 }
               }
             ]
@@ -75,7 +75,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Note3ToPose2"
+                  "pathName": "Note4ToPose2"
                 }
               },
               {
@@ -110,7 +110,7 @@
                     {
                       "type": "wait",
                       "data": {
-                        "waitTime": 2.0
+                        "waitTime": 5.0
                       }
                     },
                     {
@@ -125,7 +125,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Pose2ToNote2"
+                  "pathName": "Pose2ToNote5"
                 }
               }
             ]
@@ -188,7 +188,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Pose2ToNote1"
+                  "pathName": "Pose2ToNote3"
                 }
               }
             ]
@@ -201,7 +201,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Note1ToPose2"
+                  "pathName": "Note3ToPose2"
                 }
               },
               {

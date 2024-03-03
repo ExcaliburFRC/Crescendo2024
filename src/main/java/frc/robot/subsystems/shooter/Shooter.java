@@ -34,14 +34,16 @@ public class Shooter extends SubsystemBase implements Logged {
 
     private ShooterState currentState = new ShooterState(0);
 
-    public GenericEntry upperSpeed = Shuffleboard.getTab("match").add("upper speed", SPEAKER_DC * 100).withSize(2, 2).getEntry();
-    public GenericEntry lowerSpeed = Shuffleboard.getTab("match").add("lower speed", SPEAKER_DC * 100).withSize(2, 2).getEntry();
+    public GenericEntry lowerSpeed = Shuffleboard.getTab("match").add("upper speed", SPEAKER_DC * 100)
+            .withSize(2, 2).withPosition(14, 3).getEntry();
+    public GenericEntry upperSpeed = Shuffleboard.getTab("match").add("lower speed", SPEAKER_DC * 100)
+            .withSize(2, 2).withPosition(14, 5).getEntry();
 
     @Log.NT
     private final DigitalInput shooterBeambreak = new DigitalInput(SHOOTER_BEAMBREAK_CHANNEL);
 
     public final BooleanEvent noteShotTrigger= new BooleanEvent(CommandScheduler.getInstance().getDefaultButtonLoop(), () -> !shooterBeambreak.get()).falling();
-    public final Trigger hasNoteTrigger = new Trigger(() -> !shooterBeambreak.get()).debounce(2);
+    public final Trigger hasNoteTrigger = new Trigger(() -> !shooterBeambreak.get()).debounce(0.1);
     public final Trigger shooterSpins = new Trigger(() -> upperShooter.getVelocity() > 50).debounce(0.05);
 
     private final LEDs leds = LEDs.getInstance();
@@ -140,22 +142,22 @@ public class Shooter extends SubsystemBase implements Logged {
         }, this);
     }
 
-    public Command shootToSpeakerManualCommand() {
+    public Command shootToSpeakerManualCommand(Trigger intakeTrigger) {
         return this.runEnd(
                 ()-> {
                     this.currentState = new ShooterState(WOOFER_RPM);
                     upperShooter.set(upperSpeed.getDouble(SPEAKER_DC * 100) / 100.0);
                     lowerShooter.set(lowerSpeed.getDouble(SPEAKER_DC * 100) / 100.0);
                 },
-                this::stopMotors).until(noteShotTrigger);
+                this::stopMotors).until(noteShotTrigger.or(intakeTrigger.negate().debounce(1)));
     }
 
     public Command shootToAmpManualCommand() {
         return this.runEnd(
                 ()-> {
                     this.currentState = new ShooterState(WOOFER_RPM);
-                    upperShooter.set(0.1);
-                    lowerShooter.set(0.1);
+                    upperShooter.set(0.3);
+                    lowerShooter.set(0.3);
                 },
                 this::stopMotors).until(noteShotTrigger);
     }

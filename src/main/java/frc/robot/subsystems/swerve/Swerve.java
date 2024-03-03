@@ -42,6 +42,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.PhotonVision;
 import frc.robot.Constants;
 import frc.robot.Constants.FieldConstants.*;
+import frc.robot.RobotContainer;
 import frc.robot.util.AllianceUtils;
 import frc.robot.util.AllianceUtils.AlliancePose;
 import monologue.Annotations.Log;
@@ -117,6 +118,8 @@ public class Swerve extends SubsystemBase implements Logged {
     public GenericEntry maxSpeed = Shuffleboard.getTab("Swerve").add("speedPercent", DRIVE_SPEED_PERCENTAGE).withPosition(2, 0).withSize(2, 2).getEntry();
 
     private final InterpolatingDoubleTreeMap interpolate = new InterpolatingDoubleTreeMap();
+
+    public boolean estimatePose = true;
 
     public Swerve() {
         pigeon.getConfigurator().apply(new Pigeon2Configuration());
@@ -335,8 +338,11 @@ public class Swerve extends SubsystemBase implements Logged {
         odometry.update(getGyroRotation2d(), getModulesPositions());
 
       //      localization with PhotonPoseEstimator
-        Optional<EstimatedRobotPose> pose = photonVision.getEstimatedGlobalPose(odometry.getEstimatedPosition());
-        if (pose.isPresent()) odometry.addVisionMeasurement(pose.get().estimatedPose.toPose2d(), pose.get().timestampSeconds);//
+//        if (estimatePose) {
+//            Optional<EstimatedRobotPose> pose = photonVision.getEstimatedGlobalPose(odometry.getEstimatedPosition());
+//            if (pose.isPresent())
+//                odometry.addVisionMeasurement(pose.get().estimatedPose.toPose2d(), pose.get().timestampSeconds);//
+//        }
 
         field.setRobotPose(odometry.getEstimatedPosition());
         SmartDashboard.putData(field);
@@ -438,7 +444,6 @@ public class Swerve extends SubsystemBase implements Logged {
         swerveTab.addDouble("SwerveAngle", () -> getOdometryRotation2d().getDegrees()).withWidget(BuiltInWidgets.kGyro)
                 .withPosition(0, 2).withSize(4, 4);
         swerveTab.add("Field2d", field).withSize(9, 5).withPosition(12, 0);
-        swerveTab.addDouble("robotPitch", this::getRobotPitch);
     }
 
     private void initAutoBuilder() {
