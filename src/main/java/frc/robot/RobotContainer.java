@@ -72,8 +72,8 @@ public class RobotContainer implements Logged {
             shooter.upperSpeed.setDouble(60);
             shooter.lowerSpeed.setDouble(100);
         } else {
-            shooter.upperSpeed.setDouble(SPEAKER_DC);
-            shooter.lowerSpeed.setDouble(SPEAKER_DC);
+            shooter.upperSpeed.setDouble(SPEAKER_DC * 100);
+            shooter.lowerSpeed.setDouble(SPEAKER_DC * 100);
         }
     }).ignoringDisable(true).withName("FarShooterCommand");
 
@@ -146,12 +146,7 @@ public class RobotContainer implements Logged {
                 swerve.straightenModulesCommand(),
                 intake.intakeFromAngleCommand(HUMAN_PLAYER_BACKWARD, intakeVibrate),
                 new WaitCommand(1),
-                scoreNoteCommand(shooter.shootToAmpCommand(), new Trigger(() -> true), true)
-//                new WaitCommand(1),
-//                climber.manualCommand(()-> true, ()-> true, ()-> false, ()-> false).withTimeout(1.5),
-//                new WaitCommand(1),
-//                climber.manualCommand(()-> false, ()-> false, ()-> true, ()-> true).withTimeout(1.5),
-//                climber.manualCommand(()-> false, ()-> false, ()-> false, ()-> false).withTimeout(0.5)
+                scoreNoteCommand(shooter.shootToAmpManualCommand(), new Trigger(()-> true), true)
         );
     }
 

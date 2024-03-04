@@ -120,6 +120,7 @@ public class Swerve extends SubsystemBase implements Logged {
     private final InterpolatingDoubleTreeMap interpolate = new InterpolatingDoubleTreeMap();
 
     public boolean estimatePose = true;
+    public boolean manualStraighten = false;
 
     public Swerve() {
         pigeon.getConfigurator().apply(new Pigeon2Configuration());
@@ -266,7 +267,8 @@ public class Swerve extends SubsystemBase implements Logged {
                 swerveModules[FRONT_LEFT].isReset
                         .and(swerveModules[FRONT_RIGHT].isReset)
                         .and(swerveModules[BACK_LEFT].isReset)
-                        .and(swerveModules[BACK_RIGHT].isReset),
+                        .and(swerveModules[BACK_RIGHT].isReset)
+                        .or(new Trigger(()-> manualStraighten)),
                 this);
     }
 
@@ -444,6 +446,7 @@ public class Swerve extends SubsystemBase implements Logged {
         swerveTab.addDouble("SwerveAngle", () -> getOdometryRotation2d().getDegrees()).withWidget(BuiltInWidgets.kGyro)
                 .withPosition(0, 2).withSize(4, 4);
         swerveTab.add("Field2d", field).withSize(9, 5).withPosition(12, 0);
+        swerveTab.add("manual straighten", new InstantCommand(()-> manualStraighten = !manualStraighten));
     }
 
     private void initAutoBuilder() {
