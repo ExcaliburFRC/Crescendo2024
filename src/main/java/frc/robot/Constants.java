@@ -31,7 +31,7 @@ public final class Constants {
             FL(18, 17, 7, 0.045, true, true),
             FR(12, 11, 3, 0.071, true, true),
             BL(16, 15, 4, 0.595, true, true),
-            BR(14, 13, 2, 0.296, true, true);
+            BR(14, 13, 2, 0.127, true, true);
 
 
             public int DRIVE_MOTOR_ID, SPIN_MOTOR_ID, ABS_ENCODER_CHANNEL;
@@ -113,7 +113,8 @@ public final class Constants {
         public static final double kTurningEncoderRPMToRadiansPerSec = kTurningEncoderRotationsToRadians / 60;
 
         public static final Gains MODULE_ANGLE_GAINS = new Gains(0.75, 0, 0);
-        public static final double TOLERANCE = 0.05;
+        public static final double TOLERANCE = 0.07;
+        public static final double rel_TOLERANCE = 0.5;
 
         public static final int DRIVE_CURRENT_LIMIT = 60;
         public static final int ANGLE_CURRENT_LIMIT = 25;

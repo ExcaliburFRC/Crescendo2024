@@ -34,7 +34,7 @@ public class SwerveModule implements Sendable, Logged {
   //a pid controller for the angle of the module
   private final PIDController _spinningPIDController;
 
-  public Trigger isReset = new Trigger(()-> Math.abs(getResetRad()) < TOLERANCE).debounce(0.1);
+  public Trigger isReset = new Trigger(()-> Math.abs(getRelPos()) < TOLERANCE).debounce(0.1);
 
   // construct the class
   public SwerveModule(
@@ -90,10 +90,12 @@ public class SwerveModule implements Sendable, Logged {
 
   public void resetEncoders() {
 //    _driveEncoder.setPosition(0);
-    _angleMotor.setPosition(getAbsEncoderRad());
+
+//    _angleMotor.setPosition(getAbsEncoderRad());
+    _angleMotor.setPosition(0);
   }
 
-  @Log.NT (key = "ModuleState", level = LogLevel.NOT_FILE_ONLY)
+  @Log.NT (key = "ModuleState")
   public SwerveModuleState getState() {
     return new SwerveModuleState(_driveMotor.getVelocity(), new Rotation2d(_angleMotor.getPosition()));
   }
@@ -101,6 +103,10 @@ public class SwerveModule implements Sendable, Logged {
   @Log.NT (key = "ModulePosition")
   public SwerveModulePosition getPosition(){
     return new SwerveModulePosition(_driveMotor.getPosition(), Rotation2d.fromRadians(_angleMotor.getPosition()));
+  }
+
+  public double getRelPos(){
+    return _angleMotor.getPosition();
   }
 
   @Log.NT
@@ -126,8 +132,8 @@ public class SwerveModule implements Sendable, Logged {
   }
 
   public void spinTo(double setpoint){
-    if (Math.abs(getResetRad() - setpoint) > TOLERANCE) {
-      _angleMotor.set(-_spinningPIDController.calculate(setpoint, getResetRad()));
+    if (Math.abs(getRelPos() - setpoint) > TOLERANCE) {
+      _angleMotor.set(-_spinningPIDController.calculate(setpoint, getRelPos()));
     }
     else {
       _angleMotor.set(0);
@@ -160,5 +166,6 @@ public class SwerveModule implements Sendable, Logged {
     builder.addDoubleProperty("absEncoderPos", this::getAbsPos, null);
     builder.addDoubleProperty("drive output current", _driveMotor::getOutputCurrent, null);
     builder.addDoubleProperty("drive dc output", _driveMotor::getAppliedOutput, null);
+    builder.addDoubleProperty("relativeAngle", this::getRelPos, null);
   }
 }
