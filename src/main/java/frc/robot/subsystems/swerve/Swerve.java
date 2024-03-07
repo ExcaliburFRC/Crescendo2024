@@ -42,6 +42,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.PhotonVision;
 import frc.robot.Constants;
 import frc.robot.Constants.FieldConstants.*;
+import frc.robot.RobotContainer;
 import frc.robot.util.AllianceUtils;
 import frc.robot.util.AllianceUtils.AlliancePose;
 import monologue.Annotations.Log;
@@ -118,6 +119,9 @@ public class Swerve extends SubsystemBase implements Logged {
 
     private final InterpolatingDoubleTreeMap interpolate = new InterpolatingDoubleTreeMap();
 
+    public boolean estimatePose = true;
+    public boolean manualStraighten = false;
+
     public Swerve() {
         pigeon.getConfigurator().apply(new Pigeon2Configuration());
         resetGyroHardware();
@@ -127,7 +131,7 @@ public class Swerve extends SubsystemBase implements Logged {
         anglePIDcontroller.enableContinuousInput(0, 360);
         anglePIDcontroller.setTolerance(1);
 
-        interpolate.put(1.0, 0.2);
+        interpolate.put(1.0, 0.4);
         interpolate.put(-1.0, 1.0);
 
         initAutoBuilder();
@@ -263,7 +267,8 @@ public class Swerve extends SubsystemBase implements Logged {
                 swerveModules[FRONT_LEFT].isReset
                         .and(swerveModules[FRONT_RIGHT].isReset)
                         .and(swerveModules[BACK_LEFT].isReset)
-                        .and(swerveModules[BACK_RIGHT].isReset),
+                        .and(swerveModules[BACK_RIGHT].isReset)
+                        .or(new Trigger(()-> manualStraighten)),
                 this);
     }
 
@@ -335,13 +340,15 @@ public class Swerve extends SubsystemBase implements Logged {
         odometry.update(getGyroRotation2d(), getModulesPositions());
 
       //      localization with PhotonPoseEstimator
-//        Optional<EstimatedRobotPose> pose = photonVision.getEstimatedGlobalPose(odometry.getEstimatedPosition());
-//        if (pose.isPresent()) odometry.addVisionMeasurement(pose.get().estimatedPose.toPose2d(), pose.get().timestampSeconds);//
+//        if (estimatePose) {
+//            Optional<EstimatedRobotPose> pose = photonVision.getEstimatedGlobalPose(odometry.getEstimatedPosition());
+//            if (pose.isPresent())
+//                odometry.addVisionMeasurement(pose.get().estimatedPose.toPose2d(), pose.get().timestampSeconds);//
+//        }
 
         field.setRobotPose(odometry.getEstimatedPosition());
         SmartDashboard.putData(field);
     }
-
     // on-the-fly auto generation functions
     // drive the robot from the current location to a given Pose2d
     public Command pathPlannerToPose(Pose2d position, double endVel) {
@@ -439,7 +446,7 @@ public class Swerve extends SubsystemBase implements Logged {
         swerveTab.addDouble("SwerveAngle", () -> getOdometryRotation2d().getDegrees()).withWidget(BuiltInWidgets.kGyro)
                 .withPosition(0, 2).withSize(4, 4);
         swerveTab.add("Field2d", field).withSize(9, 5).withPosition(12, 0);
-        swerveTab.addDouble("robotPitch", this::getRobotPitch);
+        swerveTab.add("manual straighten", new InstantCommand(()-> manualStraighten = !manualStraighten));
     }
 
     private void initAutoBuilder() {

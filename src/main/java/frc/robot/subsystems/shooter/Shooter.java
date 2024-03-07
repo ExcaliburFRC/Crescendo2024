@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.Neo;
+import frc.lib.Neo.Model;
 import frc.robot.Constants.FieldConstants.FieldLocations;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.LEDs;
@@ -28,19 +29,21 @@ import static frc.robot.Constants.ShooterConstants.*;
 import static frc.robot.subsystems.LEDs.LEDPattern.SOLID;
 
 public class Shooter extends SubsystemBase implements Logged {
-    private final Neo upperShooter = new Neo(UPPER_SHOOTER_MOTOR_ID);
-    private final Neo lowerShooter = new Neo(LOWER_SHOOTER_MOTOR_ID);
+    private final Neo upperShooter = new Neo(UPPER_SHOOTER_MOTOR_ID, Model.SparkFlex);
+    private final Neo lowerShooter = new Neo(LOWER_SHOOTER_MOTOR_ID, Model.SparkFlex);
 
     private ShooterState currentState = new ShooterState(0);
 
-    public GenericEntry upperSpeed = Shuffleboard.getTab("match").add("upper speed", SPEAKER_DC * 100).withSize(2, 2).getEntry();
-    public GenericEntry lowerSpeed = Shuffleboard.getTab("match").add("lower speed", SPEAKER_DC * 100).withSize(2, 2).getEntry();
+    public GenericEntry lowerSpeed = Shuffleboard.getTab("match").add("upper speed", SPEAKER_DC * 100)
+            .withSize(2, 2).withPosition(14, 3).getEntry();
+    public GenericEntry upperSpeed = Shuffleboard.getTab("match").add("lower speed", SPEAKER_DC * 100)
+            .withSize(2, 2).withPosition(14, 5).getEntry();
 
     @Log.NT
     private final DigitalInput shooterBeambreak = new DigitalInput(SHOOTER_BEAMBREAK_CHANNEL);
 
     public final BooleanEvent noteShotTrigger= new BooleanEvent(CommandScheduler.getInstance().getDefaultButtonLoop(), () -> !shooterBeambreak.get()).falling();
-    public final Trigger hasNoteTrigger = new Trigger(() -> !shooterBeambreak.get()).debounce(0.05);
+    public final Trigger hasNoteTrigger = new Trigger(() -> !shooterBeambreak.get()).debounce(0.1);
     public final Trigger shooterSpins = new Trigger(() -> upperShooter.getVelocity() > 50).debounce(0.05);
 
     private final LEDs leds = LEDs.getInstance();
@@ -53,12 +56,12 @@ public class Shooter extends SubsystemBase implements Logged {
     public Shooter() {
         upperShooter.setIdleMode(kCoast);
         upperShooter.setSmartCurrentLimit(SHOOTER_CURRENT_LIMIT);
-        upperShooter.setInverted(true);
+        upperShooter.setInverted(false);
         upperShooter.setPosition(0);
 
         lowerShooter.setIdleMode(kCoast);
         lowerShooter.setSmartCurrentLimit(SHOOTER_CURRENT_LIMIT);
-        lowerShooter.setInverted(true);
+        lowerShooter.setInverted(false);
         lowerShooter.setPosition(0);
 
         RobotContainer.robotData.addBoolean("shooter beambreak", hasNoteTrigger);
@@ -139,12 +142,22 @@ public class Shooter extends SubsystemBase implements Logged {
         }, this);
     }
 
-    public Command shootToSpeakerManualCommand() {
+    public Command shootToSpeakerManualCommand(Trigger intakeTrigger) {
         return this.runEnd(
                 ()-> {
                     this.currentState = new ShooterState(WOOFER_RPM);
                     upperShooter.set(upperSpeed.getDouble(SPEAKER_DC * 100) / 100.0);
                     lowerShooter.set(lowerSpeed.getDouble(SPEAKER_DC * 100) / 100.0);
+                },
+                this::stopMotors).until(noteShotTrigger.or(intakeTrigger.negate().debounce(1)));
+    }
+
+    public Command shootToAmpManualCommand() {
+        return this.runEnd(
+                ()-> {
+                    this.currentState = new ShooterState(WOOFER_RPM);
+                    upperShooter.set(0.3);
+                    lowerShooter.set(0.3);
                 },
                 this::stopMotors).until(noteShotTrigger);
     }
@@ -190,12 +203,12 @@ public class Shooter extends SubsystemBase implements Logged {
     private final SysIdRoutine shooterSysid = new SysIdRoutine(
             sysidConfig,
             new SysIdRoutine.Mechanism(
-                    (Measure<Voltage> volts) -> lowerShooter.setVoltage(volts.in(Volts)),
+                    (Measure<Voltage> volts) -> upperShooter.setVoltage(volts.in(Volts)),
                     log -> log.motor("shooterMotor")
                             .voltage(appliedVoltage.mut_replace(
-                                    lowerShooter.getAppliedOutput() * RobotController.getBatteryVoltage(), Volts))
-                            .angularPosition(degrees.mut_replace(lowerShooter.getPosition(), Rotations))
-                            .angularVelocity(velocity.mut_replace(lowerShooter.getVelocity(), RPM)),
+                                    upperShooter.getAppliedOutput() * RobotController.getBatteryVoltage(), Volts))
+                            .angularPosition(degrees.mut_replace(upperShooter.getPosition(), Rotations))
+                            .angularVelocity(velocity.mut_replace(upperShooter.getVelocity(), RPM)),
                     this
             ));
 

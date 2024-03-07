@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 0.74,
-      "y": 4.48
+      "x": 1.3,
+      "y": 5.57
     },
-    "rotation": -60.0
+    "rotation": 0
   },
   "command": {
     "type": "sequential",
@@ -18,7 +18,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 0.75
+                  "waitTime": 0.5
                 }
               },
               {
@@ -37,19 +37,32 @@
           }
         },
         {
-          "type": "parallel",
+          "type": "deadline",
           "data": {
             "commands": [
               {
-                "type": "path",
+                "type": "race",
                 "data": {
-                  "pathName": "pose3ToNote8"
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 5.0
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "intakeFromGround"
+                      }
+                    }
+                  ]
                 }
               },
               {
-                "type": "named",
+                "type": "path",
                 "data": {
-                  "name": "intakeFromGround"
+                  "pathName": "Pose2ToNote4"
                 }
               }
             ]
@@ -62,7 +75,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Note8ToPose3"
+                  "pathName": "Note4ToPose2"
                 }
               },
               {
@@ -87,53 +100,9 @@
           }
         },
         {
-          "type": "parallel",
+          "type": "path",
           "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "pose3ToNote7"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "intakeFromGround"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "deadline",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "note7ToPose3"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "prepShooterCommand"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "closeIntake"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "shootToSpeakerCommand"
+            "pathName": "Pose2ToCenter"
           }
         }
       ]

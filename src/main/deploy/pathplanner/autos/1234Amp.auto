@@ -62,7 +62,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Pose2ToNote3"
+                  "pathName": "Pose2ToNote1"
                 }
               }
             ]
@@ -75,7 +75,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Note3ToPose2"
+                  "pathName": "Note1ToPose2"
                 }
               },
               {
@@ -188,7 +188,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Pose2ToNote1"
+                  "pathName": "Pose2ToNote3"
                 }
               }
             ]
@@ -201,7 +201,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Note1ToPose2"
+                  "pathName": "Note3ToPose2"
                 }
               },
               {
@@ -226,9 +226,54 @@
           }
         },
         {
-          "type": "path",
+          "type": "parallel",
           "data": {
-            "pathName": "Pose2ToCenter"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Pose2ToNote4"
+                }
+              },
+              {
+                "type": "sequential",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 2.0
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "intakeFromGround"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Note4ToAmp"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "closeIntake"
+                }
+              }
+            ]
           }
         }
       ]

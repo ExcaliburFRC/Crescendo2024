@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.Gains;
 import frc.lib.Neo;
+import frc.lib.Neo.Model;
 import frc.robot.Constants;
 import monologue.Annotations;
 import monologue.Annotations.Log;
@@ -47,8 +48,8 @@ public class SwerveModule implements Sendable, Logged {
     _absEncoderOffsetRad = offsetAngle * 2 * PI;
     _resetOffset = _absEncoderOffsetRad - PI;
 
-    _driveMotor = new Neo(driveMotorId);
-    _angleMotor = new Neo(spinningMotorId);
+    _driveMotor = new Neo(driveMotorId, Model.SparkFlex);
+    _angleMotor = new Neo(spinningMotorId, Model.SparkMax);
 
     _driveMotor.setInverted(driveMotorReversed);
     _angleMotor.setInverted(spinningMotorReversed);

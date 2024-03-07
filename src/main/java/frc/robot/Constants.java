@@ -28,10 +28,10 @@ public final class Constants {
     public static final class SwerveConstants {
         public enum Modules {
             // drive ID, spin ID, abs encoder channel, offset angle, drive reversed, angle reversed
-            FL(18, 17, 7, 0.872, true, true),
+            FL(18, 17, 7, 0.045, true, true),
             FR(12, 11, 3, 0.071, true, true),
             BL(16, 15, 4, 0.595, true, true),
-            BR(14, 13, 2, 0.296, true, true);
+            BR(14, 13, 2, 0.127, true, true);
 
 
             public int DRIVE_MOTOR_ID, SPIN_MOTOR_ID, ABS_ENCODER_CHANNEL;
@@ -113,7 +113,8 @@ public final class Constants {
         public static final double kTurningEncoderRPMToRadiansPerSec = kTurningEncoderRotationsToRadians / 60;
 
         public static final Gains MODULE_ANGLE_GAINS = new Gains(0.75, 0, 0);
-        public static final double TOLERANCE = 0.05;
+        public static final double TOLERANCE = 0.07;
+        public static final double rel_TOLERANCE = 0.5;
 
         public static final int DRIVE_CURRENT_LIMIT = 60;
         public static final int ANGLE_CURRENT_LIMIT = 25;
@@ -125,22 +126,22 @@ public final class Constants {
 
         public static final int SHOOTER_CURRENT_LIMIT = 70;
 
-        public static final int SHOOTER_BEAMBREAK_CHANNEL = 8;
+        public static final int SHOOTER_BEAMBREAK_CHANNEL = 9;
 
-        public static final Gains UPPER_GAINS = new Gains(new Gains(1.9027035E-4, 0, 0), new Gains(0.4045404132, 0, 0.11433157 * 1.025, 0.011852));
-        public static final Gains LOWER_GAINS = new Gains(new Gains(2.378379375E-4, 0, 0), new Gains(0.30647001, 0, 0.11433157, 0.011852));
+        public static final Gains UPPER_GAINS = new Gains(new Gains(0.00028558, 0, 0), new Gains(0.24192, 0, 0.11542, 0.012846));
+        public static final Gains LOWER_GAINS = new Gains(new Gains(0.0006, 0, 0), new Gains(0.25911, 0, 0.11452, 0.01353));
 
-        public static final double AMP_UPPER_SHOOTER_RPM = 800; // 1000
-        public static final double AMP_LOWER_SHOOTER_RPM = 2800; // 2300
+        public static final double AMP_UPPER_SHOOTER_RPM = 1690; // 2300
+        public static final double AMP_LOWER_SHOOTER_RPM = 4273; // 4200
         public static final double WOOFER_RPM = 0;
 
         public static final double SHOOTER_PID_TOLERANCE = 300;
 
-        public static final double SPEAKER_DC = 0.9;
+        public static final double SPEAKER_DC = 0.85;
         public static final double SPEAKER_PREP_RADIUS = 0;
 
         // sysid
-        public static final SysIdRoutine.Config sysidConfig = new SysIdConfig(0.5, 6, 30);
+        public static final SysIdRoutine.Config sysidConfig = new SysIdConfig(0.5, 7, 30);
     }
 
     public static final class IntakeConstants {
