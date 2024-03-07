@@ -1,5 +1,6 @@
 package frc.robot.subsystems.intake;
 
+import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.revrobotics.CANSparkBase.IdleMode;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
@@ -7,7 +8,6 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.units.*;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -17,11 +17,13 @@ import frc.lib.Neo.Model;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.intake.IntakeState.IntakeAngle;
+import frc.robot.util.Conversions;
 import monologue.Annotations.Log;
 import monologue.Logged;
 
 import java.util.function.BooleanSupplier;
 
+import static com.ctre.phoenix.motorcontrol.TalonSRXFeedbackDevice.CTRE_MagEncoder_Absolute;
 import static edu.wpi.first.units.MutableMeasure.mutable;
 import static edu.wpi.first.units.Units.*;
 import static edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior.kCancelIncoming;
@@ -33,7 +35,7 @@ public class Intake extends SubsystemBase implements Logged {
     private final Neo intakeMotor = new Neo(INTAKE_MOTOR_ID, Model.SparkMax);
     private final Neo angleMotor = new Neo(ANGLE_MOTOR_ID, Model.SparkMax);
 
-    private final DutyCycleEncoder intakeEncoder = new DutyCycleEncoder(ENCODER_PORT);
+    private final TalonSRX intakeEncoder = new TalonSRX(ENCODER_ID);
 
     @Log.NT
     public final DigitalInput intakeBeambreak = new DigitalInput(BEAMBREAK_PORT);
@@ -54,8 +56,8 @@ public class Intake extends SubsystemBase implements Logged {
     private final LEDs leds = LEDs.getInstance();
 
     public Intake() {
-        intakeEncoder.setDistancePerRotation(360);
-        intakeEncoder.setPositionOffset(INTAKE_ENCODER_OFFSET_POSITION);
+        intakeEncoder.configFactoryDefault();
+        intakeEncoder.configSelectedFeedbackSensor(CTRE_MagEncoder_Absolute, 0, 10);
 
         intakeMotor.setIdleMode(IdleMode.kCoast);
         intakeMotor.setSmartCurrentLimit(50);
@@ -65,7 +67,7 @@ public class Intake extends SubsystemBase implements Logged {
         angleMotor.setSmartCurrentLimit(40);
         angleMotor.setInverted(true);
         angleMotor.setOpenLoopRampRate(0.35);
-        angleMotor.setPosition(intakeEncoder.getDistance());
+        angleMotor.setPosition(getAngle());
 
         anglePIDcontroller.setTolerance(INTAKE_TOLERANCE);
 
@@ -75,9 +77,7 @@ public class Intake extends SubsystemBase implements Logged {
 
     @Log.NT(key = "intakeAngle")
     public double getAngle() {
-        double absAngle =  MathUtil.inputModulus(-intakeEncoder.getDistance(), -180, 180);
-        return absAngle;
-//        return Math.abs(absAngle - angleMotor.getPosition()) > 80? angleMotor.getPosition(): absAngle;
+        return Conversions.magTicksToDegrees(INTAKE_ENCODER_OFFSET_TICKS - intakeEncoder.getSelectedSensorPosition());
     }
 
     private void setIntakeSpeed(double speed) {

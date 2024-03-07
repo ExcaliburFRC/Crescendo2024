@@ -148,7 +148,7 @@ public final class Constants {
         public static final int INTAKE_MOTOR_ID = 21;
         public static final int ANGLE_MOTOR_ID = 22;
 
-        public static final int ENCODER_PORT = 1;
+        public static final int ENCODER_ID = 50;
         public static final int BEAMBREAK_PORT = 0;
 
         public static final Gains INTAKE_GAINS = new Gains(0.058037 * 2 , 0.0, 0.011109 / 4,0.038684, 0.12578, 0.022038, 54.356);
@@ -156,7 +156,7 @@ public final class Constants {
 
         public static final double ANGLE_MOTOR_CONVERSION_FACTOR = (1 / 10.0) * (1 / 3.0) * (16.0 / 40.0);
 
-        public static final double INTAKE_ENCODER_OFFSET_POSITION = 0.2293;
+        public static final double INTAKE_ENCODER_OFFSET_TICKS = 950;
         public static final int INTAKE_READING_OFFSET = 50; // deg
 
         public static final double AMP_SHOOTER_SPEED = -1;
