@@ -25,7 +25,9 @@ import static edu.wpi.first.units.MutableMeasure.mutable;
 import static edu.wpi.first.units.Units.*;
 import static edu.wpi.first.units.Units.RPM;
 import static frc.lib.Color.Colors.GREEN;
+import static frc.lib.Color.Colors.RED;
 import static frc.robot.Constants.ShooterConstants.*;
+import static frc.robot.subsystems.LEDs.LEDPattern.BLINKING;
 import static frc.robot.subsystems.LEDs.LEDPattern.SOLID;
 
 public class Shooter extends SubsystemBase implements Logged {
@@ -148,8 +150,10 @@ public class Shooter extends SubsystemBase implements Logged {
                     this.currentState = new ShooterState(WOOFER_RPM);
                     upperShooter.set(upperSpeed.getDouble(SPEAKER_DC * 100) / 100.0);
                     lowerShooter.set(lowerSpeed.getDouble(SPEAKER_DC * 100) / 100.0);
+
                 },
-                this::stopMotors).until(noteShotTrigger.or(intakeTrigger.negate().debounce(1)));
+                this::stopMotors).until(intakeTrigger.negate().debounce(0.1))
+                .alongWith(leds.setPattern(BLINKING, RED.color));
     }
 
     public Command shootToAmpManualCommand() {

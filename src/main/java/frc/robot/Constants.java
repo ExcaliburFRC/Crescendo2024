@@ -156,7 +156,7 @@ public final class Constants {
 
         public static final double ANGLE_MOTOR_CONVERSION_FACTOR = (1 / 10.0) * (1 / 3.0) * (16.0 / 40.0);
 
-        public static final double INTAKE_ENCODER_OFFSET_TICKS = 950;
+        public static final double INTAKE_ENCODER_OFFSET_TICKS = 950 + (4096 * 1);
         public static final int INTAKE_READING_OFFSET = 50; // deg
 
         public static final double AMP_SHOOTER_SPEED = -1;

@@ -8,6 +8,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.units.*;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -27,9 +28,12 @@ import static com.ctre.phoenix.motorcontrol.TalonSRXFeedbackDevice.CTRE_MagEncod
 import static edu.wpi.first.units.MutableMeasure.mutable;
 import static edu.wpi.first.units.Units.*;
 import static edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior.kCancelIncoming;
+import static frc.lib.Color.Colors.GREEN;
 import static frc.lib.Color.Colors.ORANGE;
 import static frc.robot.Constants.IntakeConstants.*;
 import static frc.robot.subsystems.LEDs.LEDPattern.BLINKING;
+import static frc.robot.subsystems.LEDs.LEDPattern.SOLID;
+
 
 public class Intake extends SubsystemBase implements Logged {
     private final Neo intakeMotor = new Neo(INTAKE_MOTOR_ID, Model.SparkMax);
@@ -55,6 +59,7 @@ public class Intake extends SubsystemBase implements Logged {
 
     private final LEDs leds = LEDs.getInstance();
 
+
     public Intake() {
         intakeEncoder.configFactoryDefault();
         intakeEncoder.configSelectedFeedbackSensor(CTRE_MagEncoder_Absolute, 0, 10);
@@ -77,6 +82,7 @@ public class Intake extends SubsystemBase implements Logged {
 
     @Log.NT(key = "intakeAngle")
     public double getAngle() {
+        System.out.println(intakeEncoder.getSelectedSensorPosition());
         return Conversions.magTicksToDegrees(INTAKE_ENCODER_OFFSET_TICKS - intakeEncoder.getSelectedSensorPosition());
     }
 
@@ -116,7 +122,11 @@ public class Intake extends SubsystemBase implements Logged {
                 setIntakeCommand(new IntakeState(0.35, angle, true)).until(hasNoteTrigger.debounce(0.15)),
                 new InstantCommand(vibrateCommand::schedule),
                 setIntakeCommand(new IntakeState(0, IntakeAngle.SHOOTER, false)).until(atShooterTrigger),
-                pumpNoteCommand().unless(DriverStation::isAutonomous)).withName("intakeCommand");
+                pumpNoteCommand().unless(DriverStation::isAutonomous)).withName("intakeCommand")
+                .deadlineWith(new StartEndCommand(
+                        ()-> leds.setPattern(BLINKING, ORANGE.color).schedule(),
+                        ()-> leds.setPattern(SOLID, GREEN.color).withTimeout(1.5).schedule()
+                ));
     }
 
     public Command halfIntakeFromGround(){
@@ -133,7 +143,8 @@ public class Intake extends SubsystemBase implements Logged {
 
     public Command transportToShooterCommand(BooleanSupplier toAmp) {
         return setIntakeCommand(new IntakeState(toAmp.getAsBoolean() ? -0.4 : -0.75, IntakeAngle.SHOOTER, true))
-                .until(hasNoteTrigger.negate().debounce(0.75));
+                .until(hasNoteTrigger.negate().debounce(0.75))
+                .deadlineWith(leds.setPattern(SOLID, GREEN.color));
     }
 
     public Command pumpNoteCommand() {
@@ -160,14 +171,14 @@ public class Intake extends SubsystemBase implements Logged {
         return intakingTrigger.getAsBoolean();
     }
 
-    @Log.NT (key = "intakeMotorPosition")
-    private double getMotorAngle(){
-        return angleMotor.getPosition();
-    }
-
-    @Log.NT(key = "intakeVelocity")
+    @Log.NT
     private double getIntakeVel() {
         return intakeMotor.getVelocity();
+    }
+
+    @Log.NT
+    private double getAngleMotorOutputDC(){
+        return angleMotor.getAppliedOutput();
     }
 
     // SysId stuff
