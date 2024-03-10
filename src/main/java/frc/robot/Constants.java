@@ -112,9 +112,8 @@ public final class Constants {
         public static final double kTurningEncoderRotationsToRadians = kTurningMotorGearRatio * 2 * PI;
         public static final double kTurningEncoderRPMToRadiansPerSec = kTurningEncoderRotationsToRadians / 60;
 
-        public static final Gains MODULE_ANGLE_GAINS = new Gains(0.75, 0, 0);
+        public static final Gains MODULE_ANGLE_GAINS = new Gains(0.67, 0, 0);
         public static final double TOLERANCE = 0.07;
-        public static final double rel_TOLERANCE = 0.5;
 
         public static final int DRIVE_CURRENT_LIMIT = 60;
         public static final int ANGLE_CURRENT_LIMIT = 25;

@@ -9,11 +9,9 @@ import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.lib.Gains;
 import frc.lib.Neo;
 import frc.lib.Neo.Model;
 import frc.robot.Constants;
-import monologue.Annotations;
 import monologue.Annotations.Log;
 import monologue.LogLevel;
 import monologue.Logged;
@@ -66,7 +64,12 @@ public class SwerveModule implements Sendable, Logged {
     _spinningPIDController = new PIDController(MODULE_ANGLE_GAINS.kp, MODULE_ANGLE_GAINS.ki, MODULE_ANGLE_GAINS.kd);
     _spinningPIDController.enableContinuousInput(-PI, PI);
 
-    resetEncoders();
+    new Thread(() -> {
+      try {
+        Thread.sleep(2_000);
+        resetEncoders();
+      } catch (Exception ignored) {}
+    }).start();
   }
 
   // return the module angle between -PI to PI
@@ -104,8 +107,8 @@ public class SwerveModule implements Sendable, Logged {
   }
 
   @Log.NT
-  public double getAbsPosition(){
-    return _absEncoder.getAbsolutePosition();
+  public double getRelativeAnglePosition(){
+    return _angleMotor.getPosition();
   }
 
   @Log.NT
@@ -126,16 +129,12 @@ public class SwerveModule implements Sendable, Logged {
   }
 
   public void spinTo(double setpoint){
-    if (Math.abs(getResetRad() - setpoint) > TOLERANCE) {
-      _angleMotor.set(-_spinningPIDController.calculate(setpoint, getResetRad()));
+    if (Math.abs(getRelativeAnglePosition() - setpoint) > TOLERANCE) {
+      _angleMotor.set(-_spinningPIDController.calculate(setpoint, getRelativeAnglePosition()));
     }
     else {
       _angleMotor.set(0);
     }
-  }
-
-  public double getAbsPos(){
-    return _absEncoder.getAbsolutePosition();
   }
 
   public void stopModule() {
@@ -156,8 +155,7 @@ public class SwerveModule implements Sendable, Logged {
   @Override
   public void initSendable(SendableBuilder builder) {
     builder.setSmartDashboardType("Gyro");
-    builder.addDoubleProperty("Value", () -> Math.toDegrees(getAbsEncoderRad()), null);
-    builder.addDoubleProperty("absEncoderPos", this::getAbsPos, null);
+    builder.addDoubleProperty("Value", () -> Math.toDegrees(getRelativeAnglePosition()), null);
     builder.addDoubleProperty("drive output current", _driveMotor::getOutputCurrent, null);
     builder.addDoubleProperty("drive dc output", _driveMotor::getAppliedOutput, null);
   }

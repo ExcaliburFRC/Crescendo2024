@@ -262,7 +262,7 @@ public class Swerve extends SubsystemBase implements Logged {
                 },
                 (__) -> {
                     stopModules();
-                    resetAngleEncoders();
+//                    resetAngleEncoders();
                 },
                 swerveModules[FRONT_LEFT].isReset
                         .and(swerveModules[FRONT_RIGHT].isReset)
@@ -286,7 +286,7 @@ public class Swerve extends SubsystemBase implements Logged {
     }
 
     // other methods
-    private void resetAngleEncoders() {
+    public void resetAngleEncoders() {
         foreachModule(SwerveModule::resetEncoders);
     }
 

@@ -122,6 +122,8 @@ public class RobotContainer implements Logged {
                 new InstantCommand(() -> swerve.driveRobotRelative(new ChassisSpeeds(0, 0, 0))),
                 intake.shootToAmpCommand()));
         driver.povUp().onTrue(climberModeCommand);
+
+        driver.povRight().onTrue(new InstantCommand(swerve::resetAngleEncoders));
     }
 
     // triangle - shoot to speaker

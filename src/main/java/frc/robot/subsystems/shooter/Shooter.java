@@ -129,14 +129,6 @@ public class Shooter extends SubsystemBase implements Logged {
         }).until(hasNoteTrigger.negate());
     }
 
-//    public Command prepShooterCommand(Trigger isAtSpeakerRadius, Intake intake) {
-//        return new ContinuouslyConditionalCommand(
-//                prepShooterCommand().alongWith(leds.setPattern(BLINKING, GREEN.color)),
-//                new RunCommand(upperShooter::stopMotor, this),
-//                isAtSpeakerRadius.and(intake.atShooterTrigger).and(intake.hasNoteTrigger)
-//        );
-//    }
-
     public Command prepShooterCommand() {
         return new RunCommand(() -> {
             upperShooter.set(SPEAKER_DC);
@@ -153,7 +145,7 @@ public class Shooter extends SubsystemBase implements Logged {
 
                 },
                 this::stopMotors).until(intakeTrigger.negate().debounce(0.1))
-                .alongWith(leds.setPattern(BLINKING, RED.color));
+                .alongWith(new InstantCommand(()-> leds.setPattern(BLINKING, RED.color).schedule()));
     }
 
     public Command shootToAmpManualCommand() {

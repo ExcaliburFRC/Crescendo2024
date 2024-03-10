@@ -82,7 +82,6 @@ public class Intake extends SubsystemBase implements Logged {
 
     @Log.NT(key = "intakeAngle")
     public double getAngle() {
-        System.out.println(intakeEncoder.getSelectedSensorPosition());
         return Conversions.magTicksToDegrees(INTAKE_ENCODER_OFFSET_TICKS - intakeEncoder.getSelectedSensorPosition());
     }
 
