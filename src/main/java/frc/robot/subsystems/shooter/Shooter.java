@@ -1,13 +1,11 @@
 package frc.robot.subsystems.shooter;
 
-import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.units.*;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.event.BooleanEvent;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -23,7 +21,6 @@ import static com.revrobotics.CANSparkBase.IdleMode.kBrake;
 import static com.revrobotics.CANSparkBase.IdleMode.kCoast;
 import static edu.wpi.first.units.MutableMeasure.mutable;
 import static edu.wpi.first.units.Units.*;
-import static edu.wpi.first.units.Units.RPM;
 import static frc.lib.Color.Colors.GREEN;
 import static frc.lib.Color.Colors.RED;
 import static frc.robot.Constants.ShooterConstants.*;
@@ -137,15 +134,19 @@ public class Shooter extends SubsystemBase implements Logged {
     }
 
     public Command shootToSpeakerManualCommand(Trigger intakeTrigger) {
-        return this.runEnd(
+        return new FunctionalCommand(
                 ()-> {
                     this.currentState = new ShooterState(WOOFER_RPM);
+//                    leds.setPattern(BLINKING, RED.color).schedule();
+                },
+                ()-> {
                     upperShooter.set(upperSpeed.getDouble(SPEAKER_DC * 100) / 100.0);
                     lowerShooter.set(lowerSpeed.getDouble(SPEAKER_DC * 100) / 100.0);
-
                 },
-                this::stopMotors).until(intakeTrigger.negate().debounce(0.1))
-                .alongWith(new InstantCommand(()-> leds.setPattern(BLINKING, RED.color).schedule()));
+                (__) -> this.stopMotors(),
+                intakeTrigger.negate().debounce(0.1),
+                this
+        );
     }
 
     public Command shootToAmpManualCommand() {

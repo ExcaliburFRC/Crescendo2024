@@ -82,7 +82,12 @@ public class Intake extends SubsystemBase implements Logged {
 
     @Log.NT(key = "intakeAngle")
     public double getAngle() {
-        return Conversions.magTicksToDegrees(INTAKE_ENCODER_OFFSET_TICKS - intakeEncoder.getSelectedSensorPosition());
+        double value = Conversions.magTicksToDegrees(INTAKE_ENCODER_OFFSET_TICKS - intakeEncoder.getSelectedSensorPosition());
+
+//        while (value > 200) value -= 360;
+//        while (value < -50) value += 360;
+
+        return value;
     }
 
     private void setIntakeSpeed(double speed) {
@@ -204,5 +209,9 @@ public class Intake extends SubsystemBase implements Logged {
 
     public Command sysidDynamic(SysIdRoutine.Direction direction) {
         return angleSysid.dynamic(direction);
+    }
+    @Override
+    public void periodic(){
+
     }
 }

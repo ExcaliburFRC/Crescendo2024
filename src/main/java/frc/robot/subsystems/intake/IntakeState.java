@@ -12,7 +12,7 @@ public class IntakeState {
         AMP(85),
         HUMAN_PLAYER_BACKWARD(146),
         HUMAN_PLAYER_FORWARD(104), // needs to intake from shooter as well
-        SHOOTER(168);
+        SHOOTER(164);
 
         public final int angle;
 

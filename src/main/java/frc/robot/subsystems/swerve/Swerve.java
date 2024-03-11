@@ -2,7 +2,6 @@ package frc.robot.subsystems.swerve;
 
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
-import com.kauailabs.navx.frc.AHRS;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.path.GoalEndState;
@@ -11,28 +10,20 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.SPI;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -41,19 +32,13 @@ import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.PhotonVision;
 import frc.robot.Constants;
-import frc.robot.Constants.FieldConstants.*;
-import frc.robot.RobotContainer;
+import frc.robot.Constants.FieldConstants.FieldLocations;
 import frc.robot.util.AllianceUtils;
 import frc.robot.util.AllianceUtils.AlliancePose;
 import monologue.Annotations.Log;
 import monologue.Logged;
 import org.photonvision.EstimatedRobotPose;
-import org.photonvision.PhotonCamera;
-import org.photonvision.targeting.PhotonPipelineResult;
-import org.photonvision.targeting.PhotonTrackedTarget;
 
-import java.lang.annotation.Target;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
@@ -95,7 +80,6 @@ public class Swerve extends SubsystemBase implements Logged {
                     Modules.BR.ABS_ENCODER_CHANNEL,
                     Modules.BR.OFFSET_ANGLE)};
 
-    private final AHRS navx = new AHRS(SPI.Port.kMXP);
     private final Pigeon2 pigeon = new Pigeon2(Constants.SwerveConstants.PIGEON_ID);
 
     private final ProfiledPIDController anglePIDcontroller = new ProfiledPIDController(
@@ -140,21 +124,12 @@ public class Swerve extends SubsystemBase implements Logged {
 
     // gyro getters and setters
     public void resetGyroHardware() {
-        navx.reset();
         pigeon.reset();
-    }
-
-    private double getNavxDegrees() {
-        return Math.IEEEremainder(navx.getAngle(), 360);
     }
 
     @Log.NT
     private double getPigeonDegrees() {
         return pigeon.getAngle();
-    }
-
-    public double getRobotPitch() {
-        return navx.getRoll() - 0.46;
     }
 
     // odometry getters and setters
