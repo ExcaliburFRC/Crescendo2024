@@ -120,8 +120,8 @@ public final class Constants {
     }
 
     public static final class ShooterConstants {
-        public static final int UPPER_SHOOTER_MOTOR_ID = 41;
-        public static final int LOWER_SHOOTER_MOTOR_ID = 42;
+        public static final int UPPER_SHOOTER_MOTOR_ID = 42;
+        public static final int LOWER_SHOOTER_MOTOR_ID = 41;
 
         public static final int SHOOTER_CURRENT_LIMIT = 70;
 
@@ -130,11 +130,16 @@ public final class Constants {
         public static final Gains UPPER_GAINS = new Gains(new Gains(0.00028558, 0, 0), new Gains(0.24192, 0, 0.11542, 0.012846));
         public static final Gains LOWER_GAINS = new Gains(new Gains(0.0006, 0, 0), new Gains(0.25911, 0, 0.11452, 0.01353));
 
-        public static final double AMP_UPPER_SHOOTER_RPM = 1690; // 2300
-        public static final double AMP_LOWER_SHOOTER_RPM = 4273; // 4200
+        public static final double AMP_UPPER_SHOOTER_RPM = 2160;
+        public static final double AMP_LOWER_SHOOTER_RPM = 3320;
+
+        public static final double AMP_UPPER_SHOOTER_DC = 55;
+        public static final double AMP_LOWER_SHOOTER_DC = 35;
+
+
         public static final double WOOFER_RPM = 0;
 
-        public static final double SHOOTER_PID_TOLERANCE = 300;
+        public static final double SHOOTER_PID_TOLERANCE = 150;
 
         public static final double SPEAKER_DC = 0.85;
         public static final double SPEAKER_PREP_RADIUS = 0;
@@ -155,7 +160,7 @@ public final class Constants {
 
         public static final double ANGLE_MOTOR_CONVERSION_FACTOR = (1 / 10.0) * (1 / 3.0) * (16.0 / 40.0);
 
-        public static final double INTAKE_ENCODER_OFFSET_TICKS = 950 + (4096 * 1);
+        public static final double INTAKE_ENCODER_OFFSET_TICKS = 950 + (4096 * 2);
         public static final int INTAKE_READING_OFFSET = 50; // deg
 
         public static final double AMP_SHOOTER_SPEED = -1;

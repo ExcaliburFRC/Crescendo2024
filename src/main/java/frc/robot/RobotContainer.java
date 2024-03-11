@@ -18,6 +18,7 @@ import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.util.AllianceUtils;
+import frc.robot.util.PDH;
 import monologue.Logged;
 
 import static edu.wpi.first.math.MathUtil.applyDeadband;
@@ -34,6 +35,8 @@ public class RobotContainer implements Logged {
     private final LEDs leds = LEDs.getInstance();
     private final Intake intake = new Intake();
     private final Climber climber = new Climber();
+
+    private final PDH pdh = new PDH();
 
     // controllers
     private final CommandPS5Controller driver = new CommandPS5Controller(0);
@@ -113,17 +116,16 @@ public class RobotContainer implements Logged {
         driver.touchpad().onTrue(intake.pumpNoteCommand());
 
         // shooter
-        driver.povLeft().and(intake.intakingTrigger.negate()).toggleOnTrue(scoreNoteCommand(shooter.shootToAmpManualCommand(), driver.R1(), true));
+        driver.square().and(intake.intakingTrigger.negate()).toggleOnTrue(scoreNoteCommand(shooter.shootToAmpManualCommand(), driver.R1(), true));
         driver.triangle().and(intake.intakingTrigger.negate()).toggleOnTrue(scoreNoteCommand(shooter.shootToSpeakerManualCommand(intake.hasNoteTrigger), driver.R1(), false));
 
-        driver.square().onTrue(new SequentialCommandGroup(
+        driver.povLeft().onTrue(new SequentialCommandGroup(
                 swerve.straightenModulesCommand(),
                 new RunCommand(() -> swerve.driveRobotRelative(new ChassisSpeeds(-0.75, 0, 0))).withTimeout(0.12),
                 new InstantCommand(() -> swerve.driveRobotRelative(new ChassisSpeeds(0, 0, 0))),
                 intake.shootToAmpCommand()));
-        driver.povUp().onTrue(climberModeCommand);
 
-        driver.povRight().onTrue(new InstantCommand(swerve::resetAngleEncoders));
+        driver.povUp().onTrue(climberModeCommand);
     }
 
     // triangle - shoot to speaker
@@ -159,29 +161,6 @@ public class RobotContainer implements Logged {
                 .withTimeout(seconds).ignoringDisable(true);
     }
 
-    public Command dynamicIntakeCommand() {
-        return new SequentialCommandGroup(
-                // intake from both the intake and the shooter
-                new ParallelDeadlineGroup(
-                        new WaitUntilCommand(intake.hasNoteTrigger.or(shooter.hasNoteTrigger)),
-//                        intake.intakeFromAngleCommand(HUMAN_PLAYER_BACKWARD, intakeVibrate),
-                        shooter.intakeFromShooterCommand()),
-
-                new ConditionalCommand(
-                        // if the note is in the shooter, transport it to the intake
-                        new ParallelCommandGroup(
-//                                intake.intakeFromAngleCommand(SHOOTER, intakeVibrate),
-                                new WaitCommand(0.75).andThen(shooter.transportToIntakeCommand()).until(intake.hasNoteTrigger)
-                        ),
-                        // if it's in the intake, do nothing
-                        Commands.none(),
-                        shooter.hasNoteTrigger),
-
-                // pump the note (just to make sure)
-                intake.pumpNoteCommand()
-        );
-    }
-
     public Command toggleMotorsIdleMode() {
         return new ParallelCommandGroup(
                 swerve.toggleIdleModeCommand(),
@@ -194,7 +173,6 @@ public class RobotContainer implements Logged {
     private void init() {
         NamedCommands.registerCommand("shootToSpeakerCommand", scoreNoteCommand(shooter.shootToSpeakerManualCommand(intake.hasNoteTrigger), new Trigger(() -> true), false));
         NamedCommands.registerCommand("prepShooterCommand", shooter.prepShooterCommand());
-        NamedCommands.registerCommand("shootToAmpCommand", scoreNoteCommand(shooter.shootToAmpCommand(), shooter.shooterReadyTrigger, false));
 
         NamedCommands.registerCommand("intakeFromGround", intake.halfIntakeFromGround());
         NamedCommands.registerCommand("closeIntake", intake.closeIntakeCommand());

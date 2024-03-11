@@ -84,8 +84,8 @@ public class Intake extends SubsystemBase implements Logged {
     public double getAngle() {
         double value = Conversions.magTicksToDegrees(INTAKE_ENCODER_OFFSET_TICKS - intakeEncoder.getSelectedSensorPosition());
 
-//        while (value > 200) value -= 360;
-//        while (value < -50) value += 360;
+        while (value > 200) value -= 360;
+        while (value < -50) value += 360;
 
         return value;
     }
@@ -146,7 +146,7 @@ public class Intake extends SubsystemBase implements Logged {
     }
 
     public Command transportToShooterCommand(BooleanSupplier toAmp) {
-        return setIntakeCommand(new IntakeState(toAmp.getAsBoolean() ? -0.4 : -0.75, IntakeAngle.SHOOTER, true))
+        return setIntakeCommand(new IntakeState(toAmp.getAsBoolean() ? -0.3 : -0.75, IntakeAngle.SHOOTER, true))
                 .until(hasNoteTrigger.negate().debounce(0.75))
                 .deadlineWith(leds.setPattern(SOLID, GREEN.color));
     }
