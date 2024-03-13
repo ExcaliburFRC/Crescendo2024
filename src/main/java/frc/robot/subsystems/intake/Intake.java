@@ -146,7 +146,7 @@ public class Intake extends SubsystemBase implements Logged {
     }
 
     public Command transportToShooterCommand(BooleanSupplier toAmp) {
-        return setIntakeCommand(new IntakeState(toAmp.getAsBoolean() ? -0.3 : -0.75, IntakeAngle.SHOOTER, true))
+        return setIntakeCommand(new IntakeState(toAmp.getAsBoolean() ? -0.6 : -0.75, IntakeAngle.SHOOTER, true))
                 .until(hasNoteTrigger.negate().debounce(0.75))
                 .deadlineWith(leds.setPattern(SOLID, GREEN.color));
     }

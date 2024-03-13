@@ -72,8 +72,8 @@ public class RobotContainer implements Logged {
         farShooter = !farShooter;
 
         if (farShooter) {
-            shooter.upperSpeed.setDouble(60);
-            shooter.lowerSpeed.setDouble(100);
+            shooter.upperSpeed.setDouble(100);
+            shooter.lowerSpeed.setDouble(60);
         } else {
             shooter.upperSpeed.setDouble(SPEAKER_DC * 100);
             shooter.lowerSpeed.setDouble(SPEAKER_DC * 100);
@@ -116,7 +116,7 @@ public class RobotContainer implements Logged {
         driver.touchpad().onTrue(intake.pumpNoteCommand());
 
         // shooter
-        driver.square().and(intake.intakingTrigger.negate()).toggleOnTrue(scoreNoteCommand(shooter.shootToAmpManualCommand(), driver.R1(), true));
+        driver.square().and(intake.intakingTrigger.negate()).toggleOnTrue(scoreNoteCommand(shooter.shootToAmpManualCommand(intake.hasNoteTrigger), driver.R1(), true));
         driver.triangle().and(intake.intakingTrigger.negate()).toggleOnTrue(scoreNoteCommand(shooter.shootToSpeakerManualCommand(intake.hasNoteTrigger), driver.R1(), false));
 
         driver.povLeft().onTrue(new SequentialCommandGroup(
@@ -126,6 +126,8 @@ public class RobotContainer implements Logged {
                 intake.shootToAmpCommand()));
 
         driver.povUp().onTrue(climberModeCommand);
+
+        driver.povRight().onTrue(swerve.pathFindThenFollowPath("shootFromLine").andThen(shooter.stopShooterCommand()));
     }
 
     // triangle - shoot to speaker
@@ -150,7 +152,7 @@ public class RobotContainer implements Logged {
                 swerve.straightenModulesCommand(),
                 intake.intakeFromAngleCommand(HUMAN_PLAYER_BACKWARD, intakeVibrate),
                 new WaitCommand(1),
-                scoreNoteCommand(shooter.shootToAmpManualCommand(), new Trigger(()-> true), true)
+                scoreNoteCommand(shooter.shootToAmpManualCommand(intake.hasNoteTrigger), new Trigger(()-> true), true)
         );
     }
 
@@ -177,6 +179,9 @@ public class RobotContainer implements Logged {
         NamedCommands.registerCommand("intakeFromGround", intake.halfIntakeFromGround());
         NamedCommands.registerCommand("closeIntake", intake.closeIntakeCommand());
         NamedCommands.registerCommand("pumpNote", intake.pumpNoteCommand());
+
+        NamedCommands.registerCommand("prepFarShooter", shooter.manualShooter(1, 0.6, intake.hasNoteTrigger));
+        NamedCommands.registerCommand("farShooter", scoreNoteCommand(shooter.manualShooter(1, 0.6, intake.hasNoteTrigger), new Trigger(()-> true), false));
 
         pitTab.add("Match prep", matchPrepCommand().withName("MatchPrep")).withSize(2, 2);
         pitTab.add("System tester", systemTesterCommand().withName("SystemTest")).withSize(2, 2);

@@ -27,10 +27,14 @@ public class SwerveModule implements Sendable, Logged {
   //create the module's encoders
   private final DutyCycleEncoder _absEncoder;
 
+
   private final double _resetOffset;
   private final double _absEncoderOffsetRad;
   //a pid controller for the angle of the module
   private final PIDController _spinningPIDController;
+  private final PIDController speedController;
+  @Log.NT
+  private final String moduleName;
 
   public Trigger isReset = new Trigger(()-> Math.abs(getResetRad()) < TOLERANCE).debounce(0.1);
 
@@ -41,7 +45,9 @@ public class SwerveModule implements Sendable, Logged {
           boolean driveMotorReversed,
           boolean spinningMotorReversed,
           int absEncoderChannel,
-          double offsetAngle) {
+          double offsetAngle,
+          String name,
+          double kPSpeed) {
     _absEncoder = new DutyCycleEncoder(absEncoderChannel);
     _absEncoderOffsetRad = offsetAngle * 2 * PI;
     _resetOffset = _absEncoderOffsetRad - PI;
@@ -61,8 +67,12 @@ public class SwerveModule implements Sendable, Logged {
     _driveMotor.setConversionFactors(kDriveEncoderRotationsToMeters, kDriveEncoderRPMToMeterPerSec);
     _angleMotor.setConversionFactors(kTurningEncoderRotationsToRadians, kTurningEncoderRPMToRadiansPerSec);
 
+    speedController = new PIDController(kPSpeed,0,0);
+
     _spinningPIDController = new PIDController(MODULE_ANGLE_GAINS.kp, MODULE_ANGLE_GAINS.ki, MODULE_ANGLE_GAINS.kd);
     _spinningPIDController.enableContinuousInput(-PI, PI);
+
+    this.moduleName = name;
 
     new Thread(() -> {
       try {
@@ -123,8 +133,8 @@ public class SwerveModule implements Sendable, Logged {
     }
 
     state = SwerveModuleState.optimize(state, getState().angle);
-
-    _driveMotor.set(state.speedMetersPerSecond / Constants.SwerveConstants.MAX_VELOCITY_METER_PER_SECOND);
+    double speed = state.speedMetersPerSecond / Constants.SwerveConstants.MAX_VELOCITY_METER_PER_SECOND;
+    _driveMotor.set(speed - speedController.calculate(getModuleVelocity(), speed));
     _angleMotor.set(_spinningPIDController.calculate(_angleMotor.getPosition(), state.angle.getRadians()));
   }
 

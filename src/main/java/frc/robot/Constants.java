@@ -127,11 +127,11 @@ public final class Constants {
 
         public static final int SHOOTER_BEAMBREAK_CHANNEL = 9;
 
-        public static final Gains UPPER_GAINS = new Gains(new Gains(0.00028558, 0, 0), new Gains(0.24192, 0, 0.11542, 0.012846));
-        public static final Gains LOWER_GAINS = new Gains(new Gains(0.0006, 0, 0), new Gains(0.25911, 0, 0.11452, 0.01353));
+        public static final Gains UPPER_GAINS = new Gains(new Gains(0.00028558, 0, 0), new Gains(0.24192, 0, 0.12725055, 0.012846));
+        public static final Gains LOWER_GAINS = new Gains(new Gains(0.0006, 0, 0), new Gains(0.25911, 0, 0.1131892776, 0.01353));
 
-        public static final double AMP_UPPER_SHOOTER_RPM = 2160;
-        public static final double AMP_LOWER_SHOOTER_RPM = 3320;
+        public static final double AMP_UPPER_SHOOTER_RPM = 1000;
+        public static final double AMP_LOWER_SHOOTER_RPM = 2600;
 
         public static final double AMP_UPPER_SHOOTER_DC = 55;
         public static final double AMP_LOWER_SHOOTER_DC = 35;

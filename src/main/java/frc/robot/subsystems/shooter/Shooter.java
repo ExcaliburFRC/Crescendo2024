@@ -1,5 +1,6 @@
 package frc.robot.subsystems.shooter;
 
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.units.*;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -73,7 +74,7 @@ public class Shooter extends SubsystemBase implements Logged {
         return this.currentState;
     }
 
-    public Command setShootercommand(ShooterState state) {
+    public Command setShootercommand(ShooterState state, Trigger intakeTrigger) {
         return new FunctionalCommand(
                 ()-> currentState = state,
                 ()-> {
@@ -86,23 +87,16 @@ public class Shooter extends SubsystemBase implements Logged {
                     stopMotors();
                     currentState = new ShooterState(0);
                 },
-                noteShotTrigger, this);
+                intakeTrigger.negate().debounce(1), this);
     }
 
-    public Command shootToAmpCommand() {
-        return setShootercommand(new ShooterState(AMP_UPPER_SHOOTER_RPM, AMP_LOWER_SHOOTER_RPM));
+    public Command shootToAmpCommand(Trigger intakeTrigger) {
+        return setShootercommand(new ShooterState(AMP_UPPER_SHOOTER_RPM, AMP_LOWER_SHOOTER_RPM), intakeTrigger);
     }
 
-    public Command shootFromWooferCommand() {
-        return setShootercommand(new ShooterState(WOOFER_RPM));
-    }
-
-    public Command shootToLocationCommand(FieldLocations locations) {
-        return new ConditionalCommand(
-                shootToAmpCommand(),
-                shootFromWooferCommand(),
-                () -> locations.equals(FieldLocations.AMPLIFIER));
-    }
+//    public Command shootFromWooferCommand() {
+//        return setShootercommand(new ShooterState(WOOFER_RPM), );
+//    }
 
     public Command prepShooterCommand() {
         return new RunCommand(() -> {
@@ -124,13 +118,32 @@ public class Shooter extends SubsystemBase implements Logged {
 //        ).alongWith(leds.setPattern(BLINKING, RED.color));
     }
 
-    public Command shootToAmpManualCommand() {
+    public Command shootToAmpManualCommand(Trigger intakeTrigger) {
         return this.runEnd(
                 ()-> {
-                    upperShooter.setVoltage(4.24);
-                    lowerShooter.setVoltage(6.25);
+//                    upperShooter.setVoltage(4.24);
+//                    lowerShooter.setVoltage(6.25);
+
+                    upperShooter.set(upperSpeed.getDouble(SPEAKER_DC * 100) / 100.0);
+                    lowerShooter.set(lowerSpeed.getDouble(SPEAKER_DC * 100) / 100.0);
                 },
-                this::stopMotors).until(noteShotTrigger);
+                this::stopMotors).until(intakeTrigger.negate().debounce(1));
+    }
+
+    public Command manualShooter(double upper, double lower, Trigger intakeTrigger) {
+        return this.runEnd(
+                ()-> {
+                    upperShooter.set(upper);
+                    lowerShooter.set(lower);
+                },
+                ()-> {}).until(intakeTrigger.negate().debounce(1));
+    }
+
+    public Command stopShooterCommand(){
+        return new InstantCommand(()-> {
+            upperShooter.set(0);
+            lowerShooter.set(0);
+        });
     }
 
     public Command toggleIdleModeCommand() {

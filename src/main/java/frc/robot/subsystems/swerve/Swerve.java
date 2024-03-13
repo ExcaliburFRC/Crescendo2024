@@ -33,6 +33,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.PhotonVision;
 import frc.robot.Constants;
 import frc.robot.Constants.FieldConstants.FieldLocations;
+import frc.robot.RobotContainer;
 import frc.robot.util.AllianceUtils;
 import frc.robot.util.AllianceUtils.AlliancePose;
 import monologue.Annotations.Log;
@@ -57,28 +58,37 @@ public class Swerve extends SubsystemBase implements Logged {
                     Modules.FL.DRIVE_MOTOR_REVERSED,
                     Modules.FL.SPIN_MOTOR_REVERSED,
                     Modules.FL.ABS_ENCODER_CHANNEL,
-                    Modules.FL.OFFSET_ANGLE),
+                    Modules.FL.OFFSET_ANGLE,
+                    "FL",
+                    0),
             new SwerveModule(
                     Modules.FR.DRIVE_MOTOR_ID,
                     Modules.FR.SPIN_MOTOR_ID,
                     Modules.FR.DRIVE_MOTOR_REVERSED,
                     Modules.FR.SPIN_MOTOR_REVERSED,
                     Modules.FR.ABS_ENCODER_CHANNEL,
-                    Modules.FR.OFFSET_ANGLE),
+                    Modules.FR.OFFSET_ANGLE,
+                    "FR",
+                    0.005),
             new SwerveModule(
                     Modules.BL.DRIVE_MOTOR_ID,
                     Modules.BL.SPIN_MOTOR_ID,
                     Modules.BL.DRIVE_MOTOR_REVERSED,
                     Modules.BL.SPIN_MOTOR_REVERSED,
                     Modules.BL.ABS_ENCODER_CHANNEL,
-                    Modules.BL.OFFSET_ANGLE),
+                    Modules.BL.OFFSET_ANGLE,
+                    "BL",
+                    0),
             new SwerveModule(
                     Modules.BR.DRIVE_MOTOR_ID,
                     Modules.BR.SPIN_MOTOR_ID,
                     Modules.BR.DRIVE_MOTOR_REVERSED,
                     Modules.BR.SPIN_MOTOR_REVERSED,
                     Modules.BR.ABS_ENCODER_CHANNEL,
-                    Modules.BR.OFFSET_ANGLE)};
+                    Modules.BR.OFFSET_ANGLE,
+                    "BR",
+                    0),
+    };
 
     private final Pigeon2 pigeon = new Pigeon2(Constants.SwerveConstants.PIGEON_ID);
 
@@ -120,6 +130,8 @@ public class Swerve extends SubsystemBase implements Logged {
 
         initAutoBuilder();
         initShuffleboardData();
+
+        RobotContainer.matchTab.add(setOdometryPositionCommand(new Pose2d(1.3, 5.57, new Rotation2d())));
     }
 
     // gyro getters and setters
@@ -395,9 +407,10 @@ public class Swerve extends SubsystemBase implements Logged {
                 new PathPlannerAuto(autoName));
     }
 
-    public Command runPath(String pathName){
-        return setOdometryPositionCommand(PathPlannerPath.fromPathFile(pathName).getStartingDifferentialPose())
-                .andThen(AutoBuilder.followPath(PathPlannerPath.fromPathFile(pathName)));
+    public Command pathFindThenFollowPath(String pathName){
+        return AutoBuilder.pathfindThenFollowPath(
+                PathPlannerPath.fromPathFile(pathName),
+                new PathConstraints(0, 0, 0, 0));
     }
 
     public Command estimatePoseCommand(){
