@@ -1,7 +1,10 @@
 package frc.robot;
 
+import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.event.EventLoop;
@@ -16,15 +19,19 @@ import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.ShooterState;
 import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.util.AllianceUtils;
 import frc.robot.util.PDH;
 import monologue.Logged;
 
+import java.util.List;
+
 import static edu.wpi.first.math.MathUtil.applyDeadband;
 import static edu.wpi.first.wpilibj.GenericHID.RumbleType.kBothRumble;
 import static frc.lib.Color.Colors.*;
-import static frc.robot.Constants.ShooterConstants.SPEAKER_DC;
+import static frc.robot.Constants.ShooterConstants.*;
+import static frc.robot.Constants.ShooterConstants.OnTheMoveShots.*;
 import static frc.robot.subsystems.LEDs.LEDPattern.*;
 import static frc.robot.subsystems.intake.IntakeState.IntakeAngle.*;
 
@@ -68,7 +75,7 @@ public class RobotContainer implements Logged {
         }
     }).withName("ClimberMode");
 
-    private final Command shooterDistanceCommand = new InstantCommand(()-> {
+    private final Command shooterDistanceCommand = new InstantCommand(() -> {
         farShooter = !farShooter;
 
         if (farShooter) {
@@ -140,6 +147,43 @@ public class RobotContainer implements Logged {
         return shooterCommand.alongWith(new WaitUntilCommand(release).andThen(intake.transportToShooterCommand(() -> toAmp)));
     }
 
+    private Command shootOnTheMove(int end, Translation2d startingPoint) {
+        String pathName;
+        ShooterState state;
+        Translation2d nearst = startingPoint.nearest(List.of(SEGMENT1_START, SEGMENT2_START, SEGMENT3_START));
+        if (nearst.equals(SEGMENT1_START) && end == 1) {
+            pathName = "";
+            state = PATH11.state;
+        } else if (nearst.equals(SEGMENT1_START) && end == 2) {
+            pathName = "";
+            state = PATH12.state;
+        } else if (nearst.equals(SEGMENT1_START) && end == 3) {
+            pathName = "";
+            state = PATH13.state;
+        } else if (nearst.equals(SEGMENT2_START) && end == 1) {
+            pathName = "";
+            state = PATH21.state;
+        } else if (nearst.equals(SEGMENT2_START) && end == 2) {
+            pathName = "";
+            state = PATH22.state;
+        } else if (nearst.equals(SEGMENT2_START) && end == 3) {
+            pathName = "";
+            state = PATH23.state;
+        } else if (nearst.equals(SEGMENT3_START) && end == 1) {
+            pathName = "";
+            state = PATH31.state;
+        } else if (nearst.equals(SEGMENT3_START) && end == 2) {
+            pathName = "";
+            state = PATH32.state;
+        } else {
+            pathName = "";
+            state = PATH33.state;
+        }
+        PathPlannerPath shootingPath = PathPlannerPath.fromPathFile(pathName);
+        return AutoBuilder.followPath(shootingPath).alongWith(shooter.setShootercommand(state,intake.hasNoteTrigger.negate().debounce(2)));
+
+    }
+
     public Command matchPrepCommand() {
         return new InstantCommand(() -> {
         });
@@ -152,7 +196,7 @@ public class RobotContainer implements Logged {
                 swerve.straightenModulesCommand(),
                 intake.intakeFromAngleCommand(HUMAN_PLAYER_BACKWARD, intakeVibrate),
                 new WaitCommand(1),
-                scoreNoteCommand(shooter.shootToAmpManualCommand(intake.hasNoteTrigger), new Trigger(()-> true), true)
+                scoreNoteCommand(shooter.shootToAmpManualCommand(intake.hasNoteTrigger), new Trigger(() -> true), true)
         );
     }
 
@@ -181,8 +225,8 @@ public class RobotContainer implements Logged {
         NamedCommands.registerCommand("pumpNote", intake.pumpNoteCommand());
 
         NamedCommands.registerCommand("prepFarShooter", shooter.manualShooter(1, 0.6, intake.hasNoteTrigger));
-        NamedCommands.registerCommand("farShooter", scoreNoteCommand(shooter.manualShooter(1, 0.6, intake.hasNoteTrigger), new Trigger(()-> true), false));
-
+        NamedCommands.registerCommand("farShooter", scoreNoteCommand(shooter.manualShooter(1, 0.6, intake.hasNoteTrigger), new Trigger(() -> true), false));
+        NamedCommands.registerCommand("transportToShooter",intake.transportToShooterCommand(()->false));
         pitTab.add("Match prep", matchPrepCommand().withName("MatchPrep")).withSize(2, 2);
         pitTab.add("System tester", systemTesterCommand().withName("SystemTest")).withSize(2, 2);
 
@@ -193,7 +237,8 @@ public class RobotContainer implements Logged {
         matchTab.add("climberMode", climberModeCommand).withPosition(16, 4).withSize(3, 2);
         matchTab.add("FarShooter", shooterDistanceCommand).withPosition(16, 6).withSize(3, 2);
 
-        autoChooser.setDefaultOption("none", new InstantCommand(() -> {}));
+        autoChooser.setDefaultOption("none", new InstantCommand(() -> {
+        }));
         autoChooser.addOption("123", swerve.runAuto("123"));
         autoChooser.addOption("321", swerve.runAuto("321"));
         autoChooser.addOption("14", swerve.runAuto("14"));
@@ -204,8 +249,8 @@ public class RobotContainer implements Logged {
         Shuffleboard.getTab("Auto").add(autoChooser);
     }
 
-    public Command stopSwerveCommand(){
-        return swerve.driveSwerveCommand(()-> 0, ()-> 0, ()-> 0, ()-> false).withTimeout(0.1);
+    public Command stopSwerveCommand() {
+        return swerve.driveSwerveCommand(() -> 0, () -> 0, () -> 0, () -> false).withTimeout(0.1);
     }
 
     public Command getAutonomousCommand() {

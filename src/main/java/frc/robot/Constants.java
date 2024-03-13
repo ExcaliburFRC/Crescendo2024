@@ -10,6 +10,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.Gains;
+import frc.robot.subsystems.shooter.ShooterState;
 import frc.robot.util.AllianceUtils.AlliancePose;
 import frc.robot.util.SysIdConfig;
 
@@ -146,6 +147,24 @@ public final class Constants {
 
         // sysid
         public static final SysIdRoutine.Config sysidConfig = new SysIdConfig(0.5, 7, 30);
+        public static final Translation2d SEGMENT1_START = new Translation2d(0,0);
+        public static final Translation2d SEGMENT2_START = new Translation2d(0,0);
+        public static final Translation2d SEGMENT3_START = new Translation2d(0,0);
+        public enum OnTheMoveShots{
+            PATH11(0,0),
+            PATH12(0,0),
+            PATH13(0,0),
+            PATH21(0,0),
+            PATH22(0,0),
+            PATH23(0,0),
+            PATH31(0,0),
+            PATH32(0,0),
+            PATH33(0,0);
+            public ShooterState state;
+            private OnTheMoveShots(double lowerSetPoint, double upperSetPoint){
+                this.state = new ShooterState(upperSetPoint,lowerSetPoint);
+            }
+        }
     }
 
     public static final class IntakeConstants {

@@ -1,0 +1,92 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 2.68233772831182,
+        "y": 3.1997598540651633
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 2.0106680213360426,
+        "y": 3.8527720691805034
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 2.234557923661302,
+        "y": 5.7371787470847675
+      },
+      "prevControl": {
+        "x": 0.7139723370355832,
+        "y": 5.709192509294111
+      },
+      "nextControl": {
+        "x": 2.7123419614433915,
+        "y": 5.74597231833229
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 5.91941256609786,
+        "y": 7.0898469069665415
+      },
+      "prevControl": {
+        "x": 5.303715334703397,
+        "y": 5.895767427898492
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.45,
+      "rotationDegrees": -30.0,
+      "rotateFast": true
+    }
+  ],
+  "constraintZones": [],
+  "eventMarkers": [
+    {
+      "name": "New Event Marker",
+      "waypointRelativePos": 0.45,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "transportToShooter"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 5.5,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 290.0,
+    "maxAngularAcceleration": 180.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 0,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": "Teleop",
+  "previewStartingState": {
+    "rotation": -11.76828893202068,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+}
