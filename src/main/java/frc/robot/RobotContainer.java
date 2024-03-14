@@ -180,7 +180,11 @@ public class RobotContainer implements Logged {
             state = PATH33.state;
         }
         PathPlannerPath shootingPath = PathPlannerPath.fromPathFile(pathName);
-        return AutoBuilder.followPath(shootingPath).alongWith(shooter.setShootercommand(state,intake.hasNoteTrigger.negate().debounce(2)));
+        return new ParallelCommandGroup(
+
+        )
+        return new ParallelDeadlineGroup(AutoBuilder.followPath(shootingPath), vibrateControllerCommand(90, 10))
+                .alongWith(shooter.setShootercommand(state, intake.hasNoteTrigger.negate().debounce(2))).until(() -> Math.abs(driver.getLeftX())>0.3);
 
     }
 
@@ -226,7 +230,7 @@ public class RobotContainer implements Logged {
 
         NamedCommands.registerCommand("prepFarShooter", shooter.manualShooter(1, 0.6, intake.hasNoteTrigger));
         NamedCommands.registerCommand("farShooter", scoreNoteCommand(shooter.manualShooter(1, 0.6, intake.hasNoteTrigger), new Trigger(() -> true), false));
-        NamedCommands.registerCommand("transportToShooter",intake.transportToShooterCommand(()->false));
+        NamedCommands.registerCommand("transportToShooter", intake.transportToShooterCommand(() -> false));
         pitTab.add("Match prep", matchPrepCommand().withName("MatchPrep")).withSize(2, 2);
         pitTab.add("System tester", systemTesterCommand().withName("SystemTest")).withSize(2, 2);
 
