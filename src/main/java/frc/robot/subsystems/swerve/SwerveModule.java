@@ -139,8 +139,8 @@ public class SwerveModule implements Sendable, Logged {
   }
 
   public void spinTo(double setpoint){
-    if (Math.abs(getResetRad() - setpoint) > TOLERANCE) {
-      _angleMotor.set(-_spinningPIDController.calculate(setpoint, getResetRad()));
+    if (Math.abs(getRelativeAnglePosition() - setpoint) > TOLERANCE) {
+      _angleMotor.set(-_spinningPIDController.calculate(setpoint, getRelativeAnglePosition()));
     }
     else {
       _angleMotor.set(0);

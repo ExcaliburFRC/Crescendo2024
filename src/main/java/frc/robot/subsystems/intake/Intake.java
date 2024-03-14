@@ -1,15 +1,10 @@
 package frc.robot.subsystems.intake;
 
-import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.revrobotics.CANSparkBase.IdleMode;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.units.*;
-import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.I2C;
-import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -18,13 +13,11 @@ import frc.lib.Neo.Model;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.intake.IntakeState.IntakeAngle;
-import frc.robot.util.Conversions;
 import monologue.Annotations.Log;
 import monologue.Logged;
 
 import java.util.function.BooleanSupplier;
 
-import static com.ctre.phoenix.motorcontrol.TalonSRXFeedbackDevice.CTRE_MagEncoder_Absolute;
 import static edu.wpi.first.units.MutableMeasure.mutable;
 import static edu.wpi.first.units.Units.*;
 import static edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior.kCancelIncoming;
@@ -39,11 +32,11 @@ public class Intake extends SubsystemBase implements Logged {
     private final Neo intakeMotor = new Neo(INTAKE_MOTOR_ID, Model.SparkMax);
     private final Neo angleMotor = new Neo(ANGLE_MOTOR_ID, Model.SparkMax);
 
-    private final TalonSRX intakeEncoder = new TalonSRX(ENCODER_ID);
+    private final DutyCycleEncoder encoder = new DutyCycleEncoder(ENCODER_PORT);
 
     @Log.NT
-    public final DigitalInput intakeBeambreak = new DigitalInput(BEAMBREAK_PORT);
-    public final Trigger hasNoteTrigger = new Trigger(() -> !intakeBeambreak.get()).debounce(0.2);
+    public final DigitalInput beambreak = new DigitalInput(BEAMBREAK_PORT);
+    public final Trigger hasNoteTrigger = new Trigger(() -> !beambreak.get()).debounce(0.2);
 
     private final PIDController anglePIDcontroller = new PIDController(INTAKE_GAINS.kp, INTAKE_GAINS.ki, INTAKE_GAINS.kd);
     private final ArmFeedforward angleFFcontroller = new ArmFeedforward(INTAKE_GAINS.ks, INTAKE_GAINS.kg, INTAKE_GAINS.kv, INTAKE_GAINS.ka);
@@ -61,9 +54,6 @@ public class Intake extends SubsystemBase implements Logged {
 
 
     public Intake() {
-        intakeEncoder.configFactoryDefault();
-        intakeEncoder.configSelectedFeedbackSensor(CTRE_MagEncoder_Absolute, 0, 10);
-
         intakeMotor.setIdleMode(IdleMode.kCoast);
         intakeMotor.setSmartCurrentLimit(50);
 
@@ -72,35 +62,45 @@ public class Intake extends SubsystemBase implements Logged {
         angleMotor.setSmartCurrentLimit(40);
         angleMotor.setInverted(true);
         angleMotor.setOpenLoopRampRate(0.35);
-        angleMotor.setPosition(getAngle());
 
         anglePIDcontroller.setTolerance(INTAKE_TOLERANCE);
 
+        encoder.setPositionOffset(INTAKE_ENCODER_OFFSET);
+        encoder.setDistancePerRotation(360);
+
         initShuffleboard();
-        setDefaultCommand(setIntakeCommand(new IntakeState(0, IntakeAngle.SHOOTER, false)));
+//        setDefaultCommand(setIntakeCommand(new IntakeState(0, IntakeAngle.SHOOTER, false)));
+    }
+
+    @Log.NT
+    public double rawEncoderVal(){
+        return 360 - encoder.getDistance();
     }
 
     @Log.NT(key = "intakeAngle")
     public double getAngle() {
-        double value = Conversions.magTicksToDegrees(INTAKE_ENCODER_OFFSET_TICKS - intakeEncoder.getSelectedSensorPosition());
+        double val = 360 - encoder.getDistance();
 
-        while (value > 200) value -= 360;
-        while (value < -50) value += 360;
+        while (val < -50) val += 360;
+        while (val > 200) val -= 360;
 
-        return value;
+        return val;
     }
 
     private void setIntakeSpeed(double speed) {
         intakeMotor.set(speed);
     }
 
+    double encoderAngle;
     private void setIntakeAngle(IntakeAngle angle) {
         setpoint = angle;
+        encoderAngle = getAngle();
 
-        double pid = anglePIDcontroller.calculate(getAngle() + INTAKE_READING_OFFSET, angle.angle);
+        double pid = anglePIDcontroller.calculate(encoderAngle + INTAKE_READING_OFFSET, angle.angle);
         double ff = angleFFcontroller.calculate(Math.toRadians(angle.angle), 0) / 60.0;
 
-        angleMotor.setVoltage(pid + ff);
+        if (encoderAngle > 200 || encoderAngle < -50) DriverStation.reportError("intake encoder malfunctions", false);
+        else angleMotor.setVoltage(pid + ff);
     }
 
     private void stopMotors() {
@@ -128,16 +128,16 @@ public class Intake extends SubsystemBase implements Logged {
                 setIntakeCommand(new IntakeState(0, IntakeAngle.SHOOTER, false)).until(atShooterTrigger),
                 pumpNoteCommand().unless(DriverStation::isAutonomous)).withName("intakeCommand")
                 .deadlineWith(new StartEndCommand(
-                        ()-> leds.setPattern(BLINKING, ORANGE.color).schedule(),
-                        ()-> leds.setPattern(SOLID, GREEN.color).withTimeout(1.5).schedule()
+                        () -> leds.setPattern(BLINKING, ORANGE.color).schedule(),
+                        () -> leds.setPattern(SOLID, GREEN.color).withTimeout(1.5).schedule()
                 ));
     }
 
-    public Command halfIntakeFromGround(){
+    public Command halfIntakeFromGround() {
         return setIntakeCommand(new IntakeState(0.35, IntakeAngle.GROUND, false)).until(hasNoteTrigger);
     }
 
-    public Command closeIntakeCommand(){
+    public Command closeIntakeCommand() {
         return setIntakeCommand(new IntakeState(0, IntakeAngle.SHOOTER, false));
     }
 
@@ -165,13 +165,13 @@ public class Intake extends SubsystemBase implements Logged {
                 () -> angleMotor.setIdleMode(IdleMode.kBrake)).ignoringDisable(true);
     }
 
-    private void initShuffleboard(){
+    private void initShuffleboard() {
         RobotContainer.robotData.addBoolean("intake beambreak", hasNoteTrigger);
         RobotContainer.robotData.addDouble("intake angle", this::getAngle).withSize(2, 2);
     }
 
     @Log.NT
-    private boolean intakingTrigger(){
+    private boolean intakingTrigger() {
         return intakingTrigger.getAsBoolean();
     }
 
@@ -181,7 +181,7 @@ public class Intake extends SubsystemBase implements Logged {
     }
 
     @Log.NT
-    private double getAngleMotorOutputDC(){
+    private double getAngleMotorOutputDC() {
         return angleMotor.getAppliedOutput();
     }
 
@@ -209,9 +209,5 @@ public class Intake extends SubsystemBase implements Logged {
 
     public Command sysidDynamic(SysIdRoutine.Direction direction) {
         return angleSysid.dynamic(direction);
-    }
-    @Override
-    public void periodic(){
-
     }
 }

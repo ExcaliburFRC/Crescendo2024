@@ -69,7 +69,7 @@ public class Swerve extends SubsystemBase implements Logged {
                     Modules.FR.ABS_ENCODER_CHANNEL,
                     Modules.FR.OFFSET_ANGLE,
                     "FR",
-                    0.005),
+                    0),
             new SwerveModule(
                     Modules.BL.DRIVE_MOTOR_ID,
                     Modules.BL.SPIN_MOTOR_ID,

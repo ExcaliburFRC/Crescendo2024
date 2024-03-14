@@ -28,10 +28,10 @@ public final class Constants {
     public static final class SwerveConstants {
         public enum Modules {
             // drive ID, spin ID, abs encoder channel, offset angle, drive reversed, angle reversed
-            FL(18, 17, 7, 0.045, true, true),
+            FL(18, 17, 2, 0.045, true, true),
             FR(12, 11, 3, 0.071, true, true),
             BL(16, 15, 4, 0.595, true, true),
-            BR(14, 13, 2, 0.127, true, true);
+            BR(14, 13, 1, 0.127, true, true);
 
 
             public int DRIVE_MOTOR_ID, SPIN_MOTOR_ID, ABS_ENCODER_CHANNEL;
@@ -130,12 +130,8 @@ public final class Constants {
         public static final Gains UPPER_GAINS = new Gains(new Gains(0.00028558, 0, 0), new Gains(0.24192, 0, 0.12725055, 0.012846));
         public static final Gains LOWER_GAINS = new Gains(new Gains(0.0006, 0, 0), new Gains(0.25911, 0, 0.1131892776, 0.01353));
 
-        public static final double AMP_UPPER_SHOOTER_RPM = 1000;
-        public static final double AMP_LOWER_SHOOTER_RPM = 2600;
-
-        public static final double AMP_UPPER_SHOOTER_DC = 55;
-        public static final double AMP_LOWER_SHOOTER_DC = 35;
-
+        public static final double AMP_UPPER_SHOOTER_RPM = 930;
+        public static final double AMP_LOWER_SHOOTER_RPM = 2580;
 
         public static final double WOOFER_RPM = 0;
 
@@ -152,19 +148,18 @@ public final class Constants {
         public static final int INTAKE_MOTOR_ID = 21;
         public static final int ANGLE_MOTOR_ID = 22;
 
-        public static final int ENCODER_ID = 50;
+        public static final int ENCODER_PORT = 6;
         public static final int BEAMBREAK_PORT = 0;
 
         public static final Gains INTAKE_GAINS = new Gains(0.058037 * 2 , 0.0, 0.011109 / 4,0.038684, 0.12578, 0.022038, 54.356);
-        public static final double INTAKE_TOLERANCE = 10;
+        public static final double INTAKE_TOLERANCE = 7.5;
 
         public static final double ANGLE_MOTOR_CONVERSION_FACTOR = (1 / 10.0) * (1 / 3.0) * (16.0 / 40.0);
 
-        public static final double INTAKE_ENCODER_OFFSET_TICKS = 950 + (4096 * 2);
+        public static final double INTAKE_ENCODER_OFFSET = 0.235;
         public static final int INTAKE_READING_OFFSET = 50; // deg
 
         public static final double AMP_SHOOTER_SPEED = -1;
-        public static final double STALL_DC = 0.1;
 
         //sysid
         public static final SysIdRoutine.Config sysidConfig = new SysIdConfig(0.5, 3, 10);

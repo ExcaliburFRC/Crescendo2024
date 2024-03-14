@@ -11,13 +11,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.swerve.Swerve;
-import frc.robot.util.AllianceUtils;
 import frc.robot.util.PDH;
 import monologue.Logged;
 
@@ -116,7 +114,7 @@ public class RobotContainer implements Logged {
         driver.touchpad().onTrue(intake.pumpNoteCommand());
 
         // shooter
-        driver.square().and(intake.intakingTrigger.negate()).toggleOnTrue(scoreNoteCommand(shooter.shootToAmpManualCommand(intake.hasNoteTrigger), driver.R1(), true));
+        driver.square().and(intake.intakingTrigger.negate()).toggleOnTrue(scoreNoteCommand(shooter.shootToAmpCommand(intake.hasNoteTrigger), driver.R1(), true));
         driver.triangle().and(intake.intakingTrigger.negate()).toggleOnTrue(scoreNoteCommand(shooter.shootToSpeakerManualCommand(intake.hasNoteTrigger), driver.R1(), false));
 
         driver.povLeft().onTrue(new SequentialCommandGroup(
@@ -127,7 +125,7 @@ public class RobotContainer implements Logged {
 
         driver.povUp().onTrue(climberModeCommand);
 
-        driver.povRight().onTrue(swerve.pathFindThenFollowPath("shootFromLine").andThen(shooter.stopShooterCommand()));
+//        driver.povRight().onTrue(swerve.pathFindThenFollowPath("shootFromLine").andThen(shooter.stopShooterCommand()));
     }
 
     // triangle - shoot to speaker
@@ -186,7 +184,7 @@ public class RobotContainer implements Logged {
         pitTab.add("Match prep", matchPrepCommand().withName("MatchPrep")).withSize(2, 2);
         pitTab.add("System tester", systemTesterCommand().withName("SystemTest")).withSize(2, 2);
 
-        matchTab.addBoolean("intakeBeambreak", () -> !intake.intakeBeambreak.get()).withPosition(19, 1).withSize(4, 4);
+        matchTab.addBoolean("intakeBeambreak", () -> !intake.beambreak.get()).withPosition(19, 1).withSize(4, 4);
         matchTab.addBoolean("shooterWorks", shooter.shooterSpins).withPosition(19, 5).withSize(4, 4);
 
         matchTab.add("pumpNote", intake.pumpNoteCommand().withName("PumpNote")).withPosition(16, 2).withSize(3, 2);
