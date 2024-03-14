@@ -322,19 +322,25 @@ public class Swerve extends SubsystemBase implements Logged {
                 .ignoringDisable(true);
     }
 
+    public double getAngleToPose(Pose2d pose){
+        return getPose2d().minus(pose).getRotation().getDegrees();
+    }
+
     @Override
     public void periodic() {
         odometry.update(getGyroRotation2d(), getModulesPositions());
 
       //      localization with PhotonPoseEstimator
-//        if (estimatePose) {
-//            Optional<EstimatedRobotPose> pose = photonVision.getEstimatedGlobalPose(odometry.getEstimatedPosition());
-//            if (pose.isPresent())
-//                odometry.addVisionMeasurement(pose.get().estimatedPose.toPose2d(), pose.get().timestampSeconds);//
-//        }
+        if (estimatePose) {
+            Optional<EstimatedRobotPose> pose = photonVision.getEstimatedGlobalPose(odometry.getEstimatedPosition());
+            if (pose.isPresent())
+                odometry.addVisionMeasurement(pose.get().estimatedPose.toPose2d(), pose.get().timestampSeconds);//
+        }
 
         field.setRobotPose(odometry.getEstimatedPosition());
         SmartDashboard.putData(field);
+
+        System.out.println(getAngleToPose(FieldLocations.SPEAKER.pose.get()));
     }
     // on-the-fly auto generation functions
     // drive the robot from the current location to a given Pose2d
@@ -440,7 +446,7 @@ public class Swerve extends SubsystemBase implements Logged {
     private void initAutoBuilder() {
         AutoBuilder.configureHolonomic(
                 this::getPose2d,
-                this::setPose2d,
+                (pose) -> {},
                 this::getRobotRelativeSpeeds,
                 this::driveRobotRelative,
                 new HolonomicPathFollowerConfig(

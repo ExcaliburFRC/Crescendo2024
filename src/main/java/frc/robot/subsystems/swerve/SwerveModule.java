@@ -113,7 +113,7 @@ public class SwerveModule implements Sendable, Logged {
 
   @Log.NT (key = "ModulePosition")
   public SwerveModulePosition getPosition(){
-    return new SwerveModulePosition(_driveMotor.getPosition(), Rotation2d.fromRadians(_angleMotor.getPosition()));
+    return new SwerveModulePosition(_driveMotor.getPosition(), new Rotation2d(getAbsEncoderRad()));
   }
 
   @Log.NT
@@ -165,7 +165,7 @@ public class SwerveModule implements Sendable, Logged {
   @Override
   public void initSendable(SendableBuilder builder) {
     builder.setSmartDashboardType("Gyro");
-    builder.addDoubleProperty("Value", () -> Math.toDegrees(getRelativeAnglePosition()), null);
+    builder.addDoubleProperty("Value", () -> Math.toDegrees(getResetRad()), null);
     builder.addDoubleProperty("drive output current", _driveMotor::getOutputCurrent, null);
     builder.addDoubleProperty("drive dc output", _driveMotor::getAppliedOutput, null);
   }

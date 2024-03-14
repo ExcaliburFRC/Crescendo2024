@@ -100,7 +100,7 @@ public class RobotContainer implements Logged {
         );
 
         driver.options().whileTrue(toggleMotorsIdleMode().alongWith(leds.setPattern(SOLID, WHITE.color)));
-        driver.PS().onTrue(swerve.resetOdometryAngleCommand());
+        driver.PS().onTrue(swerve.setOdometryPositionCommand(new Pose2d()));
 
         // manual actions
         climber.setDefaultCommand(climber.manualCommand(driver.L1(climberLoop), driver.R1(climberLoop), driver.L2(climberLoop), driver.R2(climberLoop)));
@@ -178,7 +178,7 @@ public class RobotContainer implements Logged {
         NamedCommands.registerCommand("closeIntake", intake.closeIntakeCommand());
         NamedCommands.registerCommand("pumpNote", intake.pumpNoteCommand());
 
-        NamedCommands.registerCommand("prepFarShooter", shooter.manualShooter(1, 0.6, intake.hasNoteTrigger));
+        NamedCommands.registerCommand("prepFarShooter", shooter.manualShooter(1, 0.56, intake.hasNoteTrigger));
         NamedCommands.registerCommand("farShooter", scoreNoteCommand(shooter.manualShooter(1, 0.6, intake.hasNoteTrigger), new Trigger(()-> true), false));
 
         pitTab.add("Match prep", matchPrepCommand().withName("MatchPrep")).withSize(2, 2);
@@ -194,6 +194,8 @@ public class RobotContainer implements Logged {
         autoChooser.setDefaultOption("none", new InstantCommand(() -> {}));
         autoChooser.addOption("123", swerve.runAuto("123"));
         autoChooser.addOption("321", swerve.runAuto("321"));
+        autoChooser.addOption("2413", swerve.runAuto("2413"));
+        autoChooser.addOption("2531", swerve.runAuto("2531"));
         autoChooser.addOption("14", swerve.runAuto("14"));
         autoChooser.addOption("73", swerve.runAuto("73"));
         autoChooser.addOption("shoot", swerve.runAuto("shoot"));

@@ -69,7 +69,7 @@ public class Intake extends SubsystemBase implements Logged {
         encoder.setDistancePerRotation(360);
 
         initShuffleboard();
-//        setDefaultCommand(setIntakeCommand(new IntakeState(0, IntakeAngle.SHOOTER, false)));
+        setDefaultCommand(setIntakeCommand(new IntakeState(0, IntakeAngle.SHOOTER, false)));
     }
 
     @Log.NT
@@ -138,7 +138,7 @@ public class Intake extends SubsystemBase implements Logged {
     }
 
     public Command closeIntakeCommand() {
-        return setIntakeCommand(new IntakeState(0, IntakeAngle.SHOOTER, false));
+        return setIntakeCommand(new IntakeState(0, IntakeAngle.SHOOTER, false)).until(atShooterTrigger);
     }
 
     public Command shootToAmpCommand() {

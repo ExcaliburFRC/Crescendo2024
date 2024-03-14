@@ -62,7 +62,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Pose2ToNote4"
+                  "pathName": "Note2ToNote4"
                 }
               }
             ]
@@ -75,7 +75,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Note4ToPose2"
+                  "pathName": "Note4ToNote2"
                 }
               },
               {
