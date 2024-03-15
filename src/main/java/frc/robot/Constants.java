@@ -68,17 +68,17 @@ public final class Constants {
                 new Translation2d(-TRACK_WIDTH / 2, -TRACK_WIDTH / 2));
 
         public static final double MAX_VELOCITY_METER_PER_SECOND = Units.feetToMeters(19.3);
-        public static final double MAX_VELOCITY_ACCELERATION_METER_PER_SECOND = 6; //TODO: find values
+        public static final double MAX_VELOCITY_ACCELERATION_METER_PER_SECOND = 6;
 
-        public static final double MAX_ANGULAR_VELOCITY_RAD_PER_SECOND = 2 * PI; //TODO: find values
-        public static final double MAX_ANGULAR_ACCELERATION_RAD_PER_SECOND = 2 * 2 * PI; //TODO: find values
+        public static final double MAX_ANGULAR_VELOCITY_PER_SECOND = 250;
+        public static final double MAX_ANGULAR_ACCELERATION_PER_SECOND = 360;
 
         // intentional limitations
         public static final double DRIVE_SPEED_PERCENTAGE = 80; // %
         public static final double BOOST_SPEED_PERCENTAGE = 100; // %
 
         // autonomous constants
-        public static final Gains ANGLE_GAINS = new Gains(0.12, 0, 0.00015);
+        public static final Gains ANGLE_GAINS = new Gains(0.175, 0, 0.001);
         public static final Gains TRANSLATION_GAINS = new Gains(0, 0, 0);
 
         public static final Gains PATHPLANNER_ANGLE_GAINS = new Gains(7, 0, 0);
@@ -86,7 +86,7 @@ public final class Constants {
 
         public static final PathConstraints PATH_CONSTRAINTS = new PathConstraints(
                 MAX_VELOCITY_METER_PER_SECOND, MAX_VELOCITY_ACCELERATION_METER_PER_SECOND,
-                MAX_ANGULAR_VELOCITY_RAD_PER_SECOND, MAX_ANGULAR_ACCELERATION_RAD_PER_SECOND);
+                MAX_ANGULAR_VELOCITY_PER_SECOND, MAX_ANGULAR_ACCELERATION_PER_SECOND);
         public enum FieldParts{
             SPEAKER(0,0),
             AMP(0,0),
@@ -280,6 +280,8 @@ public final class Constants {
             SPEAKER_TOP("SpeakerTop", new AlliancePose(0.82, 6.61, 60)),
             SPEAKER_CENTER("SpeakerCenter", new AlliancePose(1.32, 5.6, 0)),
             SPEAKER_BOTTOM("SpeakerBottom", new AlliancePose(0.71, 4.51, 120)),
+
+            BLUE_TRAP("", new AlliancePose(4.65, 4.47, -60)),
 
             AMPLIFIER("Amp", new AlliancePose(1.86, 7.68, 90)),
             SPEAKER("", new AlliancePose(0, 5.56, 0)),

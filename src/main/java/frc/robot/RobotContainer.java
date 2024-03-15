@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants.FieldConstants.FieldLocations;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.LEDs;
@@ -100,7 +101,7 @@ public class RobotContainer implements Logged {
         );
 
         driver.options().whileTrue(toggleMotorsIdleMode().alongWith(leds.setPattern(SOLID, WHITE.color)));
-        driver.PS().onTrue(swerve.setOdometryPositionCommand(new Pose2d()));
+        driver.PS().onTrue(swerve.resetOdometryAngleCommand());
 
         // manual actions
         climber.setDefaultCommand(climber.manualCommand(driver.L1(climberLoop), driver.R1(climberLoop), driver.L2(climberLoop), driver.R2(climberLoop)));
@@ -125,6 +126,7 @@ public class RobotContainer implements Logged {
 
         driver.povUp().onTrue(climberModeCommand);
 
+        driver.povRight().onTrue(swerve.turnToLocationCommand(FieldLocations.SPEAKER));
 //        driver.povRight().onTrue(swerve.pathFindThenFollowPath("shootFromLine").andThen(shooter.stopShooterCommand()));
     }
 
