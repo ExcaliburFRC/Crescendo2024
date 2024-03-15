@@ -5,10 +5,13 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
+import java.util.function.DoubleSupplier;
+
 import static frc.robot.Constants.ShooterConstants.*;
 
 public class ShooterState {
     public double upperVoltage, lowerVoltage;
+    public double upperDC, lowerDC;
     public double upperRPMsetpoint, lowerRPMsetpoint;
 
     private static final PIDController upperPIDcontroller = new PIDController(UPPER_GAINS.kp, UPPER_GAINS.ki, UPPER_GAINS.kd);
@@ -17,8 +20,24 @@ public class ShooterState {
     private static final SimpleMotorFeedforward upperFFcontroller = new SimpleMotorFeedforward(UPPER_GAINS.ks, UPPER_GAINS.kv, UPPER_GAINS.ka);
     private static final SimpleMotorFeedforward lowerFFcontroller = new SimpleMotorFeedforward(LOWER_GAINS.ks, LOWER_GAINS.kv, LOWER_GAINS.ka);
 
-    private static InterpolatingDoubleTreeMap metersToRPM = new InterpolatingDoubleTreeMap();
-    static {metersToRPM.put(0.0, 0.0);}
+    private static InterpolatingDoubleTreeMap upperInterolation = new InterpolatingDoubleTreeMap();
+    private static InterpolatingDoubleTreeMap lowerInterolation = new InterpolatingDoubleTreeMap();
+    static {
+        upperInterolation.put(1.32, 0.8);
+        lowerInterolation.put(1.32, 0.8);
+
+        upperInterolation.put(1.6, 0.8);
+        lowerInterolation.put(1.6, 0.7);
+
+        upperInterolation.put(2.1, 0.8);
+        lowerInterolation.put(2.1, 0.6);
+
+        upperInterolation.put(2.39, 0.95);
+        lowerInterolation.put(2.39, 0.54);
+
+        upperInterolation.put(2.5, 1.0);
+        lowerInterolation.put(2.5, 0.53);
+    }
 
     public final Trigger stateReady = new Trigger(()-> upperPIDcontroller.atSetpoint() && lowerPIDcontroller.atSetpoint());
 
@@ -30,8 +49,9 @@ public class ShooterState {
         lowerPIDcontroller.setTolerance(SHOOTER_PID_TOLERANCE);
     }
 
-    public ShooterState(double setpoint) {
-        this(setpoint, setpoint);
+    public ShooterState(double distMeters){
+        this.upperDC = upperInterolation.get(distMeters);
+        this.lowerDC = lowerInterolation.get(distMeters);
     }
 
     public void setVelocities(double upperMeasurement, double lowerMeasurement){

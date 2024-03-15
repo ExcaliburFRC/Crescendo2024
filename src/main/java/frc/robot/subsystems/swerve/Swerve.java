@@ -450,8 +450,7 @@ public class Swerve extends SubsystemBase implements Logged {
     private void initAutoBuilder() {
         AutoBuilder.configureHolonomic(
                 this::getPose2d,
-                (pose) -> {
-                },
+                (pose) -> {},
                 this::getRobotRelativeSpeeds,
                 this::driveRobotRelative,
                 new HolonomicPathFollowerConfig(

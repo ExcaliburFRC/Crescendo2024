@@ -18,6 +18,8 @@ import frc.robot.subsystems.LEDs;
 import monologue.Annotations.Log;
 import monologue.Logged;
 
+import java.util.function.DoubleSupplier;
+
 import static com.revrobotics.CANSparkBase.IdleMode.kBrake;
 import static com.revrobotics.CANSparkBase.IdleMode.kCoast;
 import static edu.wpi.first.units.MutableMeasure.mutable;
@@ -42,7 +44,7 @@ public class Shooter extends SubsystemBase implements Logged {
     @Log.NT
     private final DigitalInput shooterBeambreak = new DigitalInput(SHOOTER_BEAMBREAK_CHANNEL);
 
-    public final BooleanEvent noteShotTrigger= new BooleanEvent(CommandScheduler.getInstance().getDefaultButtonLoop(), () -> !shooterBeambreak.get()).falling();
+    public final BooleanEvent noteShotTrigger = new BooleanEvent(CommandScheduler.getInstance().getDefaultButtonLoop(), () -> !shooterBeambreak.get()).falling();
     public final Trigger hasNoteTrigger = new Trigger(() -> !shooterBeambreak.get()).debounce(0.1);
     public final Trigger shooterSpins = new Trigger(() -> upperShooter.getVelocity() > 50).debounce(0.05);
 
@@ -65,7 +67,7 @@ public class Shooter extends SubsystemBase implements Logged {
         RobotContainer.robotData.addBoolean("shooter beambreak", hasNoteTrigger);
     }
 
-    private void stopMotors(){
+    private void stopMotors() {
         upperShooter.stopMotor();
         lowerShooter.stopMotor();
     }
@@ -76,14 +78,14 @@ public class Shooter extends SubsystemBase implements Logged {
 
     public Command setShootercommand(ShooterState state, Trigger intakeTrigger) {
         return new FunctionalCommand(
-                ()-> currentState = state,
-                ()-> {
+                () -> currentState = state,
+                () -> {
                     state.setVelocities(upperShooter.getVelocity(), lowerShooter.getVelocity());
 
                     upperShooter.setVoltage(state.upperVoltage);
                     lowerShooter.setVoltage(state.lowerVoltage);
                 },
-                (__)-> {
+                (__) -> {
                     stopMotors();
                     currentState = new ShooterState(0);
                 },
@@ -107,8 +109,8 @@ public class Shooter extends SubsystemBase implements Logged {
 
     public Command shootToSpeakerManualCommand(Trigger intakeTrigger) {
         return new FunctionalCommand(
-                ()-> this.currentState = new ShooterState(WOOFER_RPM),
-                ()-> {
+                () -> this.currentState = new ShooterState(WOOFER_RPM),
+                () -> {
                     upperShooter.set(upperSpeed.getDouble(SPEAKER_DC * 100) / 100.0);
                     lowerShooter.set(lowerSpeed.getDouble(SPEAKER_DC * 100) / 100.0);
                 },
@@ -120,7 +122,7 @@ public class Shooter extends SubsystemBase implements Logged {
 
     public Command shootToAmpManualCommand(Trigger intakeTrigger) {
         return this.runEnd(
-                ()-> {
+                () -> {
 //                    upperShooter.setVoltage(4.24);
 //                    lowerShooter.setVoltage(6.25);
 
@@ -130,77 +132,93 @@ public class Shooter extends SubsystemBase implements Logged {
                 this::stopMotors).until(intakeTrigger.negate().debounce(1));
     }
 
-    public Command manualShooter(double upper, double lower, Trigger intakeTrigger) {
+    public Command farShooterCommand(DoubleSupplier distMeters, Trigger intakeTrigger) {
         return this.runEnd(
-                ()-> {
-                    upperShooter.set(upper);
-                    lowerShooter.set(lower);
+                () -> {
+                    ShooterState st = new ShooterState(distMeters.getAsDouble());
+
+                    System.out.println("dist: " + distMeters.getAsDouble());
+                    System.out.println("upper: " + st.upperDC);
+                    System.out.println("lower: " + st.lowerDC);
+
+                    upperShooter.set(st.upperDC);
+                    lowerShooter.set(st.lowerDC);
                 },
-                ()-> {}).until(intakeTrigger.negate().debounce(1));
+                this::stopMotors).until(intakeTrigger.negate().debounce(0.25));
     }
 
-    public Command stopShooterCommand(){
-        return new InstantCommand(()-> {
-            upperShooter.set(0);
-            lowerShooter.set(0);
-        });
-    }
+public Command manualShooter(double upper, double lower, Trigger intakeTrigger) {
+    return this.runEnd(
+            () -> {
+                upperShooter.set(upper);
+                lowerShooter.set(lower);
+            },
+            () -> {
+            }).until(intakeTrigger.negate().debounce(1));
+}
 
-    public Command toggleIdleModeCommand() {
-        return new StartEndCommand(
-                () -> upperShooter.setIdleMode(kCoast),
-                () -> upperShooter.setIdleMode(kBrake))
-                .ignoringDisable(true);
-    }
+public Command stopShooterCommand() {
+    return new InstantCommand(() -> {
+        upperShooter.set(0);
+        lowerShooter.set(0);
+    });
+}
 
-    @Log.NT
-    private boolean noteShotTrigger(){
-        return noteShotTrigger.getAsBoolean();
-    }
+public Command toggleIdleModeCommand() {
+    return new StartEndCommand(
+            () -> upperShooter.setIdleMode(kCoast),
+            () -> upperShooter.setIdleMode(kBrake))
+            .ignoringDisable(true);
+}
 
-    @Log.NT
-    private double getUpperRPM(){
-        return upperShooter.getVelocity();
-    }
+@Log.NT
+private boolean noteShotTrigger() {
+    return noteShotTrigger.getAsBoolean();
+}
 
-    @Log.NT
-    private double getUpperSetpoint(){
-        return currentState.upperRPMsetpoint;
-    }
+@Log.NT
+private double getUpperRPM() {
+    return upperShooter.getVelocity();
+}
 
-    @Log.NT
-    private double getLowerSetpoint(){
-        return currentState.lowerRPMsetpoint;
-    }
+@Log.NT
+private double getUpperSetpoint() {
+    return currentState.upperRPMsetpoint;
+}
 
-    @Log.NT
-    private double getLowerRPM(){
-        return lowerShooter.getVelocity();
-    }
+@Log.NT
+private double getLowerSetpoint() {
+    return currentState.lowerRPMsetpoint;
+}
+
+@Log.NT
+private double getLowerRPM() {
+    return lowerShooter.getVelocity();
+}
 
 
-    // sysid stuff
-    private final MutableMeasure<Voltage> appliedVoltage = mutable(Volts.of(0));
-    private final MutableMeasure<Velocity<Angle>> velocity = mutable(RotationsPerSecond.of(0));
-    private final MutableMeasure<Angle> degrees = mutable(Rotations.of(0));
+// sysid stuff
+private final MutableMeasure<Voltage> appliedVoltage = mutable(Volts.of(0));
+private final MutableMeasure<Velocity<Angle>> velocity = mutable(RotationsPerSecond.of(0));
+private final MutableMeasure<Angle> degrees = mutable(Rotations.of(0));
 
-    private final SysIdRoutine shooterSysid = new SysIdRoutine(
-            sysidConfig,
-            new SysIdRoutine.Mechanism(
-                    (Measure<Voltage> volts) -> upperShooter.setVoltage(volts.in(Volts)),
-                    log -> log.motor("shooterMotor")
-                            .voltage(appliedVoltage.mut_replace(
-                                    upperShooter.getAppliedOutput() * RobotController.getBatteryVoltage(), Volts))
-                            .angularPosition(degrees.mut_replace(upperShooter.getPosition(), Rotations))
-                            .angularVelocity(velocity.mut_replace(upperShooter.getVelocity(), RPM)),
-                    this
-            ));
+private final SysIdRoutine shooterSysid = new SysIdRoutine(
+        sysidConfig,
+        new SysIdRoutine.Mechanism(
+                (Measure<Voltage> volts) -> upperShooter.setVoltage(volts.in(Volts)),
+                log -> log.motor("shooterMotor")
+                        .voltage(appliedVoltage.mut_replace(
+                                upperShooter.getAppliedOutput() * RobotController.getBatteryVoltage(), Volts))
+                        .angularPosition(degrees.mut_replace(upperShooter.getPosition(), Rotations))
+                        .angularVelocity(velocity.mut_replace(upperShooter.getVelocity(), RPM)),
+                this
+        ));
 
-    public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-        return shooterSysid.quasistatic(direction);
-    }
+public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
+    return shooterSysid.quasistatic(direction);
+}
 
-    public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-        return shooterSysid.dynamic(direction);
-    }
+public Command sysIdDynamic(SysIdRoutine.Direction direction) {
+    return shooterSysid.dynamic(direction);
+}
 }
