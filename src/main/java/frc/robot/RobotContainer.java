@@ -16,6 +16,7 @@ import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.ShooterState;
 import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.util.PDH;
 import monologue.Logged;
@@ -30,10 +31,10 @@ import static frc.robot.subsystems.intake.IntakeState.IntakeAngle.*;
 
 public class RobotContainer implements Logged {
     // subsystems
-    public final Shooter shooter = new Shooter();
     private final Swerve swerve = new Swerve();
     private final LEDs leds = LEDs.getInstance();
     private final Intake intake = new Intake();
+    public final Shooter shooter = new Shooter(intake.hasNoteTrigger);
     private final Climber climber = new Climber();
 
     private final PDH pdh = new PDH();
@@ -116,8 +117,8 @@ public class RobotContainer implements Logged {
         driver.touchpad().onTrue(intake.pumpNoteCommand());
 
         // shooter
-        driver.square().and(intake.intakingTrigger.negate()).toggleOnTrue(scoreNoteCommand(shooter.shootToAmpCommand(intake.hasNoteTrigger), driver.R1(), true));
-        driver.triangle().and(intake.intakingTrigger.negate()).toggleOnTrue(scoreNoteCommand(shooter.shootToSpeakerManualCommand(intake.hasNoteTrigger), driver.R1(), false));
+        driver.square().and(intake.intakingTrigger.negate()).toggleOnTrue(scoreNoteCommand(shooter.shootToAmpCommand(), driver.R1(), true));
+        driver.triangle().and(intake.intakingTrigger.negate()).toggleOnTrue(scoreNoteCommand(shooter.shootToSpeakerManualCommand(), driver.R1(), false));
 
         driver.povLeft().onTrue(new SequentialCommandGroup(
                 swerve.straightenModulesCommand(),
@@ -129,7 +130,7 @@ public class RobotContainer implements Logged {
 
         driver.povRight().toggleOnTrue(new ParallelCommandGroup(
                 swerve.turnToLocationCommand(SPEAKER),
-                scoreNoteCommand(shooter.farShooterCommand(() -> swerve.getDistanceFromPose(SPEAKER.pose.get()), intake.hasNoteTrigger), driver.R1(), false)));
+                scoreNoteCommand(shooter.setShootercommand(new ShooterState(swerve.getDistanceFromPose(SPEAKER.pose.get()))), driver.R1(), false)));
     }
 
     // triangle - shoot to speaker
@@ -175,7 +176,7 @@ public class RobotContainer implements Logged {
     }
 
     private void init() {
-        NamedCommands.registerCommand("shootToSpeakerCommand", scoreNoteCommand(shooter.shootToSpeakerManualCommand(intake.hasNoteTrigger), new Trigger(() -> true), false));
+        NamedCommands.registerCommand("shootToSpeakerCommand", scoreNoteCommand(shooter.shootToSpeakerManualCommand(), new Trigger(() -> true), false));
         NamedCommands.registerCommand("prepShooterCommand", shooter.prepShooterCommand());
 
         NamedCommands.registerCommand("intakeFromGround", intake.halfIntakeFromGround());

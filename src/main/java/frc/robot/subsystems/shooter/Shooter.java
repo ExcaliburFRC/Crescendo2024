@@ -1,6 +1,6 @@
 package frc.robot.subsystems.shooter;
 
-import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.units.*;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -12,7 +12,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.Neo;
 import frc.lib.Neo.Model;
-import frc.robot.Constants.FieldConstants.FieldLocations;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.LEDs;
 import monologue.Annotations.Log;
@@ -24,11 +23,7 @@ import static com.revrobotics.CANSparkBase.IdleMode.kBrake;
 import static com.revrobotics.CANSparkBase.IdleMode.kCoast;
 import static edu.wpi.first.units.MutableMeasure.mutable;
 import static edu.wpi.first.units.Units.*;
-import static frc.lib.Color.Colors.GREEN;
-import static frc.lib.Color.Colors.RED;
 import static frc.robot.Constants.ShooterConstants.*;
-import static frc.robot.subsystems.LEDs.LEDPattern.BLINKING;
-import static frc.robot.subsystems.LEDs.LEDPattern.SOLID;
 
 public class Shooter extends SubsystemBase implements Logged {
     private final Neo upperShooter = new Neo(UPPER_SHOOTER_MOTOR_ID, Model.SparkFlex);
@@ -50,10 +45,9 @@ public class Shooter extends SubsystemBase implements Logged {
 
     private final LEDs leds = LEDs.getInstance();
 
-    @Log.NT
-    public Trigger shooterReadyTrigger = currentState.stateReady;
+    private final Trigger intakeTrigger;
 
-    public Shooter() {
+    public Shooter(Trigger intakeTrigger) {
         upperShooter.setIdleMode(kCoast);
         upperShooter.setSmartCurrentLimit(SHOOTER_CURRENT_LIMIT);
         upperShooter.setInverted(false);
@@ -63,6 +57,8 @@ public class Shooter extends SubsystemBase implements Logged {
         lowerShooter.setSmartCurrentLimit(SHOOTER_CURRENT_LIMIT);
         lowerShooter.setInverted(false);
         lowerShooter.setPosition(0);
+
+        this.intakeTrigger = intakeTrigger;
 
         RobotContainer.robotData.addBoolean("shooter beambreak", hasNoteTrigger);
     }
@@ -76,7 +72,7 @@ public class Shooter extends SubsystemBase implements Logged {
         return this.currentState;
     }
 
-    public Command setShootercommand(ShooterState state, Trigger intakeTrigger) {
+    public Command setShootercommand(ShooterState state) {
         return new FunctionalCommand(
                 () -> currentState = state,
                 () -> {
@@ -92,13 +88,13 @@ public class Shooter extends SubsystemBase implements Logged {
                 intakeTrigger.negate().debounce(1), this);
     }
 
-    public Command shootToAmpCommand(Trigger intakeTrigger) {
-        return setShootercommand(new ShooterState(AMP_UPPER_SHOOTER_RPM, AMP_LOWER_SHOOTER_RPM), intakeTrigger);
+    public Command shootToAmpCommand() {
+        return setShootercommand(new ShooterState(AMP_UPPER_SHOOTER_RPM, AMP_LOWER_SHOOTER_RPM));
     }
 
-//    public Command shootFromWooferCommand() {
-//        return setShootercommand(new ShooterState(WOOFER_RPM), );
-//    }
+    public Command shootToSpeakerCommand() {
+        return setShootercommand(new ShooterState(SPEAKER_UPPER_SHOOTER_RPM, SPEAKER_LOWER_SHOOTER_RPM));
+    }
 
     public Command prepShooterCommand() {
         return new RunCommand(() -> {
@@ -107,7 +103,7 @@ public class Shooter extends SubsystemBase implements Logged {
         }, this);
     }
 
-    public Command shootToSpeakerManualCommand(Trigger intakeTrigger) {
+    public Command shootToSpeakerManualCommand() {
         return new FunctionalCommand(
                 () -> this.currentState = new ShooterState(WOOFER_RPM),
                 () -> {
@@ -132,7 +128,7 @@ public class Shooter extends SubsystemBase implements Logged {
                 this::stopMotors).until(intakeTrigger.negate().debounce(1));
     }
 
-    public Command farShooterCommand(DoubleSupplier distMeters, Trigger intakeTrigger) {
+    public Command farShooterCommand(DoubleSupplier distMeters) {
         return this.runEnd(
                 () -> {
                     ShooterState st = new ShooterState(distMeters.getAsDouble());
@@ -147,78 +143,78 @@ public class Shooter extends SubsystemBase implements Logged {
                 this::stopMotors).until(intakeTrigger.negate().debounce(0.25));
     }
 
-public Command manualShooter(double upper, double lower, Trigger intakeTrigger) {
-    return this.runEnd(
-            () -> {
-                upperShooter.set(upper);
-                lowerShooter.set(lower);
-            },
-            () -> {
-            }).until(intakeTrigger.negate().debounce(1));
-}
+    public Command manualShooter(double upper, double lower, Trigger intakeTrigger) {
+        return this.runEnd(
+                () -> {
+                    upperShooter.set(upper);
+                    lowerShooter.set(lower);
+                },
+                () -> {
+                }).until(intakeTrigger.negate().debounce(1));
+    }
 
-public Command stopShooterCommand() {
-    return new InstantCommand(() -> {
-        upperShooter.set(0);
-        lowerShooter.set(0);
-    });
-}
+    public Command stopShooterCommand() {
+        return new InstantCommand(() -> {
+            upperShooter.set(0);
+            lowerShooter.set(0);
+        });
+    }
 
-public Command toggleIdleModeCommand() {
-    return new StartEndCommand(
-            () -> upperShooter.setIdleMode(kCoast),
-            () -> upperShooter.setIdleMode(kBrake))
-            .ignoringDisable(true);
-}
+    public Command toggleIdleModeCommand() {
+        return new StartEndCommand(
+                () -> upperShooter.setIdleMode(kCoast),
+                () -> upperShooter.setIdleMode(kBrake))
+                .ignoringDisable(true);
+    }
 
-@Log.NT
-private boolean noteShotTrigger() {
-    return noteShotTrigger.getAsBoolean();
-}
+    @Log.NT
+    private boolean noteShotTrigger() {
+        return noteShotTrigger.getAsBoolean();
+    }
 
-@Log.NT
-private double getUpperRPM() {
-    return upperShooter.getVelocity();
-}
+    @Log.NT
+    private double getUpperRPM() {
+        return upperShooter.getVelocity();
+    }
 
-@Log.NT
-private double getUpperSetpoint() {
-    return currentState.upperRPMsetpoint;
-}
+    @Log.NT
+    private double getUpperSetpoint() {
+        return currentState.upperRPMsetpoint;
+    }
 
-@Log.NT
-private double getLowerSetpoint() {
-    return currentState.lowerRPMsetpoint;
-}
+    @Log.NT
+    private double getLowerSetpoint() {
+        return currentState.lowerRPMsetpoint;
+    }
 
-@Log.NT
-private double getLowerRPM() {
-    return lowerShooter.getVelocity();
-}
+    @Log.NT
+    private double getLowerRPM() {
+        return lowerShooter.getVelocity();
+    }
 
 
-// sysid stuff
-private final MutableMeasure<Voltage> appliedVoltage = mutable(Volts.of(0));
-private final MutableMeasure<Velocity<Angle>> velocity = mutable(RotationsPerSecond.of(0));
-private final MutableMeasure<Angle> degrees = mutable(Rotations.of(0));
+    // sysid stuff
+    private final MutableMeasure<Voltage> appliedVoltage = mutable(Volts.of(0));
+    private final MutableMeasure<Velocity<Angle>> velocity = mutable(RotationsPerSecond.of(0));
+    private final MutableMeasure<Angle> degrees = mutable(Rotations.of(0));
 
-private final SysIdRoutine shooterSysid = new SysIdRoutine(
-        sysidConfig,
-        new SysIdRoutine.Mechanism(
-                (Measure<Voltage> volts) -> upperShooter.setVoltage(volts.in(Volts)),
-                log -> log.motor("shooterMotor")
-                        .voltage(appliedVoltage.mut_replace(
-                                upperShooter.getAppliedOutput() * RobotController.getBatteryVoltage(), Volts))
-                        .angularPosition(degrees.mut_replace(upperShooter.getPosition(), Rotations))
-                        .angularVelocity(velocity.mut_replace(upperShooter.getVelocity(), RPM)),
-                this
-        ));
+    private final SysIdRoutine shooterSysid = new SysIdRoutine(
+            sysidConfig,
+            new SysIdRoutine.Mechanism(
+                    (Measure<Voltage> volts) -> upperShooter.setVoltage(volts.in(Volts)),
+                    log -> log.motor("shooterMotor")
+                            .voltage(appliedVoltage.mut_replace(
+                                    upperShooter.getAppliedOutput() * RobotController.getBatteryVoltage(), Volts))
+                            .angularPosition(degrees.mut_replace(upperShooter.getPosition(), Rotations))
+                            .angularVelocity(velocity.mut_replace(upperShooter.getVelocity(), RPM)),
+                    this
+            ));
 
-public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-    return shooterSysid.quasistatic(direction);
-}
+    public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
+        return shooterSysid.quasistatic(direction);
+    }
 
-public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-    return shooterSysid.dynamic(direction);
-}
+    public Command sysIdDynamic(SysIdRoutine.Direction direction) {
+        return shooterSysid.dynamic(direction);
+    }
 }
