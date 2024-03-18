@@ -1,8 +1,12 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -11,7 +15,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants.FieldConstants.FieldLocations;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.LEDs;
@@ -24,8 +27,9 @@ import monologue.Logged;
 import static edu.wpi.first.math.MathUtil.applyDeadband;
 import static edu.wpi.first.wpilibj.GenericHID.RumbleType.kBothRumble;
 import static frc.lib.Color.Colors.*;
-import static frc.robot.Constants.FieldConstants.FieldLocations.SPEAKER;
-import static frc.robot.Constants.ShooterConstants.SPEAKER_DC;
+import static frc.robot.Constants.FieldConstants.FieldLocations.*;
+import static frc.robot.Constants.ShooterConstants.*;
+import static frc.robot.Constants.SwerveConstants.MAX_VELOCITY_METER_PER_SECOND;
 import static frc.robot.subsystems.LEDs.LEDPattern.*;
 import static frc.robot.subsystems.intake.IntakeState.IntakeAngle.*;
 
@@ -52,9 +56,12 @@ public class RobotContainer implements Logged {
 
     private static EventLoop climberLoop = new EventLoop();
     // swerve
-    final Pose2d emptyPose = new Pose2d();
+    final Translation2d emptyPose = new Translation2d();
     private boolean climberMode = false;
     private boolean farShooter = false;
+
+    Timer timer = new Timer();
+    Trigger timerTrigger = new Trigger(() -> timer.get() > 0.25);
 
     private final Command climberModeCommand = new InstantCommand(() -> {
         final CommandScheduler cs = CommandScheduler.getInstance();
@@ -118,35 +125,35 @@ public class RobotContainer implements Logged {
 
         // shooter
         driver.square().and(intake.intakingTrigger.negate()).toggleOnTrue(scoreNoteCommand(shooter.shootToAmpCommand(), driver.R1(), true));
-        driver.triangle().and(intake.intakingTrigger.negate()).toggleOnTrue(scoreNoteCommand(shooter.shootToSpeakerManualCommand(), driver.R1(), false));
+        driver.triangle().and(intake.intakingTrigger.negate()).toggleOnTrue(
+                scoreNoteCommand(shooter.shootToSpeakerManualCommand(), driver.R1(), false));
 
-        driver.povLeft().onTrue(new SequentialCommandGroup(
-                swerve.straightenModulesCommand(),
-                new RunCommand(() -> swerve.driveRobotRelative(new ChassisSpeeds(-0.75, 0, 0))).withTimeout(0.12),
-                new InstantCommand(() -> swerve.driveRobotRelative(new ChassisSpeeds(0, 0, 0))),
-                intake.shootToAmpCommand()));
+        driver.R2().and(intake.intakingTrigger.negate()).onTrue(shooter.prepFarShooter(() -> swerve.getDistanceFromPose(SPEAKER.pose.get())));
+        driver.R2().onFalse(
+                swerve.turnToLocationCommand(SPEAKER).alongWith(
+                        scoreNoteCommand(shooter.setShooterCommand(new ShooterState(() -> swerve.getDistanceFromPose(SPEAKER.pose.get()))), swerve.atAngleTrigger.and(shooter.getCurrentState().stateReady).and(() -> swerve.angleHeartbeat >= 25), false)));
 
-        driver.povUp().onTrue(climberModeCommand);
+        driver.povUp().toggleOnTrue(new ParallelDeadlineGroup(
+                scoreNoteCommand(shooter.manualShooter(1, 0.7), driver.R1(), false),
+                swerve.turnToLocationCommand(SHOOTING_LOCATION)));
+
+        driver.povLeft().toggleOnTrue(new ParallelCommandGroup(
+                new ProxyCommand(()-> swerve.pathFindToPose(HP_RIGHT.pose.get(), new PathConstraints(2, 2, Math.PI, Math.PI), 0)),
+                intake.intakeFromAngleCommand(HUMAN_PLAYER_BACKWARD, new InstantCommand(() -> {
+                }))));
 
         driver.povRight().toggleOnTrue(new ParallelCommandGroup(
-                swerve.turnToLocationCommand(SPEAKER),
-                scoreNoteCommand(shooter.setShootercommand(new ShooterState(swerve.getDistanceFromPose(SPEAKER.pose.get()))), driver.R1(), false)));
-    }
+                new ProxyCommand(()-> swerve.pathFindToPose(AMPLIFIER.pose.get(), new PathConstraints(1.5, 2, Math.PI, Math.PI), 0)),
+                scoreNoteCommand(shooter.shootToAmpCommand(), driver.R1(), true)));
 
-    // triangle - shoot to speaker
-    // square - shoot to amp
-    // circle - intake from ground
-    // cross - intake from HP
+        //up - full field shot to speaker
+        //right - drive to amp
+        //left - drive to HP
+    }
 
     // methods
     private Command scoreNoteCommand(Command shooterCommand, Trigger release, boolean toAmp) {
         return shooterCommand.alongWith(new WaitUntilCommand(release).andThen(intake.transportToShooterCommand(() -> toAmp)));
-    }
-
-    public Command matchPrepCommand() {
-        return new InstantCommand(() -> {
-        });
-//        return swerve.straightenModulesCommand().andThen(climber.autoCloseCommand());
     }
 
     private Command systemTesterCommand() {
@@ -183,15 +190,16 @@ public class RobotContainer implements Logged {
         NamedCommands.registerCommand("closeIntake", intake.closeIntakeCommand());
         NamedCommands.registerCommand("pumpNote", intake.pumpNoteCommand());
 
-        NamedCommands.registerCommand("prepFarShooter", shooter.manualShooter(1, 0.56, intake.hasNoteTrigger));
-        NamedCommands.registerCommand("farShooter", scoreNoteCommand(shooter.manualShooter(1, 0.6, intake.hasNoteTrigger), new Trigger(() -> true), false));
+        NamedCommands.registerCommand("farShooter", scoreNoteCommand(shooter.manualShooter(1, 0.6), new Trigger(() -> true), false));
+        NamedCommands.registerCommand("prepFarShooter", shooter.prepFarShooter(() -> swerve.getDistanceFromPose(SPEAKER.pose.get())));
+        NamedCommands.registerCommand("shootFromDistance",
+                new SequentialCommandGroup(
+                        new InstantCommand(timer::restart),
+                        scoreNoteCommand(shooter.setShooterCommand(new ShooterState(() -> swerve.getDistanceFromPose(SPEAKER.pose.get()))), shooter.getCurrentState().stateReady.and(timerTrigger), false)));
 
-        pitTab.add("Match prep", matchPrepCommand().withName("MatchPrep")).withSize(2, 2);
         pitTab.add("System tester", systemTesterCommand().withName("SystemTest")).withSize(2, 2);
 
         matchTab.addBoolean("intakeBeambreak", () -> !intake.beambreak.get()).withPosition(19, 1).withSize(4, 4);
-        matchTab.addBoolean("shooterWorks", shooter.shooterSpins).withPosition(19, 5).withSize(4, 4);
-
         matchTab.add("pumpNote", intake.pumpNoteCommand().withName("PumpNote")).withPosition(16, 2).withSize(3, 2);
         matchTab.add("climberMode", climberModeCommand).withPosition(16, 4).withSize(3, 2);
         matchTab.add("FarShooter", shooterDistanceCommand).withPosition(16, 6).withSize(3, 2);
@@ -200,10 +208,10 @@ public class RobotContainer implements Logged {
         }));
         autoChooser.addOption("123", swerve.runAuto("123"));
         autoChooser.addOption("321", swerve.runAuto("321"));
-        autoChooser.addOption("2413", swerve.runAuto("2413"));
-        autoChooser.addOption("2531", swerve.runAuto("2531"));
-        autoChooser.addOption("14", swerve.runAuto("14"));
+
+        autoChooser.addOption("3214", swerve.runAuto("3214"));
         autoChooser.addOption("73", swerve.runAuto("73"));
+
         autoChooser.addOption("shoot", swerve.runAuto("shoot"));
         autoChooser.addOption("leaveFromBottom", swerve.runAuto("shootAndLeave"));
 
@@ -216,11 +224,11 @@ public class RobotContainer implements Logged {
 
     public Command getAutonomousCommand() {
         // Pose 1
-//        Pose2d startingPose = new Pose2d(0.94, 6.48, Rotation2d.fromDegrees(60));
+//        Pose2d(0.94, 6.48, Rotation2d.fromDegrees(60));
         // Pose 2
-//        Pose2d startingPose = new Pose2d(1.3, 5.57, new Rotation2d());
+//        Pose2d(1.3, 5.57, new Rotation2d());
         // Pose 3
-//        Pose2d startingPose = AllianceUtils.mirrorAlliance(new Pose2d(0.74, 4.48, Rotation2d.fromDegrees(-60)));
+//        new Pose2d(0.74, 4.48, Rotation2d.fromDegrees(-60)));
 
         return new ProxyCommand(() -> autoChooser.getSelected());
     }

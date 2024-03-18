@@ -1,18 +1,14 @@
 package frc.robot.subsystems.shooter;
 
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.units.*;
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.event.BooleanEvent;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.Neo;
 import frc.lib.Neo.Model;
-import frc.robot.RobotContainer;
 import frc.robot.subsystems.LEDs;
 import monologue.Annotations.Log;
 import monologue.Logged;
@@ -31,21 +27,14 @@ public class Shooter extends SubsystemBase implements Logged {
 
     private ShooterState currentState = new ShooterState(0);
 
+    private final Trigger intakeTrigger;
+
     public GenericEntry lowerSpeed = Shuffleboard.getTab("match").add("lower speed", SPEAKER_DC * 100)
             .withSize(2, 2).withPosition(14, 5).getEntry();
     public GenericEntry upperSpeed = Shuffleboard.getTab("match").add("upper speed", SPEAKER_DC * 100)
             .withSize(2, 2).withPosition(14, 3).getEntry();
 
-    @Log.NT
-    private final DigitalInput shooterBeambreak = new DigitalInput(SHOOTER_BEAMBREAK_CHANNEL);
-
-    public final BooleanEvent noteShotTrigger = new BooleanEvent(CommandScheduler.getInstance().getDefaultButtonLoop(), () -> !shooterBeambreak.get()).falling();
-    public final Trigger hasNoteTrigger = new Trigger(() -> !shooterBeambreak.get()).debounce(0.1);
-    public final Trigger shooterSpins = new Trigger(() -> upperShooter.getVelocity() > 50).debounce(0.05);
-
     private final LEDs leds = LEDs.getInstance();
-
-    private final Trigger intakeTrigger;
 
     public Shooter(Trigger intakeTrigger) {
         upperShooter.setIdleMode(kCoast);
@@ -59,8 +48,6 @@ public class Shooter extends SubsystemBase implements Logged {
         lowerShooter.setPosition(0);
 
         this.intakeTrigger = intakeTrigger;
-
-        RobotContainer.robotData.addBoolean("shooter beambreak", hasNoteTrigger);
     }
 
     private void stopMotors() {
@@ -68,11 +55,7 @@ public class Shooter extends SubsystemBase implements Logged {
         lowerShooter.stopMotor();
     }
 
-    public ShooterState getCurrentState() {
-        return this.currentState;
-    }
-
-    public Command setShootercommand(ShooterState state) {
+    public Command setShooterCommand(ShooterState state) {
         return new FunctionalCommand(
                 () -> currentState = state,
                 () -> {
@@ -83,37 +66,17 @@ public class Shooter extends SubsystemBase implements Logged {
                 },
                 (__) -> {
                     stopMotors();
-                    currentState = new ShooterState(0);
+                    currentState = new ShooterState(0, 0);
                 },
-                intakeTrigger.negate().debounce(1), this);
+                intakeTrigger.negate().debounce(0.25), this);
     }
 
     public Command shootToAmpCommand() {
-        return setShootercommand(new ShooterState(AMP_UPPER_SHOOTER_RPM, AMP_LOWER_SHOOTER_RPM));
+        return setShooterCommand(new ShooterState(AMP_UPPER_SHOOTER_RPM, AMP_LOWER_SHOOTER_RPM));
     }
 
     public Command shootToSpeakerCommand() {
-        return setShootercommand(new ShooterState(SPEAKER_UPPER_SHOOTER_RPM, SPEAKER_LOWER_SHOOTER_RPM));
-    }
-
-    public Command prepShooterCommand() {
-        return new RunCommand(() -> {
-            upperShooter.set(SPEAKER_DC);
-            lowerShooter.set(SPEAKER_DC);
-        }, this);
-    }
-
-    public Command shootToSpeakerManualCommand() {
-        return new FunctionalCommand(
-                () -> this.currentState = new ShooterState(WOOFER_RPM),
-                () -> {
-                    upperShooter.set(upperSpeed.getDouble(SPEAKER_DC * 100) / 100.0);
-                    lowerShooter.set(lowerSpeed.getDouble(SPEAKER_DC * 100) / 100.0);
-                },
-                (__) -> this.stopMotors(),
-                intakeTrigger.negate().debounce(0.1),
-                this);
-//        ).alongWith(leds.setPattern(BLINKING, RED.color));
+        return setShooterCommand(new ShooterState(SPEAKER_UPPER_SHOOTER_RPM, SPEAKER_LOWER_SHOOTER_RPM));
     }
 
     public Command shootToAmpManualCommand(Trigger intakeTrigger) {
@@ -128,29 +91,39 @@ public class Shooter extends SubsystemBase implements Logged {
                 this::stopMotors).until(intakeTrigger.negate().debounce(1));
     }
 
-    public Command farShooterCommand(DoubleSupplier distMeters) {
-        return this.runEnd(
+    public Command shootToSpeakerManualCommand() {
+        return new FunctionalCommand(
+                () -> this.currentState = new ShooterState(0, 0),
                 () -> {
-                    ShooterState st = new ShooterState(distMeters.getAsDouble());
-
-                    System.out.println("dist: " + distMeters.getAsDouble());
-                    System.out.println("upper: " + st.upperDC);
-                    System.out.println("lower: " + st.lowerDC);
-
-                    upperShooter.set(st.upperDC);
-                    lowerShooter.set(st.lowerDC);
+                    upperShooter.set(upperSpeed.getDouble(SPEAKER_DC * 100) / 100.0);
+                    lowerShooter.set(lowerSpeed.getDouble(SPEAKER_DC * 100) / 100.0);
                 },
-                this::stopMotors).until(intakeTrigger.negate().debounce(0.25));
+                (__) -> this.stopMotors(),
+                intakeTrigger.negate().debounce(0.1),
+                this);
+//        ).alongWith(leds.setPattern(BLINKING, RED.color));
     }
 
-    public Command manualShooter(double upper, double lower, Trigger intakeTrigger) {
-        return this.runEnd(
-                () -> {
-                    upperShooter.set(upper);
-                    lowerShooter.set(lower);
+    public Command prepShooterCommand() {
+        return new RunCommand(() -> {
+            upperShooter.set(SPEAKER_DC);
+            lowerShooter.set(SPEAKER_DC);
+        }, this);
+    }
+
+    ShooterState prepState;
+    public Command prepFarShooter(DoubleSupplier distMeters){
+        return new FunctionalCommand(
+                ()-> prepState = new ShooterState(distMeters),
+                ()-> {
+                    prepState.setVelocities(upperShooter.getVelocity(), lowerShooter.getVelocity());
+
+                    upperShooter.setVoltage(prepState.upperVoltage);
+                    lowerShooter.setVoltage(prepState.lowerVoltage);
                 },
-                () -> {
-                }).until(intakeTrigger.negate().debounce(1));
+                (__)-> {},
+                ()-> false,
+                this);
     }
 
     public Command stopShooterCommand() {
@@ -160,6 +133,15 @@ public class Shooter extends SubsystemBase implements Logged {
         });
     }
 
+    public Command manualShooter(double upper, double lower) {
+        return this.runEnd(
+                () -> {
+                    upperShooter.set(upper);
+                    lowerShooter.set(lower);
+                },
+                this::stopMotors).until(intakeTrigger.negate().debounce(0.25));
+    }
+
     public Command toggleIdleModeCommand() {
         return new StartEndCommand(
                 () -> upperShooter.setIdleMode(kCoast),
@@ -167,9 +149,8 @@ public class Shooter extends SubsystemBase implements Logged {
                 .ignoringDisable(true);
     }
 
-    @Log.NT
-    private boolean noteShotTrigger() {
-        return noteShotTrigger.getAsBoolean();
+    public ShooterState getCurrentState() {
+        return this.currentState;
     }
 
     @Log.NT
@@ -190,31 +171,5 @@ public class Shooter extends SubsystemBase implements Logged {
     @Log.NT
     private double getLowerRPM() {
         return lowerShooter.getVelocity();
-    }
-
-
-    // sysid stuff
-    private final MutableMeasure<Voltage> appliedVoltage = mutable(Volts.of(0));
-    private final MutableMeasure<Velocity<Angle>> velocity = mutable(RotationsPerSecond.of(0));
-    private final MutableMeasure<Angle> degrees = mutable(Rotations.of(0));
-
-    private final SysIdRoutine shooterSysid = new SysIdRoutine(
-            sysidConfig,
-            new SysIdRoutine.Mechanism(
-                    (Measure<Voltage> volts) -> upperShooter.setVoltage(volts.in(Volts)),
-                    log -> log.motor("shooterMotor")
-                            .voltage(appliedVoltage.mut_replace(
-                                    upperShooter.getAppliedOutput() * RobotController.getBatteryVoltage(), Volts))
-                            .angularPosition(degrees.mut_replace(upperShooter.getPosition(), Rotations))
-                            .angularVelocity(velocity.mut_replace(upperShooter.getVelocity(), RPM)),
-                    this
-            ));
-
-    public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-        return shooterSysid.quasistatic(direction);
-    }
-
-    public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-        return shooterSysid.dynamic(direction);
     }
 }

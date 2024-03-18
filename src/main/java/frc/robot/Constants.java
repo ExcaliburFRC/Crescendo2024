@@ -77,7 +77,7 @@ public final class Constants {
         public static final double BOOST_SPEED_PERCENTAGE = 100; // %
 
         // autonomous constants
-        public static final Gains ANGLE_GAINS = new Gains(0.175, 0, 0.001);
+        public static final Gains ANGLE_GAINS = new Gains(0.175, 0, 0.007);
         public static final Gains TRANSLATION_GAINS = new Gains(0, 0, 0);
 
         public static final Gains PATHPLANNER_ANGLE_GAINS = new Gains(7, 0, 0);
@@ -86,20 +86,6 @@ public final class Constants {
         public static final PathConstraints PATH_CONSTRAINTS = new PathConstraints(
                 MAX_VELOCITY_METER_PER_SECOND, MAX_VELOCITY_ACCELERATION_METER_PER_SECOND,
                 MAX_ANGULAR_VELOCITY_PER_SECOND, MAX_ANGULAR_ACCELERATION_PER_SECOND);
-        public enum FieldParts{
-            SPEAKER(0,0),
-            AMP(0,0),
-            SOURCE(0,0),
-            Trap1(0,0),
-            Trap2(0,0),
-            Trap3(0,0);
-            public final int blueID;
-            public final int redID;
-            private FieldParts(int blueID, int redID){
-                this.blueID = blueID;
-                this.redID = redID;
-            }
-        }
     }
 
     public static final class ModuleConstants {
@@ -111,8 +97,8 @@ public final class Constants {
         public static final double kTurningEncoderRotationsToRadians = kTurningMotorGearRatio * 2 * PI;
         public static final double kTurningEncoderRPMToRadiansPerSec = kTurningEncoderRotationsToRadians / 60;
 
-        public static final Gains MODULE_ANGLE_GAINS = new Gains(0.67, 0, 0);
-        public static final double TOLERANCE = 0.07;
+        public static final Gains MODULE_ANGLE_GAINS = new Gains(0.785, 0, 0);
+        public static final double TOLERANCE = 0.15;
 
         public static final int DRIVE_CURRENT_LIMIT = 60;
         public static final int ANGLE_CURRENT_LIMIT = 25;
@@ -124,22 +110,20 @@ public final class Constants {
 
         public static final int SHOOTER_CURRENT_LIMIT = 70;
 
-        public static final int SHOOTER_BEAMBREAK_CHANNEL = 9;
-
         public static final Gains UPPER_GAINS = new Gains(new Gains(0.00028558, 0, 0), new Gains(14.5152, 0, 0.11033, 0));
-        public static final Gains LOWER_GAINS = new Gains(new Gains(0.0006, 0, 0), new Gains(15.5466, 0, 0.10869, 0));
+        public static final Gains LOWER_GAINS = new Gains(new Gains(0.0006, 0, 0), new Gains(15.5466, 0, 0.1059890436, 0));
 
-        public static final double AMP_UPPER_SHOOTER_RPM = 930;
-        public static final double AMP_LOWER_SHOOTER_RPM = 2580;
+        public static final double AMP_UPPER_SHOOTER_RPM = 1000; //930
+        public static final double AMP_LOWER_SHOOTER_RPM = 2250; //2580
 
         public static final double SPEAKER_SHOOTER_RPM = 5300;
 
-        public static final double SPEAKER_UPPER_SHOOTER_RPM = 55_00;
-        public static final double SPEAKER_LOWER_SHOOTER_RPM = 30_00;
-
-        public static final double WOOFER_RPM = 0;
+        public static final double SPEAKER_UPPER_SHOOTER_RPM = 5700;
+        public static final double SPEAKER_LOWER_SHOOTER_RPM = 3100;
 
         public static final double SHOOTER_PID_TOLERANCE = 100;
+
+        public static final double MAX_SHOOTER_DISTANCE = 2.4;
 
         public static final double SPEAKER_DC = 0.8;
 
@@ -179,26 +163,25 @@ public final class Constants {
 
         public enum FieldLocations {
             // Human player locations
-            HP_LEFT("HMLeft", new AlliancePose(16.01, 1.21, -60)),
-            HP_CENTER("HMCenter", new AlliancePose(15.45, 0.9, -60)),
-            HP_RIGHT("HMRight", new AlliancePose(14.95, 0.56, -60)),
+            HP_LEFT(new AlliancePose(16.01, 1.21, -60)),
+            HP_CENTER(new AlliancePose(15.45, 0.9, -60)),
+            HP_RIGHT(new AlliancePose(14.82, 0.66, 120)),
 
             // Speaker locations,
-            SPEAKER_TOP("SpeakerTop", new AlliancePose(0.82, 6.61, 60)),
-            SPEAKER_CENTER("SpeakerCenter", new AlliancePose(1.32, 5.6, 0)),
-            SPEAKER_BOTTOM("SpeakerBottom", new AlliancePose(0.71, 4.51, 120)),
+            SPEAKER_TOP(new AlliancePose(0.82, 6.61, 60)),
+            SPEAKER_CENTER(new AlliancePose(1.32, 5.6, 0)),
+            SPEAKER_BOTTOM(new AlliancePose(0.71, 4.51, 120)),
 
-            BLUE_TRAP("", new AlliancePose(4.65, 4.47, -60)),
+            BLUE_TRAP(new AlliancePose(4.65, 4.47, -60)),
+            SHOOTING_LOCATION(new AlliancePose(1.2, 7.15, 0)),
 
-            AMPLIFIER("Amp", new AlliancePose(1.86, 7.68, 90)),
-            SPEAKER("", new AlliancePose(0, 5.56, 0)),
-            PODIUM("Podium", new AlliancePose(2.86, 4.09, -28));
+            AMPLIFIER(new AlliancePose(1.88, 7.76, -90)),
+            SPEAKER(new AlliancePose(0, 5.56, 0)),
+            PODIUM(new AlliancePose(2.86, 4.09, -28));
 
-            public String pathName;
             public AlliancePose pose;
 
-            FieldLocations(String pathName, AlliancePose pose) {
-                this.pathName = pathName;
+            FieldLocations(AlliancePose pose) {
                 this.pose = pose;
             }
         }

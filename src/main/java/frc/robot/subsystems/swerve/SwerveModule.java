@@ -33,7 +33,6 @@ public class SwerveModule implements Sendable, Logged {
   //a pid controller for the angle of the module
   private final PIDController _spinningPIDController;
   private final PIDController speedController;
-  @Log.NT
   private final String moduleName;
 
   public Trigger isReset = new Trigger(()-> Math.abs(getResetRad()) < TOLERANCE).debounce(0.1);
@@ -106,22 +105,18 @@ public class SwerveModule implements Sendable, Logged {
     _angleMotor.setPosition(getAbsEncoderRad());
   }
 
-  @Log.NT (key = "ModuleState", level = LogLevel.NOT_FILE_ONLY)
   public SwerveModuleState getState() {
     return new SwerveModuleState(_driveMotor.getVelocity(), new Rotation2d(_angleMotor.getPosition()));
   }
 
-  @Log.NT (key = "ModulePosition")
   public SwerveModulePosition getPosition(){
     return new SwerveModulePosition(_driveMotor.getPosition(), new Rotation2d(getAbsEncoderRad()));
   }
 
-  @Log.NT
   public double getRelativeAnglePosition(){
     return _angleMotor.getPosition();
   }
 
-  @Log.NT
   public double getModuleVelocity(){
     return _driveMotor.getVelocity();
   }

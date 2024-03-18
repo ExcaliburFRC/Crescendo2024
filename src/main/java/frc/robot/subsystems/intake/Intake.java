@@ -41,10 +41,8 @@ public class Intake extends SubsystemBase implements Logged {
     private final PIDController anglePIDcontroller = new PIDController(INTAKE_GAINS.kp, INTAKE_GAINS.ki, INTAKE_GAINS.kd);
     private final ArmFeedforward angleFFcontroller = new ArmFeedforward(INTAKE_GAINS.ks, INTAKE_GAINS.kg, INTAKE_GAINS.kv, INTAKE_GAINS.ka);
 
-    @Log.NT
     public IntakeAngle setpoint = IntakeAngle.SHOOTER;
 
-    @Log.NT
     public final Trigger atSetpointTrigger = new Trigger(anglePIDcontroller::atSetpoint).debounce(0.2);
     public final Trigger atShooterTrigger = atSetpointTrigger.and(() -> setpoint.equals(IntakeAngle.SHOOTER));
 
@@ -72,11 +70,6 @@ public class Intake extends SubsystemBase implements Logged {
         setDefaultCommand(setIntakeCommand(new IntakeState(0, IntakeAngle.SHOOTER, false)));
     }
 
-    @Log.NT
-    public double rawEncoderVal(){
-        return 360 - encoder.getDistance();
-    }
-
     @Log.NT(key = "intakeAngle")
     public double getAngle() {
         double val = 360 - encoder.getDistance();
@@ -99,7 +92,7 @@ public class Intake extends SubsystemBase implements Logged {
         double pid = anglePIDcontroller.calculate(encoderAngle + INTAKE_READING_OFFSET, angle.angle);
         double ff = angleFFcontroller.calculate(Math.toRadians(angle.angle), 0) / 60.0;
 
-        if (encoderAngle > 200 || encoderAngle < -50) DriverStation.reportError("intake encoder malfunctions", false);
+        if (encoderAngle > 200 || encoderAngle < -50) DriverStation.reportError("intake encoder malfunctions: " + encoderAngle, false);
         else angleMotor.setVoltage(pid + ff);
     }
 
@@ -123,14 +116,10 @@ public class Intake extends SubsystemBase implements Logged {
 
     public Command intakeFromAngleCommand(IntakeAngle angle, Command vibrateCommand) {
         return new SequentialCommandGroup(
-                setIntakeCommand(new IntakeState(0.35, angle, true)).until(hasNoteTrigger.debounce(0.15)),
+                setIntakeCommand(new IntakeState(0.35, angle, true)).until(hasNoteTrigger.debounce(0.1)),
                 new InstantCommand(vibrateCommand::schedule),
                 setIntakeCommand(new IntakeState(0, IntakeAngle.SHOOTER, false)).until(atShooterTrigger),
-                pumpNoteCommand().unless(DriverStation::isAutonomous)).withName("intakeCommand")
-                .deadlineWith(new StartEndCommand(
-                        () -> leds.setPattern(BLINKING, ORANGE.color).schedule(),
-                        () -> leds.setPattern(SOLID, GREEN.color).withTimeout(1.5).schedule()
-                ));
+                pumpNoteCommand().unless(DriverStation::isAutonomous)).withName("intakeCommand");
     }
 
     public Command halfIntakeFromGround() {
@@ -147,7 +136,7 @@ public class Intake extends SubsystemBase implements Logged {
 
     public Command transportToShooterCommand(BooleanSupplier toAmp) {
         return setIntakeCommand(new IntakeState(toAmp.getAsBoolean() ? -0.6 : -0.75, IntakeAngle.SHOOTER, true))
-                .until(hasNoteTrigger.negate().debounce(0.75))
+                .until(hasNoteTrigger.negate().debounce(0.2))
                 .deadlineWith(leds.setPattern(SOLID, GREEN.color));
     }
 
@@ -168,46 +157,5 @@ public class Intake extends SubsystemBase implements Logged {
     private void initShuffleboard() {
         RobotContainer.robotData.addBoolean("intake beambreak", hasNoteTrigger);
         RobotContainer.robotData.addDouble("intake angle", this::getAngle).withSize(2, 2);
-    }
-
-    @Log.NT
-    private boolean intakingTrigger() {
-        return intakingTrigger.getAsBoolean();
-    }
-
-    @Log.NT
-    private double getIntakeVel() {
-        return intakeMotor.getVelocity();
-    }
-
-    @Log.NT
-    private double getAngleMotorOutputDC() {
-        return angleMotor.getAppliedOutput();
-    }
-
-    // SysId stuff
-    private final MutableMeasure<Voltage> appliedVoltage = mutable(Volts.of(0));
-    private final MutableMeasure<Angle> degrees = mutable(Degrees.of(0));
-
-    private final MutableMeasure<Velocity<Angle>> velocity = mutable(DegreesPerSecond.of(0));
-
-    private final SysIdRoutine angleSysid = new SysIdRoutine(
-            sysidConfig,
-            new SysIdRoutine.Mechanism(
-                    (Measure<Voltage> volts) -> angleMotor.setVoltage(volts.in(Volts)),
-                    log -> log.motor("angleMotor")
-                            .voltage(appliedVoltage.mut_replace(
-                                    angleMotor.getAppliedOutput() * RobotController.getBatteryVoltage(), Volts))
-                            .angularPosition(degrees.mut_replace(getAngle(), Degrees))
-                            .angularVelocity(velocity.mut_replace(angleMotor.getVelocity(), RPM)),
-                    this
-            ));
-
-    public Command sysidQuasistatic(SysIdRoutine.Direction direction) {
-        return angleSysid.quasistatic(direction);
-    }
-
-    public Command sysidDynamic(SysIdRoutine.Direction direction) {
-        return angleSysid.dynamic(direction);
     }
 }
