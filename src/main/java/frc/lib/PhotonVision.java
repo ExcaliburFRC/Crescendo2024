@@ -30,7 +30,7 @@ public class PhotonVision {
 
     private PhotonPoseEstimator photonPoseEstimator;
 
-    private final Transform3d robotToCamera = new Transform3d(-0.384279,0,0.46352,new Rotation3d(0, 2.67, 0));
+    private final Transform3d robotToCamera = new Transform3d(-0.384279,0,0.46352,new Rotation3d(Math.PI, 2.67, 0)); //0.01745
 
     public PhotonVision() {
         camera = new PhotonCamera("OV9281");
@@ -42,7 +42,7 @@ public class PhotonVision {
 
         seenTagTimer.start();
 
-        RobotContainer.matchTab.addBoolean("seen Tag", seenTagTrigger).withSize(4, 4);
+        RobotContainer.matchTab.addBoolean("seen Tag", seenTagTrigger).withSize(4, 4).withPosition(19, 3);
     }
 
     public PhotonCamera getCamera() {

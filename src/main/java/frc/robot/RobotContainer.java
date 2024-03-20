@@ -74,18 +74,6 @@ public class RobotContainer implements Logged {
         }
     }).withName("ClimberMode");
 
-    private final Command shooterDistanceCommand = new InstantCommand(() -> {
-        farShooter = !farShooter;
-
-        if (farShooter) {
-            shooter.upperSpeed.setDouble(100);
-            shooter.lowerSpeed.setDouble(60);
-        } else {
-            shooter.upperSpeed.setDouble(SPEAKER_DC * 100);
-            shooter.lowerSpeed.setDouble(SPEAKER_DC * 100);
-        }
-    }).ignoringDisable(true).withName("FarShooterCommand");
-
     Command intakeVibrate = vibrateControllerCommand(50, 0.25);
 
     public RobotContainer() {
@@ -109,6 +97,8 @@ public class RobotContainer implements Logged {
 
         driver.options().whileTrue(toggleMotorsIdleMode().alongWith(leds.setPattern(SOLID, WHITE.color)));
         driver.PS().onTrue(swerve.resetOdometryAngleCommand());
+
+        driver.L1().whileTrue(leds.deadLineLEDcommand(leds.setPattern(BLINKING, RED.color)));
 
         // manual actions
         climber.setDefaultCommand(climber.manualCommand(driver.L1(climberLoop), driver.R1(climberLoop), driver.L2(climberLoop), driver.R2(climberLoop)));
@@ -144,9 +134,12 @@ public class RobotContainer implements Logged {
                 new ProxyCommand(() -> swerve.pathFindToPose(AMPLIFIER.pose.get(), new PathConstraints(1.5, 2, Math.PI, Math.PI), 0)),
                 scoreNoteCommand(shooter.shootToAmpCommand(), driver.R1(), true)));
 
+        driver.povDown().onTrue(shooter.forceShootCommand().alongWith(new WaitCommand(0.75).andThen(intake.forceTransport(()-> false))));
+
         //up - full field shot to speaker
         //right - drive to amp
         //left - drive to HP
+        //down - force shoot command
     }
 
     // methods
@@ -198,6 +191,8 @@ public class RobotContainer implements Logged {
 
         NamedCommands.registerCommand("setSwerveIdle", swerve.setDriveIdleMode(CANSparkBase.IdleMode.kCoast));
 
+        NamedCommands.registerCommand("forceShoot", shooter.forceShootCommand().alongWith(new WaitCommand(0.75).andThen(intake.forceTransport(()-> false))));
+
         NamedCommands.registerCommand("farShooter", scoreNoteCommand(shooter.manualShooter(1, 0.6), new Trigger(() -> true), false));
         NamedCommands.registerCommand("prepFarShooter", shooter.prepFarShooter(() -> swerve.getDistanceFromPose(SPEAKER.pose.get())));
         NamedCommands.registerCommand("shootFromDistance",
@@ -207,10 +202,9 @@ public class RobotContainer implements Logged {
 
         pitTab.add("System tester", systemTesterCommand().withName("SystemTest")).withSize(2, 2);
 
-        matchTab.addBoolean("intake note", intake.hasNoteTrigger).withPosition(19, 1).withSize(4, 4);
-        matchTab.add("pumpNote", intake.pumpNoteCommand().withName("PumpNote")).withPosition(16, 2).withSize(3, 2);
-        matchTab.add("climberMode", climberModeCommand).withPosition(16, 4).withSize(3, 2);
-        matchTab.add("FarShooter", shooterDistanceCommand).withPosition(16, 6).withSize(3, 2);
+        matchTab.addBoolean("intake note", intake.hasNoteTrigger).withPosition(19, 0).withSize(4, 3);
+        matchTab.add("pumpNote", intake.pumpNoteCommand().withName("PumpNote")).withPosition(16, 1).withSize(3, 2);
+        matchTab.add("climberMode", climberModeCommand).withPosition(16, 3).withSize(3, 2);
 
         autoChooser.setDefaultOption("none", new InstantCommand(() -> {
         }));

@@ -132,7 +132,7 @@ public class Swerve extends SubsystemBase implements Logged {
         initAutoBuilder();
         initShuffleboardData();
 
-        RobotContainer.matchTab.addBoolean("shooter distance", shooterDistanceTrigger).withPosition(19, 5).withSize(4, 4);
+        RobotContainer.matchTab.addBoolean("shooter distance", shooterDistanceTrigger).withPosition(19, 7).withSize(4, 3);
     }
 
     // gyro getters and setters

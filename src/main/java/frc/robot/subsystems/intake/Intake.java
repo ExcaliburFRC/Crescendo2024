@@ -32,13 +32,16 @@ public class Intake extends SubsystemBase implements Logged {
     private final Neo intakeMotor = new Neo(INTAKE_MOTOR_ID, Model.SparkMax);
     private final Neo angleMotor = new Neo(ANGLE_MOTOR_ID, Model.SparkMax);
 
-    private final DutyCycleEncoder encoder = new DutyCycleEncoder(ENCODER_PORT);
+    private boolean shouldPump = true;
+    private boolean useColorSensor = false;
 
     @Log.NT
     public final DigitalInput beambreak = new DigitalInput(BEAMBREAK_PORT);
-    public final ColorSensorV3 colorSensor = new ColorSensorV3(I2C.Port.kMXP);
+    public final ColorSensorV3 colorSensor = new ColorSensorV3(I2C.Port.kOnboard);
 
-    public final Trigger hasNoteTrigger = new Trigger(() -> !beambreak.get() || colorSensor.getProximity() > 100).debounce(0.2);
+    public final Trigger hasNoteTrigger = new Trigger(() -> useColorSensor? (colorSensor.getProximity() > 80) : !beambreak.get()).debounce(0.2);
+
+    private final DutyCycleEncoder encoder = new DutyCycleEncoder(ENCODER_PORT);
 
     private final PIDController anglePIDcontroller = new PIDController(INTAKE_GAINS.kp, INTAKE_GAINS.ki, INTAKE_GAINS.kd);
     private final ArmFeedforward angleFFcontroller = new ArmFeedforward(INTAKE_GAINS.ks, INTAKE_GAINS.kg, INTAKE_GAINS.kv, INTAKE_GAINS.ka);
@@ -51,9 +54,6 @@ public class Intake extends SubsystemBase implements Logged {
     public final Trigger intakingTrigger = new Trigger(() -> getCurrentCommand() != null && getCurrentCommand().getName().equals("intakeCommand"));
 
     private final LEDs leds = LEDs.getInstance();
-
-    private boolean shouldPump = true;
-    private boolean useColorSensor = false;
 
     public Intake() {
         intakeMotor.setIdleMode(IdleMode.kCoast);
@@ -153,6 +153,10 @@ public class Intake extends SubsystemBase implements Logged {
                 .until(hasNoteTrigger.negate().debounce(0.2));
     }
 
+    public Command forceTransport(BooleanSupplier toAmp){
+        return setIntakeCommand(new IntakeState(toAmp.getAsBoolean() ? -0.6 : -0.75, IntakeAngle.SHOOTER, true)).withTimeout(0.35);
+    }
+
     public Command pumpNoteCommand() {
         return new SequentialCommandGroup(
                 this.runEnd(() -> intakeMotor.set(-0.2), intakeMotor::stopMotor).withTimeout(0.1),
@@ -171,7 +175,7 @@ public class Intake extends SubsystemBase implements Logged {
         RobotContainer.robotData.addBoolean("intake beambreak", hasNoteTrigger);
         RobotContainer.robotData.addDouble("intake angle", this::getAngle).withSize(2, 2);
 
-        RobotContainer.matchTab.add(new InstantCommand(()-> shouldPump = !shouldPump).withName("togglePump"));
-        RobotContainer.matchTab.add(new InstantCommand(()-> useColorSensor = !useColorSensor).withName("toggleSensor"));
+        RobotContainer.matchTab.add(new InstantCommand(()-> shouldPump = !shouldPump).ignoringDisable(true).withName("togglePump")).withSize(3, 2).withPosition(16, 5);
+        RobotContainer.matchTab.add(new InstantCommand(()-> useColorSensor = !useColorSensor).ignoringDisable(true).withName("toggleSensor")).withSize(3, 2).withPosition(16, 7);
     }
 }

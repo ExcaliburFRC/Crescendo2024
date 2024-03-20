@@ -103,10 +103,23 @@ public class Shooter extends SubsystemBase implements Logged {
                     lowerShooter.set(lowerSpeed.getDouble(SPEAKER_DC * 100) / 100.0);
                 },
                 (__) -> this.stopMotors(),
-                intakeTrigger.negate().debounce(0.1),
+                intakeTrigger.negate().debounce(0.25),
                 this);
 //        ).alongWith(leds.setPattern(BLINKING, RED.color));
     }
+
+    public Command forceShootCommand(){
+        return new FunctionalCommand(
+                () -> this.currentState = new ShooterState(0, 0),
+                () -> {
+                    upperShooter.set(upperSpeed.getDouble(SPEAKER_DC * 100) / 100.0);
+                    lowerShooter.set(lowerSpeed.getDouble(SPEAKER_DC * 100) / 100.0);
+                },
+                (__) -> this.stopMotors(),
+                ()-> false,
+                this).withTimeout(2);
+    }
+
 
     public Command prepShooterCommand() {
         return new RunCommand(() -> {

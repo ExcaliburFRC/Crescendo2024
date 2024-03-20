@@ -98,7 +98,7 @@ public final class Constants {
         public static final double kTurningEncoderRPMToRadiansPerSec = kTurningEncoderRotationsToRadians / 60;
 
         public static final Gains MODULE_ANGLE_GAINS = new Gains(0.785, 0, 0);
-        public static final double TOLERANCE = 0.15;
+        public static final double TOLERANCE = 0.2;
 
         public static final int DRIVE_CURRENT_LIMIT = 60;
         public static final int ANGLE_CURRENT_LIMIT = 25;
@@ -113,8 +113,8 @@ public final class Constants {
         public static final Gains UPPER_GAINS = new Gains(new Gains(0.00028558, 0, 0), new Gains(14.5152, 0, 0.11033, 0));
         public static final Gains LOWER_GAINS = new Gains(new Gains(0.0006, 0, 0), new Gains(15.5466, 0, 0.1059890436, 0));
 
-        public static final double AMP_UPPER_SHOOTER_RPM = 1000; //930
-        public static final double AMP_LOWER_SHOOTER_RPM = 2250; //2580
+        public static final double AMP_UPPER_SHOOTER_RPM = 1125; //1000
+        public static final double AMP_LOWER_SHOOTER_RPM = 2500; //2250
 
         public static final double SPEAKER_SHOOTER_RPM = 5300;
 
