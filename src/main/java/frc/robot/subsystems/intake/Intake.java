@@ -1,13 +1,15 @@
 package frc.robot.subsystems.intake;
 
 import com.revrobotics.CANSparkBase.IdleMode;
+import com.revrobotics.ColorSensorV3;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.units.*;
-import edu.wpi.first.wpilibj.*;
+import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DutyCycleEncoder;
+import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.Neo;
 import frc.lib.Neo.Model;
 import frc.robot.RobotContainer;
@@ -18,8 +20,6 @@ import monologue.Logged;
 
 import java.util.function.BooleanSupplier;
 
-import static edu.wpi.first.units.MutableMeasure.mutable;
-import static edu.wpi.first.units.Units.*;
 import static edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior.kCancelIncoming;
 import static frc.lib.Color.Colors.GREEN;
 import static frc.lib.Color.Colors.ORANGE;
@@ -36,7 +36,9 @@ public class Intake extends SubsystemBase implements Logged {
 
     @Log.NT
     public final DigitalInput beambreak = new DigitalInput(BEAMBREAK_PORT);
-    public final Trigger hasNoteTrigger = new Trigger(() -> !beambreak.get()).debounce(0.2);
+    public final ColorSensorV3 colorSensor = new ColorSensorV3(I2C.Port.kMXP);
+
+    public final Trigger hasNoteTrigger = new Trigger(() -> !beambreak.get() || colorSensor.getProximity() > 100).debounce(0.2);
 
     private final PIDController anglePIDcontroller = new PIDController(INTAKE_GAINS.kp, INTAKE_GAINS.ki, INTAKE_GAINS.kd);
     private final ArmFeedforward angleFFcontroller = new ArmFeedforward(INTAKE_GAINS.ks, INTAKE_GAINS.kg, INTAKE_GAINS.kv, INTAKE_GAINS.ka);
@@ -50,6 +52,8 @@ public class Intake extends SubsystemBase implements Logged {
 
     private final LEDs leds = LEDs.getInstance();
 
+    private boolean shouldPump = true;
+    private boolean useColorSensor = false;
 
     public Intake() {
         intakeMotor.setIdleMode(IdleMode.kCoast);
@@ -80,11 +84,17 @@ public class Intake extends SubsystemBase implements Logged {
         return val;
     }
 
+    @Log.NT
+    public double getProximity() {
+        return colorSensor.getProximity();
+    }
+
     private void setIntakeSpeed(double speed) {
         intakeMotor.set(speed);
     }
 
     double encoderAngle;
+
     private void setIntakeAngle(IntakeAngle angle) {
         setpoint = angle;
         encoderAngle = getAngle();
@@ -92,7 +102,8 @@ public class Intake extends SubsystemBase implements Logged {
         double pid = anglePIDcontroller.calculate(encoderAngle + INTAKE_READING_OFFSET, angle.angle);
         double ff = angleFFcontroller.calculate(Math.toRadians(angle.angle), 0) / 60.0;
 
-        if (encoderAngle > 200 || encoderAngle < -50) DriverStation.reportError("intake encoder malfunctions: " + encoderAngle, false);
+        if (encoderAngle > 200 || encoderAngle < -50)
+            DriverStation.reportError("intake encoder malfunctions: " + encoderAngle, false);
         else angleMotor.setVoltage(pid + ff);
     }
 
@@ -103,8 +114,6 @@ public class Intake extends SubsystemBase implements Logged {
 
     private Command setIntakeCommand(IntakeState intakeState) {
         return this.runEnd(() -> {
-            leds.setPattern(BLINKING, ORANGE.color);
-
             setIntakeAngle(intakeState.angle);
 
             if (!intakeState.waitForAngle) setIntakeSpeed(intakeState.intakeDC);
@@ -115,11 +124,16 @@ public class Intake extends SubsystemBase implements Logged {
     }
 
     public Command intakeFromAngleCommand(IntakeAngle angle, Command vibrateCommand) {
-        return new SequentialCommandGroup(
-                setIntakeCommand(new IntakeState(0.35, angle, true)).until(hasNoteTrigger.debounce(0.1)),
-                new InstantCommand(vibrateCommand::schedule),
-                setIntakeCommand(new IntakeState(0, IntakeAngle.SHOOTER, false)).until(atShooterTrigger),
-                pumpNoteCommand().unless(DriverStation::isAutonomous)).withName("intakeCommand");
+        return new ParallelDeadlineGroup(
+                new SequentialCommandGroup(
+                        setIntakeCommand(new IntakeState(0.35, angle, true)).until(hasNoteTrigger.debounce(0.1)),
+                        new InstantCommand(vibrateCommand::schedule),
+                        setIntakeCommand(new IntakeState(0, IntakeAngle.SHOOTER, false)).until(atShooterTrigger),
+                        pumpNoteCommand().unless(() -> DriverStation.isAutonomous() || !shouldPump)).withName("intakeCommand"),
+                new SequentialCommandGroup(
+                        leds.scheduleLEDcommand(leds.setPattern(BLINKING, ORANGE.color)),
+                        new WaitUntilCommand(hasNoteTrigger),
+                        leds.scheduleLEDcommand(leds.setPattern(SOLID, GREEN.color).withTimeout(2))));
     }
 
     public Command halfIntakeFromGround() {
@@ -136,8 +150,7 @@ public class Intake extends SubsystemBase implements Logged {
 
     public Command transportToShooterCommand(BooleanSupplier toAmp) {
         return setIntakeCommand(new IntakeState(toAmp.getAsBoolean() ? -0.6 : -0.75, IntakeAngle.SHOOTER, true))
-                .until(hasNoteTrigger.negate().debounce(0.2))
-                .deadlineWith(leds.setPattern(SOLID, GREEN.color));
+                .until(hasNoteTrigger.negate().debounce(0.2));
     }
 
     public Command pumpNoteCommand() {
@@ -157,5 +170,8 @@ public class Intake extends SubsystemBase implements Logged {
     private void initShuffleboard() {
         RobotContainer.robotData.addBoolean("intake beambreak", hasNoteTrigger);
         RobotContainer.robotData.addDouble("intake angle", this::getAngle).withSize(2, 2);
+
+        RobotContainer.matchTab.add(new InstantCommand(()-> shouldPump = !shouldPump).withName("togglePump"));
+        RobotContainer.matchTab.add(new InstantCommand(()-> useColorSensor = !useColorSensor).withName("toggleSensor"));
     }
 }

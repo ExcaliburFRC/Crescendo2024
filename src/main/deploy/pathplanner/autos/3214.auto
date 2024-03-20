@@ -206,6 +206,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "setSwerveIdle"
+          }
+        },
+        {
           "type": "deadline",
           "data": {
             "commands": [

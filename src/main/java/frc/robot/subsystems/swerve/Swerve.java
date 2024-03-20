@@ -4,12 +4,13 @@ import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.PathPlannerAuto;
-import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
+import com.revrobotics.CANSparkBase;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -125,14 +126,13 @@ public class Swerve extends SubsystemBase implements Logged {
         anglePIDcontroller.enableContinuousInput(0, 360);
         anglePIDcontroller.setTolerance(3);
 
-        decelaratorInterpolation.put(1.0, 0.4);
+        decelaratorInterpolation.put(1.0, 0.3);
         decelaratorInterpolation.put(-1.0, 1.0);
 
         initAutoBuilder();
         initShuffleboardData();
 
         RobotContainer.matchTab.addBoolean("shooter distance", shooterDistanceTrigger).withPosition(19, 5).withSize(4, 4);
-        RobotContainer.matchTab.addString("dist from speaker", ()-> String.valueOf(getDistanceFromPose(FieldLocations.SPEAKER.pose.get()))).withSize(2, 2);
     }
 
     // gyro getters and setters
@@ -348,8 +348,15 @@ public class Swerve extends SubsystemBase implements Logged {
     public Command toggleIdleModeCommand() {
         return new StartEndCommand(
                 () -> foreachModule(SwerveModule::setIdleModeCoast),
-                () -> foreachModule(SwerveModule::setIdleModebreak))
+                () -> foreachModule(SwerveModule::setIdleModeBreak))
                 .ignoringDisable(true);
+    }
+
+    public Command setDriveIdleMode(CANSparkBase.IdleMode mode){
+        return new ConditionalCommand(
+                new InstantCommand(() -> foreachModule(SwerveModule::setIdleModeBreak)),
+                new InstantCommand(() -> foreachModule(SwerveModule::setIdleModeCoast)),
+                ()-> mode.equals(CANSparkBase.IdleMode.kBrake));
     }
 
     @Override
@@ -365,8 +372,6 @@ public class Swerve extends SubsystemBase implements Logged {
 
         field.setRobotPose(odometry.getEstimatedPosition());
         SmartDashboard.putData(field);
-
-//        System.out.println(getDistanceFromPose(FieldLocations.SPEAKER.pose.get()));
     }
 
     @Log.NT
@@ -429,24 +434,4 @@ public class Swerve extends SubsystemBase implements Logged {
                 () -> DriverStation.getAlliance().get().equals(Red), this
         );
     }
-
-//    public Command adjustTo(FieldParts fieldPart){
-//        int id = AllianceUtils.isRedAlliance()? fieldPart.redID : fieldPart.blueID;
-//        PhotonPipelineResult results = camera.getLatestResult();
-//        if (!results.hasTargets()) return new PrintCommand("target "+ id +"not found");
-//        List<PhotonTrackedTarget> targets = results.getTargets();
-//        PhotonTrackedTarget desiredTarget = null;
-//        for (PhotonTrackedTarget target : targets){
-//            if (target.getFiducialId() == id) {
-//                desiredTarget = target;
-//                break;
-//            }
-//        }
-//        Transform3d cameraToTarget = desiredTarget.getBestCameraToTarget();
-//        Transform3d TargetToRobot;
-//        return null;//TODO get the diffrence between the required transform to the given transform and driving it using pp
-//    }
-//    private Transform3d targetToRobot(Transform3d cameraToTarget){
-//        return null;//TODO write a function that receives the transform of the camera to a target, returns the transform of the robot to the target
-//    }
 }

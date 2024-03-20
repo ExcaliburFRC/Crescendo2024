@@ -7,9 +7,11 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.lib.Color;
 import frc.lib.Neo;
 import frc.lib.Neo.Model;
 import frc.robot.subsystems.LEDs;
+import frc.robot.subsystems.LEDs.LEDPattern;
 import monologue.Annotations.Log;
 import monologue.Logged;
 
@@ -19,6 +21,7 @@ import static com.revrobotics.CANSparkBase.IdleMode.kBrake;
 import static com.revrobotics.CANSparkBase.IdleMode.kCoast;
 import static edu.wpi.first.units.MutableMeasure.mutable;
 import static edu.wpi.first.units.Units.*;
+import static frc.lib.Color.Colors.RED;
 import static frc.robot.Constants.ShooterConstants.*;
 
 public class Shooter extends SubsystemBase implements Logged {
@@ -68,7 +71,8 @@ public class Shooter extends SubsystemBase implements Logged {
                     stopMotors();
                     currentState = new ShooterState(0, 0);
                 },
-                intakeTrigger.negate().debounce(0.25), this);
+                intakeTrigger.negate().debounce(0.25),
+                this);
     }
 
     public Command shootToAmpCommand() {
@@ -112,17 +116,19 @@ public class Shooter extends SubsystemBase implements Logged {
     }
 
     ShooterState prepState;
-    public Command prepFarShooter(DoubleSupplier distMeters){
+
+    public Command prepFarShooter(DoubleSupplier distMeters) {
         return new FunctionalCommand(
-                ()-> prepState = new ShooterState(distMeters),
-                ()-> {
+                () -> prepState = new ShooterState(distMeters),
+                () -> {
                     prepState.setVelocities(upperShooter.getVelocity(), lowerShooter.getVelocity());
 
                     upperShooter.setVoltage(prepState.upperVoltage);
                     lowerShooter.setVoltage(prepState.lowerVoltage);
                 },
-                (__)-> {},
-                ()-> false,
+                (__) -> {
+                },
+                () -> false,
                 this);
     }
 

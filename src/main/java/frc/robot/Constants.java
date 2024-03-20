@@ -30,7 +30,7 @@ public final class Constants {
             FL(18, 17, 2, 0.045, true, true),
             FR(12, 11, 3, 0.071, true, true),
             BL(16, 15, 4, 0.595, true, true),
-            BR(14, 13, 1, 0.127, true, true);
+            BR(14, 13, 1, 0.116, true, true);
 
 
             public int DRIVE_MOTOR_ID, SPIN_MOTOR_ID, ABS_ENCODER_CHANNEL;
@@ -188,7 +188,7 @@ public final class Constants {
     }
 
     public static class LedsConstants {
-        public static final int LEDS_PORT = 4; // pwm
-        public static final int LENGTH = 50;
+        public static final int LEDS_PORT = 9; // pwm
+        public static final int LENGTH = 23;
     }
 }

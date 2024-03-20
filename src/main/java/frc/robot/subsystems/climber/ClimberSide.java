@@ -19,6 +19,8 @@ class ClimberSide implements Logged {
 
     public ClimberSide(int motorID) {
         motor = new Neo(motorID, Model.SparkMax);
+
+        motor.setSmartCurrentLimit(40);
     }
 
     public Command manualCommand(BooleanSupplier rise, BooleanSupplier lower){

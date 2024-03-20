@@ -12,8 +12,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.Neo;
 import frc.lib.Neo.Model;
 import frc.robot.Constants;
-import monologue.Annotations.Log;
-import monologue.LogLevel;
 import monologue.Logged;
 
 import static frc.robot.Constants.ModuleConstants.*;
@@ -152,7 +150,7 @@ public class SwerveModule implements Sendable, Logged {
     _angleMotor.setIdleMode(CANSparkMax.IdleMode.kCoast);
   }
 
-  public void setIdleModebreak(){
+  public void setIdleModeBreak(){
     _driveMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
     _angleMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
   }

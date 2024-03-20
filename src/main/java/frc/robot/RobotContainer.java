@@ -2,6 +2,7 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.path.PathConstraints;
+import com.revrobotics.CANSparkBase;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -29,19 +30,16 @@ import static edu.wpi.first.wpilibj.GenericHID.RumbleType.kBothRumble;
 import static frc.lib.Color.Colors.*;
 import static frc.robot.Constants.FieldConstants.FieldLocations.*;
 import static frc.robot.Constants.ShooterConstants.*;
-import static frc.robot.Constants.SwerveConstants.MAX_VELOCITY_METER_PER_SECOND;
 import static frc.robot.subsystems.LEDs.LEDPattern.*;
 import static frc.robot.subsystems.intake.IntakeState.IntakeAngle.*;
 
 public class RobotContainer implements Logged {
     // subsystems
-    private final Swerve swerve = new Swerve();
-    private final LEDs leds = LEDs.getInstance();
+    public final Swerve swerve = new Swerve();
     private final Intake intake = new Intake();
     public final Shooter shooter = new Shooter(intake.hasNoteTrigger);
     private final Climber climber = new Climber();
-
-    private final PDH pdh = new PDH();
+    private final LEDs leds = LEDs.getInstance();
 
     // controllers
     private final CommandPS5Controller driver = new CommandPS5Controller(0);
@@ -138,12 +136,12 @@ public class RobotContainer implements Logged {
                 swerve.turnToLocationCommand(SHOOTING_LOCATION)));
 
         driver.povLeft().toggleOnTrue(new ParallelCommandGroup(
-                new ProxyCommand(()-> swerve.pathFindToPose(HP_RIGHT.pose.get(), new PathConstraints(2, 2, Math.PI, Math.PI), 0)),
+                new ProxyCommand(() -> swerve.pathFindToPose(HP_RIGHT.pose.get(), new PathConstraints(2, 2, Math.PI, Math.PI), 0)),
                 intake.intakeFromAngleCommand(HUMAN_PLAYER_BACKWARD, new InstantCommand(() -> {
                 }))));
 
         driver.povRight().toggleOnTrue(new ParallelCommandGroup(
-                new ProxyCommand(()-> swerve.pathFindToPose(AMPLIFIER.pose.get(), new PathConstraints(1.5, 2, Math.PI, Math.PI), 0)),
+                new ProxyCommand(() -> swerve.pathFindToPose(AMPLIFIER.pose.get(), new PathConstraints(1.5, 2, Math.PI, Math.PI), 0)),
                 scoreNoteCommand(shooter.shootToAmpCommand(), driver.R1(), true)));
 
         //up - full field shot to speaker
@@ -153,7 +151,15 @@ public class RobotContainer implements Logged {
 
     // methods
     private Command scoreNoteCommand(Command shooterCommand, Trigger release, boolean toAmp) {
-        return shooterCommand.alongWith(new WaitUntilCommand(release).andThen(intake.transportToShooterCommand(() -> toAmp)));
+        return new ParallelCommandGroup(
+                shooterCommand,
+                leds.scheduleLEDcommand(leds.setPattern(SOLID, ORANGE.color)),
+                new SequentialCommandGroup(
+                        new WaitUntilCommand(release),
+                        new ParallelDeadlineGroup(
+                                intake.transportToShooterCommand(() -> toAmp),
+                                leds.deadLineLEDcommand(leds.setPattern(SOLID, GREEN.color).withTimeout(0.25))
+                )));
     }
 
     private Command systemTesterCommand() {
@@ -190,6 +196,8 @@ public class RobotContainer implements Logged {
         NamedCommands.registerCommand("closeIntake", intake.closeIntakeCommand());
         NamedCommands.registerCommand("pumpNote", intake.pumpNoteCommand());
 
+        NamedCommands.registerCommand("setSwerveIdle", swerve.setDriveIdleMode(CANSparkBase.IdleMode.kCoast));
+
         NamedCommands.registerCommand("farShooter", scoreNoteCommand(shooter.manualShooter(1, 0.6), new Trigger(() -> true), false));
         NamedCommands.registerCommand("prepFarShooter", shooter.prepFarShooter(() -> swerve.getDistanceFromPose(SPEAKER.pose.get())));
         NamedCommands.registerCommand("shootFromDistance",
@@ -199,7 +207,7 @@ public class RobotContainer implements Logged {
 
         pitTab.add("System tester", systemTesterCommand().withName("SystemTest")).withSize(2, 2);
 
-        matchTab.addBoolean("intakeBeambreak", () -> !intake.beambreak.get()).withPosition(19, 1).withSize(4, 4);
+        matchTab.addBoolean("intake note", intake.hasNoteTrigger).withPosition(19, 1).withSize(4, 4);
         matchTab.add("pumpNote", intake.pumpNoteCommand().withName("PumpNote")).withPosition(16, 2).withSize(3, 2);
         matchTab.add("climberMode", climberModeCommand).withPosition(16, 4).withSize(3, 2);
         matchTab.add("FarShooter", shooterDistanceCommand).withPosition(16, 6).withSize(3, 2);
