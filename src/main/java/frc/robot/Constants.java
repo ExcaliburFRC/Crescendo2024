@@ -28,7 +28,7 @@ public final class Constants {
         public enum Modules {
             // drive ID, spin ID, abs encoder channel, offset angle, drive reversed, angle reversed
             FL(18, 17, 2, 0.045, true, true),
-            FR(12, 11, 3, 0.071, true, true),
+            FR(12, 11, 8, 0.071, true, true),
             BL(16, 15, 4, 0.595, true, true),
             BR(14, 13, 1, 0.116, true, true);
 
@@ -98,7 +98,7 @@ public final class Constants {
         public static final double kTurningEncoderRPMToRadiansPerSec = kTurningEncoderRotationsToRadians / 60;
 
         public static final Gains MODULE_ANGLE_GAINS = new Gains(0.785, 0, 0);
-        public static final double TOLERANCE = 0.2;
+        public static final double TOLERANCE = 0.35;
 
         public static final int DRIVE_CURRENT_LIMIT = 60;
         public static final int ANGLE_CURRENT_LIMIT = 25;
@@ -113,8 +113,8 @@ public final class Constants {
         public static final Gains UPPER_GAINS = new Gains(new Gains(0.00028558, 0, 0), new Gains(14.5152, 0, 0.11033, 0));
         public static final Gains LOWER_GAINS = new Gains(new Gains(0.0006, 0, 0), new Gains(15.5466, 0, 0.1059890436, 0));
 
-        public static final double AMP_UPPER_SHOOTER_RPM = 1125; //1000
-        public static final double AMP_LOWER_SHOOTER_RPM = 2500; //2250
+        public static final double AMP_UPPER_SHOOTER_RPM = 1125;
+        public static final double AMP_LOWER_SHOOTER_RPM = 2500;
 
         public static final double SPEAKER_SHOOTER_RPM = 5300;
 
@@ -138,12 +138,12 @@ public final class Constants {
         public static final int ENCODER_PORT = 6;
         public static final int BEAMBREAK_PORT = 0;
 
-        public static final Gains INTAKE_GAINS = new Gains(0.058037 * 2 , 0.0, 0.011109 / 4,0.038684, 0.12578, 0.022038, 54.356);
+        public static final Gains INTAKE_GAINS = new Gains(0.116074, 0.0, 0.00277725,0.038684, 0.12578, 0.022038, 54.356);
         public static final double INTAKE_TOLERANCE = 7.5;
 
         public static final double ANGLE_MOTOR_CONVERSION_FACTOR = (1 / 10.0) * (1 / 3.0) * (16.0 / 40.0);
 
-        public static final double INTAKE_ENCODER_OFFSET = 0.235;
+        public static final double INTAKE_ENCODER_OFFSET = 0.4016 - 0.006;
         public static final int INTAKE_READING_OFFSET = 50; // deg
 
         public static final double AMP_SHOOTER_SPEED = -1;

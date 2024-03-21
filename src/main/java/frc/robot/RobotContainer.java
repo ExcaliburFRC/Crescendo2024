@@ -55,6 +55,7 @@ public class RobotContainer implements Logged {
     private static EventLoop climberLoop = new EventLoop();
     // swerve
     final Translation2d emptyPose = new Translation2d();
+
     private boolean climberMode = false;
     private boolean farShooter = false;
 
@@ -68,11 +69,27 @@ public class RobotContainer implements Logged {
         if (climberMode) {
             cs.setActiveButtonLoop(climberLoop);
             swerve.maxSpeed.setDouble(20);
+            leds.setPattern(SOLID, CYAN.color).schedule();
         } else {
             cs.setActiveButtonLoop(cs.getDefaultButtonLoop());
             swerve.maxSpeed.setDouble(Constants.SwerveConstants.DRIVE_SPEED_PERCENTAGE);
+            leds.setPattern(TRAIN, TEAM_BLUE.color, TEAM_GOLD.color).schedule();
         }
-    }).withName("ClimberMode");
+    }).withName("ClimberMode").ignoringDisable(true);
+
+
+    private final Command shooterDistanceCommand = new InstantCommand(() -> {
+        farShooter = !farShooter;
+
+        if (farShooter) {
+            shooter.upperSpeed.setDouble(80);
+            shooter.lowerSpeed.setDouble(100);
+        } else {
+            shooter.upperSpeed.setDouble(SPEAKER_DC * 100);
+            shooter.lowerSpeed.setDouble(SPEAKER_DC * 100);
+        }
+    }).ignoringDisable(true).withName("Delivery");
+
 
     Command intakeVibrate = vibrateControllerCommand(50, 0.25);
 
@@ -134,7 +151,9 @@ public class RobotContainer implements Logged {
                 new ProxyCommand(() -> swerve.pathFindToPose(AMPLIFIER.pose.get(), new PathConstraints(1.5, 2, Math.PI, Math.PI), 0)),
                 scoreNoteCommand(shooter.shootToAmpCommand(), driver.R1(), true)));
 
-        driver.povDown().onTrue(shooter.forceShootCommand().alongWith(new WaitCommand(0.75).andThen(intake.forceTransport(()-> false))));
+        driver.povDown().onTrue(shooter.forceShootCommand().alongWith(new WaitCommand(0.75).andThen(intake.forceTransport(() -> false))));
+
+        driver.create().onTrue(intake.shootToAmpCommand());
 
         //up - full field shot to speaker
         //right - drive to amp
@@ -152,7 +171,7 @@ public class RobotContainer implements Logged {
                         new ParallelDeadlineGroup(
                                 intake.transportToShooterCommand(() -> toAmp),
                                 leds.deadLineLEDcommand(leds.setPattern(SOLID, GREEN.color).withTimeout(0.25))
-                )));
+                        )));
     }
 
     private Command systemTesterCommand() {
@@ -191,7 +210,7 @@ public class RobotContainer implements Logged {
 
         NamedCommands.registerCommand("setSwerveIdle", swerve.setDriveIdleMode(CANSparkBase.IdleMode.kCoast));
 
-        NamedCommands.registerCommand("forceShoot", shooter.forceShootCommand().alongWith(new WaitCommand(0.75).andThen(intake.forceTransport(()-> false))));
+        NamedCommands.registerCommand("forceShoot", shooter.forceShootCommand().alongWith(new WaitCommand(0.75).andThen(intake.forceTransport(() -> false))));
 
         NamedCommands.registerCommand("farShooter", scoreNoteCommand(shooter.manualShooter(1, 0.6), new Trigger(() -> true), false));
         NamedCommands.registerCommand("prepFarShooter", shooter.prepFarShooter(() -> swerve.getDistanceFromPose(SPEAKER.pose.get())));
@@ -203,7 +222,7 @@ public class RobotContainer implements Logged {
         pitTab.add("System tester", systemTesterCommand().withName("SystemTest")).withSize(2, 2);
 
         matchTab.addBoolean("intake note", intake.hasNoteTrigger).withPosition(19, 0).withSize(4, 3);
-        matchTab.add("pumpNote", intake.pumpNoteCommand().withName("PumpNote")).withPosition(16, 1).withSize(3, 2);
+        matchTab.add("delivery", shooterDistanceCommand).withPosition(16, 1).withSize(3, 2);
         matchTab.add("climberMode", climberModeCommand).withPosition(16, 3).withSize(3, 2);
 
         autoChooser.setDefaultOption("none", new InstantCommand(() -> {
@@ -214,7 +233,7 @@ public class RobotContainer implements Logged {
         autoChooser.addOption("3214", swerve.runAuto("3214"));
         autoChooser.addOption("73", swerve.runAuto("73"));
 
-        autoChooser.addOption("shoot", swerve.runAuto("shoot"));
+        autoChooser.addOption("shoot", shooter.forceShootCommand().alongWith(new WaitCommand(0.75).andThen(intake.forceTransport(() -> false))));
         autoChooser.addOption("leaveFromBottom", swerve.runAuto("shootAndLeave"));
 
         Shuffleboard.getTab("Auto").add(autoChooser);

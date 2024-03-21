@@ -10,7 +10,6 @@ import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
 import com.revrobotics.CANSparkBase;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -197,7 +196,7 @@ public class Swerve extends SubsystemBase implements Logged {
             BooleanSupplier boost,
             Supplier<Translation2d> turnToTranslation
     ) {
-        return straightenModulesCommand().andThen(this.run(
+        return this.run(
                 () -> {
                     int allianceMultiplier = AllianceUtils.isRedAlliance() ? -1 : 1;
                     double speedLimit = boost.getAsBoolean() ? BOOST_SPEED_PERCENTAGE : maxSpeed.getDouble(DRIVE_SPEED_PERCENTAGE);
@@ -222,7 +221,7 @@ public class Swerve extends SubsystemBase implements Logged {
                     //apply the array to the swerve modules of the robot
                     setModulesStates(moduleStates);
                 }
-        ));
+        );
     }
 
     public Command driveSwerveCommand(
@@ -251,8 +250,7 @@ public class Swerve extends SubsystemBase implements Logged {
                 swerveModules[FRONT_LEFT].isReset
                         .and(swerveModules[FRONT_RIGHT].isReset)
                         .and(swerveModules[BACK_LEFT].isReset)
-                        .and(swerveModules[BACK_RIGHT].isReset)
-                        .or(new Trigger(() -> manualStraighten)),
+                        .and(swerveModules[BACK_RIGHT].isReset),
                 this);
     }
 
@@ -306,7 +304,7 @@ public class Swerve extends SubsystemBase implements Logged {
 
     // other methods
     public void resetAngleEncoders() {
-        foreachModule(SwerveModule::resetEncoders);
+        foreachModule(SwerveModule::resetRelative);
     }
 
     private void stopModules() {
@@ -397,7 +395,6 @@ public class Swerve extends SubsystemBase implements Logged {
 
     public Command runAuto(String autoName) {
         return new SequentialCommandGroup(
-                straightenModulesCommand(),
                 setOdometryPositionCommand(PathPlannerAuto.getStaringPoseFromAutoFile(autoName)),
                 new PathPlannerAuto(autoName));
     }
@@ -417,6 +414,8 @@ public class Swerve extends SubsystemBase implements Logged {
                 .withPosition(0, 2).withSize(4, 4);
         swerveTab.add("Field2d", field).withSize(9, 5).withPosition(12, 0);
         swerveTab.add("manual straighten", new InstantCommand(() -> manualStraighten = !manualStraighten));
+
+        swerveTab.add(new InstantCommand(()-> foreachModule((SwerveModule::resetAbs))));
     }
 
     private void initAutoBuilder() {

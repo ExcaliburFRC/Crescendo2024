@@ -74,7 +74,7 @@ public class SwerveModule implements Sendable, Logged {
     new Thread(() -> {
       try {
         Thread.sleep(2_000);
-        resetEncoders();
+        resetRelative();
       } catch (Exception ignored) {}
     }).start();
   }
@@ -98,9 +98,12 @@ public class SwerveModule implements Sendable, Logged {
     return angle;
   }
 
-  public void resetEncoders() {
-//    _driveEncoder.setPosition(0);
-    _angleMotor.setPosition(getAbsEncoderRad());
+  public void resetRelative() {
+    _angleMotor.setPosition(0);
+  }
+
+  public void resetAbs() {
+    _angleMotor.setPosition(getResetRad());
   }
 
   public SwerveModuleState getState() {
