@@ -37,7 +37,7 @@ public class Color extends edu.wpi.first.wpilibj.util.Color {
         CYAN(new Color(0, 255, 255)),
         PINK(new Color(255, 0, 255)),
 
-        ORANGE(new Color(255, 165, 0)),
+        ORANGE(new Color(255, 50, 0)),
         PURPLE(new Color(75, 0, 130));
 
         // TODO: add more colors

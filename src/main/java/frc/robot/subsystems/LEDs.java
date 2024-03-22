@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.*;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.Color;
 
 import java.util.Arrays;
@@ -36,7 +37,7 @@ public class LEDs extends SubsystemBase {
         LedStrip.setLength(LENGTH);
         LedStrip.start();
 
-        setDefaultCommand(setPattern(LEDPattern.TRAIN_CIRCLE, BLUE.color, TEAM_GOLD.color));
+        setDefaultCommand(setPattern(LEDPattern.TRAIN, BLUE.color, TEAM_GOLD.color));
     }
 
     public static LEDs getInstance() {
@@ -49,7 +50,7 @@ public class LEDs extends SubsystemBase {
     public Command setPattern(LEDPattern pattern, Color mainColor, Color accentColor) {
         Command command = new InstantCommand();
         Color[] colors = new Color[LENGTH];
-        int trainLength = (int) (LENGTH * 0.5);
+        int trainLength = (int) (LENGTH / 5.0);
         final AtomicBoolean invert = new AtomicBoolean(false);
 
         switch (pattern) {
@@ -170,6 +171,20 @@ public class LEDs extends SubsystemBase {
         return this.runOnce(() -> setLedStrip(colors)).ignoringDisable(true);
     }
 
+    public Command twoStatesCommand(LEDPattern firstPattern, Color firstColor, LEDPattern secondPattern, Color secondColor, Trigger switchStates){
+        return setPattern(firstPattern, firstColor).until(switchStates).andThen(setPattern(secondPattern, secondColor));
+    }
+
+    public Command deadLineLEDcommand(Command ledCommand){
+        return new StartEndCommand(
+                ledCommand::schedule,
+                restoreLEDs()::schedule);
+    }
+
+    public Command scheduleLEDcommand(Command ledCommand){
+        return new InstantCommand(ledCommand::schedule);
+    }
+
     public Command circleLEDs(Color[] colors) {
         return Commands.repeatingSequence(
                         setLEDsCommand(colors),
@@ -192,6 +207,7 @@ public class LEDs extends SubsystemBase {
         TRAIN_CIRCLE,
         TRAIN,
         RANDOM,
+        EXPAND,
         BLINKING;
     }
 

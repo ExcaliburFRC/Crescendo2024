@@ -1,5 +1,5 @@
 # [@Excalibur #6738](https://github.com/ExcaliburFRC) Code for crescendo | 2024 season 🤖
-### *By the Excalibur [software team](https://github.com/ExcaliburFRC/Crescendo2024/graphs/contributors)* ⚔️
+> ### By the Excalibur [software team](https://github.com/ExcaliburFRC/Crescendo2024/graphs/contributors)* ⚔️
 -----------------------------------------
 
 # What is this repository? 💻
@@ -8,7 +8,8 @@
 > ### Our robot `Iron Sword`, Will compete in:
 > * [***ISR District #1***](https://www.thebluealliance.com/event/2024isde1)
 > * [***ISR District #3***](https://www.thebluealliance.com/event/2024isde3)
-> * [***DCMP?***](https://www.thebluealliance.com/event/2024iscmp) 
+> * [***DCMP***](https://www.thebluealliance.com/event/2024iscmp) 
+> * [***Houston Championship?***](https://www.thebluealliance.com/event/2024cmptx) 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------
 # Picture of `Iron Sword`: 📷
 ![image](https://github.com/I-No-oNe/I-No-oNe/blob/main/Frc/Iron%20sword%20picture.jpg?raw=true)

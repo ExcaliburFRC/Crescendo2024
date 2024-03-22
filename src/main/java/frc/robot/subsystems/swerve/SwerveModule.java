@@ -9,13 +9,9 @@ import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.lib.Gains;
 import frc.lib.Neo;
 import frc.lib.Neo.Model;
 import frc.robot.Constants;
-import monologue.Annotations;
-import monologue.Annotations.Log;
-import monologue.LogLevel;
 import monologue.Logged;
 
 import static frc.robot.Constants.ModuleConstants.*;
@@ -29,10 +25,13 @@ public class SwerveModule implements Sendable, Logged {
   //create the module's encoders
   private final DutyCycleEncoder _absEncoder;
 
+
   private final double _resetOffset;
   private final double _absEncoderOffsetRad;
   //a pid controller for the angle of the module
   private final PIDController _spinningPIDController;
+  private final PIDController speedController;
+  private final String moduleName;
 
   public Trigger isReset = new Trigger(()-> Math.abs(getResetRad()) < TOLERANCE).debounce(0.1);
 
@@ -43,7 +42,9 @@ public class SwerveModule implements Sendable, Logged {
           boolean driveMotorReversed,
           boolean spinningMotorReversed,
           int absEncoderChannel,
-          double offsetAngle) {
+          double offsetAngle,
+          String name,
+          double kPSpeed) {
     _absEncoder = new DutyCycleEncoder(absEncoderChannel);
     _absEncoderOffsetRad = offsetAngle * 2 * PI;
     _resetOffset = _absEncoderOffsetRad - PI;
@@ -63,10 +64,19 @@ public class SwerveModule implements Sendable, Logged {
     _driveMotor.setConversionFactors(kDriveEncoderRotationsToMeters, kDriveEncoderRPMToMeterPerSec);
     _angleMotor.setConversionFactors(kTurningEncoderRotationsToRadians, kTurningEncoderRPMToRadiansPerSec);
 
+    speedController = new PIDController(kPSpeed,0,0);
+
     _spinningPIDController = new PIDController(MODULE_ANGLE_GAINS.kp, MODULE_ANGLE_GAINS.ki, MODULE_ANGLE_GAINS.kd);
     _spinningPIDController.enableContinuousInput(-PI, PI);
 
-    resetEncoders();
+    this.moduleName = name;
+
+    new Thread(() -> {
+      try {
+        Thread.sleep(2_000);
+        resetRelative();
+      } catch (Exception ignored) {}
+    }).start();
   }
 
   // return the module angle between -PI to PI
@@ -88,27 +98,26 @@ public class SwerveModule implements Sendable, Logged {
     return angle;
   }
 
-  public void resetEncoders() {
-//    _driveEncoder.setPosition(0);
-    _angleMotor.setPosition(getAbsEncoderRad());
+  public void resetRelative() {
+    _angleMotor.setPosition(0);
   }
 
-  @Log.NT (key = "ModuleState", level = LogLevel.NOT_FILE_ONLY)
+  public void resetAbs() {
+    _angleMotor.setPosition(getResetRad());
+  }
+
   public SwerveModuleState getState() {
     return new SwerveModuleState(_driveMotor.getVelocity(), new Rotation2d(_angleMotor.getPosition()));
   }
 
-  @Log.NT (key = "ModulePosition")
   public SwerveModulePosition getPosition(){
-    return new SwerveModulePosition(_driveMotor.getPosition(), Rotation2d.fromRadians(_angleMotor.getPosition()));
+    return new SwerveModulePosition(_driveMotor.getPosition(), new Rotation2d(getAbsEncoderRad()));
   }
 
-  @Log.NT
-  public double getAbsPosition(){
-    return _absEncoder.getAbsolutePosition();
+  public double getRelativeAnglePosition(){
+    return _angleMotor.getPosition();
   }
 
-  @Log.NT
   public double getModuleVelocity(){
     return _driveMotor.getVelocity();
   }
@@ -120,22 +129,18 @@ public class SwerveModule implements Sendable, Logged {
     }
 
     state = SwerveModuleState.optimize(state, getState().angle);
-
-    _driveMotor.set(state.speedMetersPerSecond / Constants.SwerveConstants.MAX_VELOCITY_METER_PER_SECOND);
+    double speed = state.speedMetersPerSecond / Constants.SwerveConstants.MAX_VELOCITY_METER_PER_SECOND;
+    _driveMotor.set(speed - speedController.calculate(getModuleVelocity(), speed));
     _angleMotor.set(_spinningPIDController.calculate(_angleMotor.getPosition(), state.angle.getRadians()));
   }
 
   public void spinTo(double setpoint){
-    if (Math.abs(getResetRad() - setpoint) > TOLERANCE) {
-      _angleMotor.set(-_spinningPIDController.calculate(setpoint, getResetRad()));
+    if (Math.abs(getRelativeAnglePosition() - setpoint) > TOLERANCE) {
+      _angleMotor.set(-_spinningPIDController.calculate(setpoint, getRelativeAnglePosition()));
     }
     else {
       _angleMotor.set(0);
     }
-  }
-
-  public double getAbsPos(){
-    return _absEncoder.getAbsolutePosition();
   }
 
   public void stopModule() {
@@ -148,7 +153,7 @@ public class SwerveModule implements Sendable, Logged {
     _angleMotor.setIdleMode(CANSparkMax.IdleMode.kCoast);
   }
 
-  public void setIdleModebreak(){
+  public void setIdleModeBreak(){
     _driveMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
     _angleMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
   }
@@ -156,8 +161,7 @@ public class SwerveModule implements Sendable, Logged {
   @Override
   public void initSendable(SendableBuilder builder) {
     builder.setSmartDashboardType("Gyro");
-    builder.addDoubleProperty("Value", () -> Math.toDegrees(getAbsEncoderRad()), null);
-    builder.addDoubleProperty("absEncoderPos", this::getAbsPos, null);
+    builder.addDoubleProperty("Value", () -> Math.toDegrees(getResetRad()), null);
     builder.addDoubleProperty("drive output current", _driveMotor::getOutputCurrent, null);
     builder.addDoubleProperty("drive dc output", _driveMotor::getAppliedOutput, null);
   }

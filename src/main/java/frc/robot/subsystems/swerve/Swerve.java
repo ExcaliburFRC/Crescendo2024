@@ -2,37 +2,23 @@ package frc.robot.subsystems.swerve;
 
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
-import com.kauailabs.navx.frc.AHRS;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.PathPlannerAuto;
-import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.Vector;
+import com.revrobotics.CANSparkBase;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.math.util.Units;
+import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.SPI;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -41,19 +27,14 @@ import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.PhotonVision;
 import frc.robot.Constants;
-import frc.robot.Constants.FieldConstants.*;
+import frc.robot.Constants.FieldConstants.FieldLocations;
 import frc.robot.RobotContainer;
 import frc.robot.util.AllianceUtils;
 import frc.robot.util.AllianceUtils.AlliancePose;
 import monologue.Annotations.Log;
 import monologue.Logged;
 import org.photonvision.EstimatedRobotPose;
-import org.photonvision.PhotonCamera;
-import org.photonvision.targeting.PhotonPipelineResult;
-import org.photonvision.targeting.PhotonTrackedTarget;
 
-import java.lang.annotation.Target;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
@@ -61,6 +42,7 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import static edu.wpi.first.wpilibj.DriverStation.Alliance.Red;
+import static frc.robot.Constants.ShooterConstants.MAX_SHOOTER_DISTANCE;
 import static frc.robot.Constants.SwerveConstants.*;
 import static frc.robot.Constants.SwerveConstants.Modules.*;
 
@@ -72,35 +54,42 @@ public class Swerve extends SubsystemBase implements Logged {
                     Modules.FL.DRIVE_MOTOR_REVERSED,
                     Modules.FL.SPIN_MOTOR_REVERSED,
                     Modules.FL.ABS_ENCODER_CHANNEL,
-                    Modules.FL.OFFSET_ANGLE),
+                    Modules.FL.OFFSET_ANGLE,
+                    "FL",
+                    0),
             new SwerveModule(
                     Modules.FR.DRIVE_MOTOR_ID,
                     Modules.FR.SPIN_MOTOR_ID,
                     Modules.FR.DRIVE_MOTOR_REVERSED,
                     Modules.FR.SPIN_MOTOR_REVERSED,
                     Modules.FR.ABS_ENCODER_CHANNEL,
-                    Modules.FR.OFFSET_ANGLE),
+                    Modules.FR.OFFSET_ANGLE,
+                    "FR",
+                    0),
             new SwerveModule(
                     Modules.BL.DRIVE_MOTOR_ID,
                     Modules.BL.SPIN_MOTOR_ID,
                     Modules.BL.DRIVE_MOTOR_REVERSED,
                     Modules.BL.SPIN_MOTOR_REVERSED,
                     Modules.BL.ABS_ENCODER_CHANNEL,
-                    Modules.BL.OFFSET_ANGLE),
+                    Modules.BL.OFFSET_ANGLE,
+                    "BL",
+                    0),
             new SwerveModule(
                     Modules.BR.DRIVE_MOTOR_ID,
                     Modules.BR.SPIN_MOTOR_ID,
                     Modules.BR.DRIVE_MOTOR_REVERSED,
                     Modules.BR.SPIN_MOTOR_REVERSED,
                     Modules.BR.ABS_ENCODER_CHANNEL,
-                    Modules.BR.OFFSET_ANGLE)};
+                    Modules.BR.OFFSET_ANGLE,
+                    "BR",
+                    0),
+    };
 
-    private final AHRS navx = new AHRS(SPI.Port.kMXP);
     private final Pigeon2 pigeon = new Pigeon2(Constants.SwerveConstants.PIGEON_ID);
 
-    private final ProfiledPIDController anglePIDcontroller = new ProfiledPIDController(
-            ANGLE_GAINS.kp, ANGLE_GAINS.ki, ANGLE_GAINS.kd,
-            new TrapezoidProfile.Constraints(MAX_VELOCITY_METER_PER_SECOND, MAX_VELOCITY_ACCELERATION_METER_PER_SECOND));
+    private final PIDController anglePIDcontroller = new PIDController(
+            ANGLE_GAINS.kp, ANGLE_GAINS.ki, ANGLE_GAINS.kd);
 
     private final PIDController xTranslationPIDcontroller = new PIDController(PATHPLANNER_TRANSLATION_GAINS.kp, PATHPLANNER_TRANSLATION_GAINS.ki, PATHPLANNER_TRANSLATION_GAINS.kd);
     private final PIDController yTranslationPIDcontroller = new PIDController(PATHPLANNER_TRANSLATION_GAINS.kp, PATHPLANNER_TRANSLATION_GAINS.ki, PATHPLANNER_TRANSLATION_GAINS.kd);
@@ -111,13 +100,18 @@ public class Swerve extends SubsystemBase implements Logged {
             getModulesPositions(),
             new Pose2d());
 
+    private final SwerveDriveOdometry relativeOdometry = new SwerveDriveOdometry(kSwerveKinematics, getGyroRotation2d(), getModulesPositions(), new Pose2d());
+
     private final Field2d field = new Field2d();
 
-    private final PhotonVision photonVision = PhotonVision.INSTANCE;
+    private final PhotonVision photonVision = new PhotonVision();
 
     public GenericEntry maxSpeed = Shuffleboard.getTab("Swerve").add("speedPercent", DRIVE_SPEED_PERCENTAGE).withPosition(2, 0).withSize(2, 2).getEntry();
 
-    private final InterpolatingDoubleTreeMap interpolate = new InterpolatingDoubleTreeMap();
+    private final InterpolatingDoubleTreeMap decelaratorInterpolation = new InterpolatingDoubleTreeMap();
+
+    public final Trigger atAngleTrigger = new Trigger(anglePIDcontroller::atSetpoint).debounce(0.2);
+    public final Trigger shooterDistanceTrigger = new Trigger(()-> getDistanceFromPose(FieldLocations.SPEAKER.pose.get()) < MAX_SHOOTER_DISTANCE).debounce(0.2);
 
     public boolean estimatePose = true;
     public boolean manualStraighten = false;
@@ -129,32 +123,20 @@ public class Swerve extends SubsystemBase implements Logged {
         odometry.resetPosition(getGyroRotation2d(), getModulesPositions(), new Pose2d(0, 0, new Rotation2d()));
 
         anglePIDcontroller.enableContinuousInput(0, 360);
-        anglePIDcontroller.setTolerance(1);
+        anglePIDcontroller.setTolerance(3);
 
-        interpolate.put(1.0, 0.4);
-        interpolate.put(-1.0, 1.0);
+        decelaratorInterpolation.put(1.0, 0.3);
+        decelaratorInterpolation.put(-1.0, 1.0);
 
         initAutoBuilder();
         initShuffleboardData();
+
+        RobotContainer.matchTab.addBoolean("shooter distance", shooterDistanceTrigger).withPosition(19, 7).withSize(4, 3);
     }
 
     // gyro getters and setters
     public void resetGyroHardware() {
-        navx.reset();
         pigeon.reset();
-    }
-
-    private double getNavxDegrees() {
-        return Math.IEEEremainder(navx.getAngle(), 360);
-    }
-
-    @Log.NT
-    private double getPigeonDegrees() {
-        return pigeon.getAngle();
-    }
-
-    public double getRobotPitch() {
-        return navx.getRoll() - 0.46;
     }
 
     // odometry getters and setters
@@ -171,7 +153,6 @@ public class Swerve extends SubsystemBase implements Logged {
         return odometry.getEstimatedPosition();
     }
 
-    @Log.NT
     public Rotation2d getGyroRotation2d() {
         return pigeon.getRotation2d();
     }
@@ -195,13 +176,15 @@ public class Swerve extends SubsystemBase implements Logged {
     public Command setOdometryAngleCommand(AlliancePose angle) {
         return new ProxyCommand(() ->
                 setOdometryPositionCommand(new Pose2d(
-                odometry.getEstimatedPosition().getTranslation(),
-                angle.get().getRotation())).ignoringDisable(true));
+                        odometry.getEstimatedPosition().getTranslation(),
+                        angle.get().getRotation())).ignoringDisable(true));
     }
 
     public Command resetOdometryAngleCommand() {
         return setOdometryAngleCommand(new AlliancePose(0));
     }
+
+    private Translation2d empty = new Translation2d();
 
     // drive commands
     public Command driveSwerveCommand(
@@ -211,21 +194,21 @@ public class Swerve extends SubsystemBase implements Logged {
             BooleanSupplier fieldOriented,
             DoubleSupplier decelerator, // credit to @oh_fear (discord) from Trigon 5990
             BooleanSupplier boost,
-            Supplier<Pose2d> turnToPose
+            Supplier<Translation2d> turnToTranslation
     ) {
-        return straightenModulesCommand().andThen(this.run(
+        return this.run(
                 () -> {
-                    int allianceMultiplier = AllianceUtils.isRedAlliance()? -1: 1;
-                    double speedLimit = boost.getAsBoolean()? BOOST_SPEED_PERCENTAGE: maxSpeed.getDouble(DRIVE_SPEED_PERCENTAGE);
+                    int allianceMultiplier = AllianceUtils.isRedAlliance() ? -1 : 1;
+                    double speedLimit = boost.getAsBoolean() ? BOOST_SPEED_PERCENTAGE : maxSpeed.getDouble(DRIVE_SPEED_PERCENTAGE);
 
                     //create the speeds for x,y and spin
-                    double xSpeed = xSpeedSupplier.getAsDouble() * MAX_VELOCITY_METER_PER_SECOND / 100 * speedLimit * interpolate.get(decelerator.getAsDouble()) * allianceMultiplier;
-                    double ySpeed = ySpeedSupplier.getAsDouble() * MAX_VELOCITY_METER_PER_SECOND / 100 * speedLimit * interpolate.get(decelerator.getAsDouble()) * allianceMultiplier;
-                    double spinningSpeed = spinningSpeedSupplier.getAsDouble() * MAX_VELOCITY_METER_PER_SECOND / 100 * speedLimit * interpolate.get(decelerator.getAsDouble());
+                    double xSpeed = xSpeedSupplier.getAsDouble() * MAX_VELOCITY_METER_PER_SECOND / 100 * speedLimit * decelaratorInterpolation.get(decelerator.getAsDouble()) * allianceMultiplier;
+                    double ySpeed = ySpeedSupplier.getAsDouble() * MAX_VELOCITY_METER_PER_SECOND / 100 * speedLimit * decelaratorInterpolation.get(decelerator.getAsDouble()) * allianceMultiplier;
+                    double spinningSpeed = spinningSpeedSupplier.getAsDouble() * MAX_VELOCITY_METER_PER_SECOND / 100 * speedLimit * decelaratorInterpolation.get(decelerator.getAsDouble());
 
                     // if a pose was supplied, replace the driver input with a pid calculated value for turning to the given pose
-                    if (!turnToPose.get().equals(new Pose2d()))
-                        spinningSpeed = anglePIDcontroller.calculate(getPose2d().minus(turnToPose.get()).getRotation().getDegrees());
+                    if (!turnToTranslation.get().equals(empty))
+                        spinningSpeed = getRobotAngleToTranslation(turnToTranslation.get()).plus(getPose2d().getRotation()).getDegrees();
 
                     // create a CassisSpeeds object and apply it the speeds
                     ChassisSpeeds chassisSpeeds = fieldOriented.getAsBoolean() ?
@@ -238,7 +221,7 @@ public class Swerve extends SubsystemBase implements Logged {
                     //apply the array to the swerve modules of the robot
                     setModulesStates(moduleStates);
                 }
-        ));
+        );
     }
 
     public Command driveSwerveCommand(
@@ -246,8 +229,8 @@ public class Swerve extends SubsystemBase implements Logged {
             DoubleSupplier ySpeedSupplier,
             DoubleSupplier spinningSpeedSupplier,
             BooleanSupplier fieldOriented) {
-        Pose2d emptyPose = new Pose2d();
-        return driveSwerveCommand(xSpeedSupplier, ySpeedSupplier, spinningSpeedSupplier, fieldOriented, () -> 1, ()-> false, () -> emptyPose);
+        Translation2d emptyPose = new Translation2d();
+        return driveSwerveCommand(xSpeedSupplier, ySpeedSupplier, spinningSpeedSupplier, fieldOriented, () -> 1, () -> false, () -> emptyPose);
     }
 
     public Command straightenModulesCommand() {
@@ -262,32 +245,66 @@ public class Swerve extends SubsystemBase implements Logged {
                 },
                 (__) -> {
                     stopModules();
-                    resetAngleEncoders();
+//                    resetAngleEncoders();
                 },
                 swerveModules[FRONT_LEFT].isReset
                         .and(swerveModules[FRONT_RIGHT].isReset)
                         .and(swerveModules[BACK_LEFT].isReset)
-                        .and(swerveModules[BACK_RIGHT].isReset)
-                        .or(new Trigger(()-> manualStraighten)),
+                        .and(swerveModules[BACK_RIGHT].isReset),
                 this);
     }
 
-    // TODO: change command to use the setRobotRelative function instead of the driveSwerveCommand
-    public Command turnToAngleCommand(double setpoint) {
-        return driveSwerveCommand(
-                () -> 0, () -> 0,
-                () -> anglePIDcontroller.calculate(getOdometryRotation2d().getDegrees(), setpoint),
-                () -> false)
-                .until(new Trigger(anglePIDcontroller::atSetpoint).debounce(0.1));
+    public Command driveAndTurnToLocationCommand(FieldLocations location, Supplier<ChassisSpeeds> transaltionSpeeds) {
+        return new FunctionalCommand(
+                () -> relativeOdometry.resetPosition(getGyroRotation2d(), getModulesPositions(), new Pose2d(getPose2d().getTranslation(), new Rotation2d())),
+                () -> {
+                    double degrees = getRobotAngleToTranslation(location.pose.get().getTranslation()).getDegrees();
+                    System.out.println(degrees);
+                    relativeOdometry.update(getGyroRotation2d(), getModulesPositions());
+                    driveRobotRelative(ChassisSpeeds.fromFieldRelativeSpeeds(
+                            transaltionSpeeds.get().vxMetersPerSecond, transaltionSpeeds.get().vyMetersPerSecond,
+                            anglePIDcontroller.calculate(relativeOdometry.getPoseMeters().getRotation().getDegrees(), - degrees),
+                            getOdometryRotation2d()));
+                },
+                (__) -> driveRobotRelative(new ChassisSpeeds()),
+                atAngleTrigger,
+                this);
+    }
+
+    public Rotation2d getRobotAngleToTranslation(Translation2d translation) {
+        return getOdometryRotation2d().minus(translation.minus(getPose2d().getTranslation()).getAngle()).plus(Rotation2d.fromDegrees(180));
     }
 
     public Command turnToLocationCommand(FieldLocations location) {
-        return turnToAngleCommand(getPose2d().minus(location.pose.get()).getRotation().getDegrees());
+        return new ProxyCommand(() -> turnToAngleCommand(getRobotAngleToTranslation(location.pose.get().getTranslation()).getDegrees()));
+    }
+
+    @Log.NT
+    public int angleHeartbeat;
+    public Command turnToAngleCommand(double degrees) {
+        return new FunctionalCommand(
+                () -> {
+                    relativeOdometry.resetPosition(getGyroRotation2d(), getModulesPositions(), new Pose2d(getPose2d().getTranslation(), new Rotation2d()));
+                    angleHeartbeat = 0;
+                },
+                () -> {
+                    angleHeartbeat ++;
+                    relativeOdometry.update(getGyroRotation2d(), getModulesPositions());
+                    driveRobotRelative(new ChassisSpeeds(
+                            0, 0,
+                            anglePIDcontroller.calculate(relativeOdometry.getPoseMeters().getRotation().getDegrees(), -degrees)));
+                },
+                (__) -> {
+                    driveRobotRelative(new ChassisSpeeds());
+                    angleHeartbeat = 30;
+                },
+                new Trigger(anglePIDcontroller::atSetpoint).debounce(0.2),
+                this);
     }
 
     // other methods
-    private void resetAngleEncoders() {
-        foreachModule(SwerveModule::resetEncoders);
+    public void resetAngleEncoders() {
+        foreachModule(SwerveModule::resetRelative);
     }
 
     private void stopModules() {
@@ -302,7 +319,6 @@ public class Swerve extends SubsystemBase implements Logged {
         swerveModules[BACK_RIGHT].setDesiredState(states[BACK_RIGHT]);
     }
 
-    @Log.NT
     public SwerveModulePosition[] getModulesPositions() {
         return new SwerveModulePosition[]{
                 swerveModules[0].getPosition(),
@@ -312,7 +328,6 @@ public class Swerve extends SubsystemBase implements Logged {
         };
     }
 
-    @Log.NT
     public SwerveModuleState[] getModulesStates() {
         return new SwerveModuleState[]{
                 swerveModules[0].getState(),
@@ -331,69 +346,39 @@ public class Swerve extends SubsystemBase implements Logged {
     public Command toggleIdleModeCommand() {
         return new StartEndCommand(
                 () -> foreachModule(SwerveModule::setIdleModeCoast),
-                () -> foreachModule(SwerveModule::setIdleModebreak))
+                () -> foreachModule(SwerveModule::setIdleModeBreak))
                 .ignoringDisable(true);
+    }
+
+    public Command setDriveIdleMode(CANSparkBase.IdleMode mode){
+        return new ConditionalCommand(
+                new InstantCommand(() -> foreachModule(SwerveModule::setIdleModeBreak)),
+                new InstantCommand(() -> foreachModule(SwerveModule::setIdleModeCoast)),
+                ()-> mode.equals(CANSparkBase.IdleMode.kBrake));
     }
 
     @Override
     public void periodic() {
         odometry.update(getGyroRotation2d(), getModulesPositions());
 
-      //      localization with PhotonPoseEstimator
-//        if (estimatePose) {
-//            Optional<EstimatedRobotPose> pose = photonVision.getEstimatedGlobalPose(odometry.getEstimatedPosition());
-//            if (pose.isPresent())
-//                odometry.addVisionMeasurement(pose.get().estimatedPose.toPose2d(), pose.get().timestampSeconds);//
-//        }
+        //      localization with PhotonPoseEstimator
+        if (estimatePose) {
+            Optional<EstimatedRobotPose> pose = photonVision.getEstimatedGlobalPose(odometry.getEstimatedPosition());
+            if (pose.isPresent())
+                odometry.addVisionMeasurement(pose.get().estimatedPose.toPose2d(), pose.get().timestampSeconds);//
+        }
 
         field.setRobotPose(odometry.getEstimatedPosition());
         SmartDashboard.putData(field);
     }
+
+    @Log.NT
+    public double getPIDError(){
+        return anglePIDcontroller.getPositionError();
+    }
+
     // on-the-fly auto generation functions
     // drive the robot from the current location to a given Pose2d
-    public Command pathPlannerToPose(Pose2d position, double endVel) {
-        return new ProxyCommand(() ->
-                followPath(endVel, position.getRotation().getDegrees(), getStraightLinePoses(position.getTranslation()))
-        );
-    }
-
-    private Command followPath(double endVel, double endDegrees, Pose2d... positions) {
-        return AutoBuilder.followPath(
-                new PathPlannerPath(
-                        PathPlannerPath.bezierFromPoses(getAlliancePositions(positions)),
-                        PATH_CONSTRAINTS,
-                        new GoalEndState(endVel, Rotation2d.fromDegrees(endDegrees)))
-        );
-    }
-
-    private Pose2d[] getAlliancePositions(Pose2d... poses) {
-        for (int i = 0; i < poses.length; i++) poses[i] = AllianceUtils.toAlliancePose(poses[i]);
-        return poses;
-    }
-
-    private Pose2d[] getStraightLinePoses(Translation2d setpoint) {
-        Translation2d current = odometry.getEstimatedPosition().getTranslation();
-        Rotation2d directionOfTravel = setpoint.minus(current).getAngle();
-
-        return new Pose2d[]{
-                new Pose2d(current, directionOfTravel),
-                new Pose2d(setpoint, directionOfTravel)
-        };
-    }
-
-    public Command pidToPose(Pose2d setpoint) {
-        return new RunCommand(() -> driveRobotRelative(
-                ChassisSpeeds.fromFieldRelativeSpeeds(new ChassisSpeeds(
-                                xTranslationPIDcontroller.calculate(getPose2d().getX(), setpoint.getX()),
-                                yTranslationPIDcontroller.calculate(getPose2d().getY(), setpoint.getY()),
-                                anglePIDcontroller.calculate(getPose2d().getRotation().getDegrees(), setpoint.getRotation().getDegrees())),
-                        getOdometryRotation2d())), this);
-    }
-
-    public Command pathFindToLocation(FieldLocations location) {
-        return AutoBuilder.pathfindThenFollowPath(PathPlannerPath.fromPathFile(location.pathName), PATH_CONSTRAINTS);
-    }
-
     public Command pathFindToPose(Pose2d pose, PathConstraints constraints, double goalEndVel) {
         return AutoBuilder.pathfindToPose(pose, constraints, goalEndVel);
     }
@@ -402,34 +387,16 @@ public class Swerve extends SubsystemBase implements Logged {
         return pathFindToPose(pose, PATH_CONSTRAINTS, 0);
     }
 
-    public Command shootInMotionCommand() {
-        PathPlannerPath topPath = PathPlannerPath.fromPathFile("ShootInMotionTop");
-        PathPlannerPath bottomPath = PathPlannerPath.fromPathFile("ShootInMotionBottom");
-
-        return new ConditionalCommand(
-                AutoBuilder.pathfindThenFollowPath(topPath, PATH_CONSTRAINTS),
-                AutoBuilder.pathfindThenFollowPath(bottomPath, PATH_CONSTRAINTS),
-                () -> getDistanceFromPose(topPath.getStartingDifferentialPose()) < getDistanceFromPose(bottomPath.getStartingDifferentialPose())
-        );
+    public Command pathFindThenFollowPath(String pathName) {
+        return AutoBuilder.pathfindThenFollowPath(
+                PathPlannerPath.fromPathFile(pathName),
+                new PathConstraints(0, 0, 0, 0));
     }
 
-    public Command runAuto(String autoName){
+    public Command runAuto(String autoName) {
         return new SequentialCommandGroup(
-                straightenModulesCommand(),
                 setOdometryPositionCommand(PathPlannerAuto.getStaringPoseFromAutoFile(autoName)),
                 new PathPlannerAuto(autoName));
-    }
-
-    public Command runPath(String pathName){
-        return setOdometryPositionCommand(PathPlannerPath.fromPathFile(pathName).getStartingDifferentialPose())
-                .andThen(AutoBuilder.followPath(PathPlannerPath.fromPathFile(pathName)));
-    }
-
-    public Command estimatePoseCommand(){
-        return new RunCommand(()-> {
-            Optional<EstimatedRobotPose> pose = photonVision.getEstimatedGlobalPose(odometry.getEstimatedPosition());
-        if (pose.isPresent()) odometry.addVisionMeasurement(pose.get().estimatedPose.toPose2d(), pose.get().timestampSeconds);
-        });
     }
     // ----------
 
@@ -446,13 +413,15 @@ public class Swerve extends SubsystemBase implements Logged {
         swerveTab.addDouble("SwerveAngle", () -> getOdometryRotation2d().getDegrees()).withWidget(BuiltInWidgets.kGyro)
                 .withPosition(0, 2).withSize(4, 4);
         swerveTab.add("Field2d", field).withSize(9, 5).withPosition(12, 0);
-        swerveTab.add("manual straighten", new InstantCommand(()-> manualStraighten = !manualStraighten));
+        swerveTab.add("manual straighten", new InstantCommand(() -> manualStraighten = !manualStraighten));
+
+        swerveTab.add(new InstantCommand(()-> foreachModule((SwerveModule::resetAbs))));
     }
 
     private void initAutoBuilder() {
         AutoBuilder.configureHolonomic(
                 this::getPose2d,
-                this::setPose2d,
+                (pose) -> {},
                 this::getRobotRelativeSpeeds,
                 this::driveRobotRelative,
                 new HolonomicPathFollowerConfig(
@@ -464,24 +433,4 @@ public class Swerve extends SubsystemBase implements Logged {
                 () -> DriverStation.getAlliance().get().equals(Red), this
         );
     }
-
-//    public Command adjustTo(FieldParts fieldPart){
-//        int id = AllianceUtils.isRedAlliance()? fieldPart.redID : fieldPart.blueID;
-//        PhotonPipelineResult results = camera.getLatestResult();
-//        if (!results.hasTargets()) return new PrintCommand("target "+ id +"not found");
-//        List<PhotonTrackedTarget> targets = results.getTargets();
-//        PhotonTrackedTarget desiredTarget = null;
-//        for (PhotonTrackedTarget target : targets){
-//            if (target.getFiducialId() == id) {
-//                desiredTarget = target;
-//                break;
-//            }
-//        }
-//        Transform3d cameraToTarget = desiredTarget.getBestCameraToTarget();
-//        Transform3d TargetToRobot;
-//        return null;//TODO get the diffrence between the required transform to the given transform and driving it using pp
-//    }
-//    private Transform3d targetToRobot(Transform3d cameraToTarget){
-//        return null;//TODO write a function that receives the transform of the camera to a target, returns the transform of the robot to the target
-//    }
 }

@@ -9,13 +9,13 @@ public class Neo extends CANSparkBase {
     private final Gains gains;
 
     public enum Model{
-        SparkMax(1),
-        SparkFlex(2);
+        SparkMax(SparkModel.SparkMax),
+        SparkFlex(SparkModel.SparkFlex);
 
         SparkModel model;
 
-        Model(int model){
-            this.model = (model == 1? SparkModel.SparkMax : SparkModel.SparkFlex);
+        Model(SparkModel model){
+            this.model = model;
         }
     }
 
@@ -32,8 +32,7 @@ public class Neo extends CANSparkBase {
         this.gains = gains;
 
         this.setIdleMode(IdleMode.kBrake); // motors default to brake mode
-        this.
-        initPIDcontroller(gains);
+        this.initPIDcontroller(gains);
     }
 
     public Neo(int motorID, Model model) {

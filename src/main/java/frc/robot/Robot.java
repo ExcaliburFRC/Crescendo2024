@@ -6,6 +6,7 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.NamedCommands;
+import com.revrobotics.CANSparkBase;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -81,6 +82,8 @@ public class Robot extends TimedRobot implements Logged {
   public void teleopInit() {
     autonomousCommand.cancel();
     robotContainer.stopSwerveCommand().schedule();
+    robotContainer.shooter.manualShooter(0, 0).withTimeout(0.1).schedule();
+    robotContainer.swerve.setDriveIdleMode(CANSparkBase.IdleMode.kBrake).schedule();
   }
 
   @Override
