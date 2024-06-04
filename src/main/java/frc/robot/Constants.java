@@ -9,7 +9,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.lib.Gains;
+import frc.robot.util.Gains;
 import frc.robot.util.AllianceUtils.AlliancePose;
 import frc.robot.util.SysIdConfig;
 

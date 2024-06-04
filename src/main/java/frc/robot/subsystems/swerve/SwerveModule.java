@@ -9,8 +9,8 @@ import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.lib.Neo;
-import frc.lib.Neo.Model;
+import frc.robot.util.Neo;
+import frc.robot.util.Neo.Model;
 import frc.robot.Constants;
 import monologue.Logged;
 

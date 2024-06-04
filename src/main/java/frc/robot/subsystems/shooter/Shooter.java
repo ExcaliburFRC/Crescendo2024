@@ -1,17 +1,12 @@
 package frc.robot.subsystems.shooter;
 
 import edu.wpi.first.networktables.GenericEntry;
-import edu.wpi.first.units.*;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.lib.Color;
-import frc.lib.Neo;
-import frc.lib.Neo.Model;
+import frc.robot.util.Neo;
+import frc.robot.util.Neo.Model;
 import frc.robot.subsystems.LEDs;
-import frc.robot.subsystems.LEDs.LEDPattern;
 import monologue.Annotations.Log;
 import monologue.Logged;
 
@@ -19,9 +14,6 @@ import java.util.function.DoubleSupplier;
 
 import static com.revrobotics.CANSparkBase.IdleMode.kBrake;
 import static com.revrobotics.CANSparkBase.IdleMode.kCoast;
-import static edu.wpi.first.units.MutableMeasure.mutable;
-import static edu.wpi.first.units.Units.*;
-import static frc.lib.Color.Colors.RED;
 import static frc.robot.Constants.ShooterConstants.*;
 
 public class Shooter extends SubsystemBase implements Logged {

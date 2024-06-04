@@ -6,7 +6,7 @@ import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.lib.Color;
+import frc.robot.util.Color;
 
 import java.util.Arrays;
 import java.util.Random;
@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static frc.lib.Color.Colors.*;
+import static frc.robot.util.Color.Colors.*;
 import static frc.robot.Constants.LedsConstants.LEDS_PORT;
 import static frc.robot.Constants.LedsConstants.LENGTH;
 

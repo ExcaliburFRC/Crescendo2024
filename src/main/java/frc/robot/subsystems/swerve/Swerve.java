@@ -25,7 +25,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.lib.PhotonVision;
+import frc.robot.util.PhotonVision;
 import frc.robot.Constants;
 import frc.robot.Constants.FieldConstants.FieldLocations;
 import frc.robot.RobotContainer;
