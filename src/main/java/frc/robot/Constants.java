@@ -27,15 +27,13 @@ public final class Constants {
     public static final class SwerveConstants {
         public enum Modules {
             // drive ID, spin ID, abs encoder channel, offset angle, drive reversed, angle reversed
-            FL(18, 17, 2, 0.045, true, true),
-            FR(12, 11, 8, 0.071, true, true),
-            BL(16, 15, 4, 0.595, true, true),
-            BR(14, 13, 1, 0.116, true, true);
-
+            FL(18, 17, 2, 0.045),
+            FR(12, 11, 8, 0.071),
+            BL(16, 15, 4, 0.595),
+            BR(14, 13, 1, 0.116);
 
             public int DRIVE_MOTOR_ID, SPIN_MOTOR_ID, ABS_ENCODER_CHANNEL;
             public double OFFSET_ANGLE;
-            public boolean DRIVE_MOTOR_REVERSED, SPIN_MOTOR_REVERSED;
 
             public static final int FRONT_LEFT = 0;
             public static final int FRONT_RIGHT = 1;
@@ -45,15 +43,11 @@ public final class Constants {
             Modules(int DRIVE_MOTOR_ID,
                     int SPIN_MOTOR_ID,
                     int ABS_ENCODER_CHANNEL,
-                    double OFFSET_ANGLE,
-                    boolean DRIVE_MOTOR_REVERSED,
-                    boolean SPIN_MOTOR_REVERSED) {
+                    double OFFSET_ANGLE) {
                 this.DRIVE_MOTOR_ID = DRIVE_MOTOR_ID;
                 this.SPIN_MOTOR_ID = SPIN_MOTOR_ID;
                 this.ABS_ENCODER_CHANNEL = ABS_ENCODER_CHANNEL;
                 this.OFFSET_ANGLE = OFFSET_ANGLE;
-                this.DRIVE_MOTOR_REVERSED = DRIVE_MOTOR_REVERSED;
-                this.SPIN_MOTOR_REVERSED = SPIN_MOTOR_REVERSED;
             }
         }
 

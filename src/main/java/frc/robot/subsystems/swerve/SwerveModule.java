@@ -39,8 +39,6 @@ public class SwerveModule implements Sendable, Logged {
   public SwerveModule(
           int driveMotorId,
           int spinningMotorId,
-          boolean driveMotorReversed,
-          boolean spinningMotorReversed,
           int absEncoderChannel,
           double offsetAngle,
           String name,
@@ -52,8 +50,8 @@ public class SwerveModule implements Sendable, Logged {
     _driveMotor = new Neo(driveMotorId, Model.SparkFlex);
     _angleMotor = new Neo(spinningMotorId, Model.SparkMax);
 
-    _driveMotor.setInverted(driveMotorReversed);
-    _angleMotor.setInverted(spinningMotorReversed);
+    _driveMotor.setInverted(true);
+    _angleMotor.setInverted(true);
 
     _driveMotor.clearFaults();
     _angleMotor.clearFaults();

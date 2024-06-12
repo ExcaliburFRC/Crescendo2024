@@ -20,7 +20,7 @@ import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.shooter.Shooter;
-import frc.robot.subsystems.shooter.ShooterState;
+import frc.robot.subsystems.shooter.ShooterVelocity;
 import frc.robot.subsystems.swerve.Swerve;
 import monologue.Logged;
 
@@ -92,14 +92,19 @@ public class RobotContainer implements Logged {
         driver.touchpad().onTrue(intake.pumpNoteCommand());
 
         // shooter
-        driver.square().and(intake.intakingTrigger.negate()).toggleOnTrue(scoreNoteCommand(shooter.shootToAmpCommand(), driver.R1(), true));
+        driver.square().and(intake.intakingTrigger.negate()).toggleOnTrue(
+                scoreNoteCommand(shooter.shootToAmpCommand(), driver.R1(), true));
         driver.triangle().and(intake.intakingTrigger.negate()).toggleOnTrue(
                 scoreNoteCommand(shooter.shootToSpeakerManualCommand(), driver.R1(), false));
 
-        driver.R2().and(intake.intakingTrigger.negate()).onTrue(shooter.prepFarShooter(() -> swerve.getDistanceFromPose(SPEAKER.pose.get())));
+        driver.R2().and(intake.intakingTrigger.negate()).onTrue(
+                shooter.prepFarShooter(() -> swerve.getDistanceFromPose(SPEAKER.pose.get())));
         driver.R2().onFalse(
                 swerve.turnToLocationCommand(SPEAKER).alongWith(
-                        scoreNoteCommand(shooter.setShooterCommand(new ShooterState(() -> swerve.getDistanceFromPose(SPEAKER.pose.get()))), swerve.atAngleTrigger.and(shooter.getCurrentState().stateReady).and(() -> swerve.angleHeartbeat >= 25), false)));
+                scoreNoteCommand(shooter.setShooterCommand(
+                new ShooterVelocity(() -> swerve.getDistanceFromPose(SPEAKER.pose.get()))),
+                swerve.atAngleTrigger.and(shooter.getCurrentVelocity().velocitiesReady)
+                .and(() -> swerve.angleHeartbeat >= 25), false)));
 
         driver.povUp().toggleOnTrue(new ParallelDeadlineGroup(
                 scoreNoteCommand(shooter.manualShooter(1, 0.7), driver.R1(), false),
@@ -114,7 +119,8 @@ public class RobotContainer implements Logged {
                 new ProxyCommand(() -> swerve.pathFindToPose(AMPLIFIER.pose.get(), new PathConstraints(1.5, 2, Math.PI, Math.PI), 0)),
                 scoreNoteCommand(shooter.shootToAmpCommand(), driver.R1(), true)));
 
-        driver.povDown().onTrue(shooter.forceShootCommand().alongWith(new WaitCommand(0.75).andThen(intake.forceTransport(() -> false))));
+        driver.povDown().onTrue(shooter.forceShootCommand().alongWith(
+                new WaitCommand(0.75).andThen(intake.forceTransport(() -> false))));
 
         driver.create().onTrue(intake.shootToAmpCommand());
 
@@ -130,11 +136,11 @@ public class RobotContainer implements Logged {
                 shooterCommand,
                 leds.scheduleLEDcommand(leds.setPattern(SOLID, ORANGE.color)),
                 new SequentialCommandGroup(
-                        new WaitUntilCommand(release),
-                        new ParallelDeadlineGroup(
-                                intake.transportToShooterCommand(() -> toAmp),
-                                leds.deadLineLEDcommand(leds.setPattern(SOLID, GREEN.color).withTimeout(0.25))
-                        )));
+                    new WaitUntilCommand(release),
+                    new ParallelDeadlineGroup(
+                        intake.transportToShooterCommand(() -> toAmp),
+                        leds.deadLineLEDcommand(leds.setPattern(SOLID, GREEN.color).withTimeout(0.25))
+                    )));
     }
 
     private Command systemTesterCommand() {
@@ -143,7 +149,7 @@ public class RobotContainer implements Logged {
                 swerve.straightenModulesCommand(),
                 intake.intakeFromAngleCommand(HUMAN_PLAYER_BACKWARD, new VibrateControllerCommand(driverVibration, 0.5, 50)),
                 new WaitCommand(1),
-                scoreNoteCommand(shooter.shootToAmpManualCommand(intake.hasNoteTrigger), new Trigger(() -> true), true)
+                scoreNoteCommand(shooter.shootToSpeakerManualCommand(), new Trigger(() -> true), true)
         );
     }
 
@@ -173,7 +179,7 @@ public class RobotContainer implements Logged {
         NamedCommands.registerCommand("shootFromDistance",
                 new SequentialCommandGroup(
                         new InstantCommand(timer::restart),
-                        scoreNoteCommand(shooter.setShooterCommand(new ShooterState(() -> swerve.getDistanceFromPose(SPEAKER.pose.get()))), shooter.getCurrentState().stateReady.and(timerTrigger), false)));
+                        scoreNoteCommand(shooter.setShooterCommand(new ShooterVelocity(() -> swerve.getDistanceFromPose(SPEAKER.pose.get()))), shooter.getCurrentVelocity().velocitiesReady.and(timerTrigger), false)));
 
         pitTab.add("System tester", systemTesterCommand().withName("SystemTest")).withSize(2, 2);
 

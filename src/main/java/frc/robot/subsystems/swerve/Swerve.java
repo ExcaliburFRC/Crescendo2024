@@ -51,8 +51,6 @@ public class Swerve extends SubsystemBase implements Logged {
             new SwerveModule(
                     Modules.FL.DRIVE_MOTOR_ID,
                     Modules.FL.SPIN_MOTOR_ID,
-                    Modules.FL.DRIVE_MOTOR_REVERSED,
-                    Modules.FL.SPIN_MOTOR_REVERSED,
                     Modules.FL.ABS_ENCODER_CHANNEL,
                     Modules.FL.OFFSET_ANGLE,
                     "FL",
@@ -60,8 +58,6 @@ public class Swerve extends SubsystemBase implements Logged {
             new SwerveModule(
                     Modules.FR.DRIVE_MOTOR_ID,
                     Modules.FR.SPIN_MOTOR_ID,
-                    Modules.FR.DRIVE_MOTOR_REVERSED,
-                    Modules.FR.SPIN_MOTOR_REVERSED,
                     Modules.FR.ABS_ENCODER_CHANNEL,
                     Modules.FR.OFFSET_ANGLE,
                     "FR",
@@ -69,8 +65,6 @@ public class Swerve extends SubsystemBase implements Logged {
             new SwerveModule(
                     Modules.BL.DRIVE_MOTOR_ID,
                     Modules.BL.SPIN_MOTOR_ID,
-                    Modules.BL.DRIVE_MOTOR_REVERSED,
-                    Modules.BL.SPIN_MOTOR_REVERSED,
                     Modules.BL.ABS_ENCODER_CHANNEL,
                     Modules.BL.OFFSET_ANGLE,
                     "BL",
@@ -78,8 +72,6 @@ public class Swerve extends SubsystemBase implements Logged {
             new SwerveModule(
                     Modules.BR.DRIVE_MOTOR_ID,
                     Modules.BR.SPIN_MOTOR_ID,
-                    Modules.BR.DRIVE_MOTOR_REVERSED,
-                    Modules.BR.SPIN_MOTOR_REVERSED,
                     Modules.BR.ABS_ENCODER_CHANNEL,
                     Modules.BR.OFFSET_ANGLE,
                     "BR",
