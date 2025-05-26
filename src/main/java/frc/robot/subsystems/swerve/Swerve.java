@@ -25,7 +25,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.lib.PhotonVision;
+import frc.robot.util.PhotonVision;
 import frc.robot.Constants;
 import frc.robot.Constants.FieldConstants.FieldLocations;
 import frc.robot.RobotContainer;
@@ -51,39 +51,27 @@ public class Swerve extends SubsystemBase implements Logged {
             new SwerveModule(
                     Modules.FL.DRIVE_MOTOR_ID,
                     Modules.FL.SPIN_MOTOR_ID,
-                    Modules.FL.DRIVE_MOTOR_REVERSED,
-                    Modules.FL.SPIN_MOTOR_REVERSED,
                     Modules.FL.ABS_ENCODER_CHANNEL,
                     Modules.FL.OFFSET_ANGLE,
-                    "FL",
-                    0),
+                    "FL"),
             new SwerveModule(
                     Modules.FR.DRIVE_MOTOR_ID,
                     Modules.FR.SPIN_MOTOR_ID,
-                    Modules.FR.DRIVE_MOTOR_REVERSED,
-                    Modules.FR.SPIN_MOTOR_REVERSED,
                     Modules.FR.ABS_ENCODER_CHANNEL,
                     Modules.FR.OFFSET_ANGLE,
-                    "FR",
-                    0),
+                    "FR"),
             new SwerveModule(
                     Modules.BL.DRIVE_MOTOR_ID,
                     Modules.BL.SPIN_MOTOR_ID,
-                    Modules.BL.DRIVE_MOTOR_REVERSED,
-                    Modules.BL.SPIN_MOTOR_REVERSED,
                     Modules.BL.ABS_ENCODER_CHANNEL,
                     Modules.BL.OFFSET_ANGLE,
-                    "BL",
-                    0),
+                    "BL"),
             new SwerveModule(
                     Modules.BR.DRIVE_MOTOR_ID,
                     Modules.BR.SPIN_MOTOR_ID,
-                    Modules.BR.DRIVE_MOTOR_REVERSED,
-                    Modules.BR.SPIN_MOTOR_REVERSED,
                     Modules.BR.ABS_ENCODER_CHANNEL,
                     Modules.BR.OFFSET_ANGLE,
-                    "BR",
-                    0),
+                    "BR"),
     };
 
     private final Pigeon2 pigeon = new Pigeon2(Constants.SwerveConstants.PIGEON_ID);

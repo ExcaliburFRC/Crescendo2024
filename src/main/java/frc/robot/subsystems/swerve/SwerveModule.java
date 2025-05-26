@@ -9,8 +9,8 @@ import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.lib.Neo;
-import frc.lib.Neo.Model;
+import frc.robot.util.Neo;
+import frc.robot.util.Neo.Model;
 import frc.robot.Constants;
 import monologue.Logged;
 
@@ -30,7 +30,6 @@ public class SwerveModule implements Sendable, Logged {
   private final double _absEncoderOffsetRad;
   //a pid controller for the angle of the module
   private final PIDController _spinningPIDController;
-  private final PIDController speedController;
   private final String moduleName;
 
   public Trigger isReset = new Trigger(()-> Math.abs(getResetRad()) < TOLERANCE).debounce(0.1);
@@ -39,12 +38,9 @@ public class SwerveModule implements Sendable, Logged {
   public SwerveModule(
           int driveMotorId,
           int spinningMotorId,
-          boolean driveMotorReversed,
-          boolean spinningMotorReversed,
           int absEncoderChannel,
           double offsetAngle,
-          String name,
-          double kPSpeed) {
+          String name) {
     _absEncoder = new DutyCycleEncoder(absEncoderChannel);
     _absEncoderOffsetRad = offsetAngle * 2 * PI;
     _resetOffset = _absEncoderOffsetRad - PI;
@@ -52,8 +48,8 @@ public class SwerveModule implements Sendable, Logged {
     _driveMotor = new Neo(driveMotorId, Model.SparkFlex);
     _angleMotor = new Neo(spinningMotorId, Model.SparkMax);
 
-    _driveMotor.setInverted(driveMotorReversed);
-    _angleMotor.setInverted(spinningMotorReversed);
+    _driveMotor.setInverted(true);
+    _angleMotor.setInverted(true);
 
     _driveMotor.clearFaults();
     _angleMotor.clearFaults();
@@ -63,8 +59,6 @@ public class SwerveModule implements Sendable, Logged {
 
     _driveMotor.setConversionFactors(kDriveEncoderRotationsToMeters, kDriveEncoderRPMToMeterPerSec);
     _angleMotor.setConversionFactors(kTurningEncoderRotationsToRadians, kTurningEncoderRPMToRadiansPerSec);
-
-    speedController = new PIDController(kPSpeed,0,0);
 
     _spinningPIDController = new PIDController(MODULE_ANGLE_GAINS.kp, MODULE_ANGLE_GAINS.ki, MODULE_ANGLE_GAINS.kd);
     _spinningPIDController.enableContinuousInput(-PI, PI);
@@ -130,7 +124,7 @@ public class SwerveModule implements Sendable, Logged {
 
     state = SwerveModuleState.optimize(state, getState().angle);
     double speed = state.speedMetersPerSecond / Constants.SwerveConstants.MAX_VELOCITY_METER_PER_SECOND;
-    _driveMotor.set(speed - speedController.calculate(getModuleVelocity(), speed));
+    _driveMotor.set(speed);
     _angleMotor.set(_spinningPIDController.calculate(_angleMotor.getPosition(), state.angle.getRadians()));
   }
 

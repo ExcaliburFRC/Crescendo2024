@@ -1,4 +1,4 @@
-package frc.lib;
+package frc.robot.util;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
@@ -17,7 +17,6 @@ import org.photonvision.targeting.PhotonPipelineResult;
 
 import java.util.Optional;
 import java.util.function.BiConsumer;
-import java.util.function.Supplier;
 
 public class PhotonVision {
     private static final double THATS_WAY_TOO_FUCKING_FAR = 3.5;

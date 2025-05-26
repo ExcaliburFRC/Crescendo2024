@@ -1,15 +1,9 @@
 package frc.robot.subsystems.climber;
 
 import com.revrobotics.CANSparkBase;
-import com.revrobotics.CANSparkLowLevel;
-import edu.wpi.first.math.controller.ElevatorFeedforward;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.*;
-import frc.lib.Gains;
-import frc.lib.Neo;
-import frc.lib.Neo.Model;
-import monologue.Annotations.Log;
+import frc.robot.util.Neo;
+import frc.robot.util.Neo.Model;
 import monologue.Logged;
 
 import java.util.function.BooleanSupplier;

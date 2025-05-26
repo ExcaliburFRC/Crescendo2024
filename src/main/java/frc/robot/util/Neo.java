@@ -1,4 +1,4 @@
-package frc.lib;
+package frc.robot.util;
 
 import com.revrobotics.CANSparkBase;
 import com.revrobotics.*;
